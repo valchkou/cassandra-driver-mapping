@@ -40,7 +40,7 @@ it in your application using the following Maven dependency::
 
     <dependency>
       <groupId>com.datastax.cassandra</groupId>
-      <artifactId>driver-jpa-plugin</artifactId>
+      <artifactId>cassandra-driver-mapping</artifactId>
       <version>2.0.0-rc2</version>
     </dependency>
 
