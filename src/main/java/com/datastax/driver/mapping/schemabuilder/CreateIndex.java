@@ -13,7 +13,7 @@ public class CreateIndex extends RegularStatement {
 	final String columnName;
 	final String indexName;
 
-	<T> CreateIndex(String keyspace, String tableName, String columnName, String indexName) {
+	CreateIndex(String keyspace, String tableName, String columnName, String indexName) {
 		this.keyspace = keyspace;
 		this.tableName = tableName;
 		this.columnName = columnName;
