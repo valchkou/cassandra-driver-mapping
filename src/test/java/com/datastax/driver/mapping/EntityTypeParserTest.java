@@ -4,8 +4,11 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 
+import java.lang.reflect.Field;
+
 import org.junit.Test;
 
+import com.datastax.driver.mapping.EntityTypeMetadata.FieldData;
 import com.datastax.driver.mapping.entity.SimplePojo;
 
 public class EntityTypeParserTest {
@@ -17,6 +20,7 @@ public class EntityTypeParserTest {
 		assertEquals("id", meta.getIdField().getColumnName());
 		assertEquals("id", meta.getIdField().getName());
 		assertEquals(0, meta.getIndexes().size());
+		assertEquals(4, meta.getFields().size());
 	}
 
 }

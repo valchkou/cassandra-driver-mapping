@@ -16,7 +16,6 @@ public class CreateTable extends RegularStatement {
 		this.keyspace = keyspace;
 		this.entityMetadata = entityMetadata;
 	}
-	
 
 	@Override
 	public String getQueryString() {

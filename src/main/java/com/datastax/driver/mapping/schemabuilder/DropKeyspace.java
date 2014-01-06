@@ -4,35 +4,28 @@ import java.nio.ByteBuffer;
 
 import com.datastax.driver.core.RegularStatement;
 
-public class DropIndex extends RegularStatement {
-	
-	private static final String DROP_INDEX_TEMPLATE_CQL = "DROP INDEX %s;";
+public class DropKeyspace extends RegularStatement {
 	
 	final String keyspace;
-	final String indexName;
 
-	DropIndex(String keyspace, String indexName) {
+	DropKeyspace(String keyspace) {
 		this.keyspace = keyspace;
-		this.indexName = indexName;
 	}
 
 	@Override
 	public String getQueryString() {
-		return String.format(DROP_INDEX_TEMPLATE_CQL, indexName);
+		return "DROP KEYSPACE IF EXISTS "+ keyspace;
 	}
-
 
 	@Override
 	public ByteBuffer[] getValues() {
 		return null;
 	}
 
-
 	@Override
 	public ByteBuffer getRoutingKey() {
 		return null;
 	}
-
 
 	@Override
 	public String getKeyspace() {

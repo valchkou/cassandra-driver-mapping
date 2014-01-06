@@ -139,12 +139,16 @@ public class EntityTypeMetadata {
 		return indexes;
 	}
 
+	public String getIndex(String column) {
+		return indexes.get(column);
+	}
+	
 	public void setIndexes(Map<String, String> indexes) {
 		this.indexes = indexes;
 	}
 
-	public void addindex(String name, String cols) {
-		indexes.put(name, cols);
+	public void addindex(String name, String column) {
+		indexes.put(column, name);
 	}
 
 }
