@@ -6,7 +6,7 @@ import com.datastax.driver.core.RegularStatement;
 
 public class CreateIndex extends RegularStatement {
 	
-	private static final String CREATE_INDEX_TEMPLATE_CQL = "CREATE INDEX %s ON %s(%s);";
+	private static final String CREATE_INDEX_TEMPLATE_CQL = "CREATE INDEX IF NOT EXISTS %s ON %s(%s);";
 	
 	final String keyspace;
 	final String tableName;

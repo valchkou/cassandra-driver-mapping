@@ -6,7 +6,7 @@ import com.datastax.driver.core.RegularStatement;
 
 public class DropIndex extends RegularStatement {
 	
-	private static final String DROP_INDEX_TEMPLATE_CQL = "DROP INDEX %s;";
+	private static final String DROP_INDEX_TEMPLATE_CQL = "DROP INDEX IF EXISTS %s;";
 	
 	final String keyspace;
 	final String indexName;
@@ -17,7 +17,7 @@ public class DropIndex extends RegularStatement {
 	}
 
 	@Override
-	public String getQueryString() {
+	public String getQueryString() {		
 		return String.format(DROP_INDEX_TEMPLATE_CQL, indexName);
 	}
 
