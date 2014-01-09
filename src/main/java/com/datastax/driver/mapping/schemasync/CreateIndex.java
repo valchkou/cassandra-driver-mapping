@@ -27,11 +27,11 @@ public class CreateIndex extends RegularStatement {
 
 	@Override
 	public String getQueryString() {
-		String tabName = tableName;
+		String table = tableName;
 		if (keyspace != null) {
-			tabName = keyspace + "." + tabName;
+			table = keyspace + "." + table;
 		}
-		return String.format(CREATE_INDEX_TEMPLATE_CQL, indexName, tabName, columnName);
+		return String.format(CREATE_INDEX_TEMPLATE_CQL, indexName, table, columnName);
 
 	}
 
