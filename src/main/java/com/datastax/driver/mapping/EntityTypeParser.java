@@ -21,7 +21,7 @@ import com.datastax.driver.core.DataType;
 
 public class EntityTypeParser {
 //	private static final Logger log = Logger.getLogger(EntityMetadataParser.class.getName());
-	private static final Map<Class<?>, DataType.Name> javaTypeToDataType = new HashMap<>();
+	private static Map<Class<?>, DataType.Name> javaTypeToDataType = new HashMap<>();
 	private static final Map<Class<?>, EntityTypeMetadata> entityData = new HashMap<>();
 	
 	static {
@@ -45,6 +45,14 @@ public class EntityTypeParser {
 	    javaTypeToDataType.put(long.class, 								DataType.Name.BIGINT);
 	    javaTypeToDataType.put(double.class, 							DataType.Name.DOUBLE);
 	    javaTypeToDataType.put(float.class, 							DataType.Name.FLOAT);
+	}
+	
+	/**
+	 * to override default java to datastax type mapping
+	 * @param mapping
+	 */
+	public static void setDataTypeMapping(Map<Class<?>, DataType.Name> mapping) {
+		javaTypeToDataType = mapping;
 	}
 	
 	/** 

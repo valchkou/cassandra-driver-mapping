@@ -17,7 +17,6 @@ import com.datastax.driver.mapping.EntityTypeMetadata.FieldData;
 
 public final class SchemaSync {
 	
-	
 	private SchemaSync() {}
 	
     public static void sync(String keyspace, Session session, Class<?> clazz) {
@@ -46,15 +45,42 @@ public final class SchemaSync {
     		sync(keyspace, session, clazz);
     	}
     } 	
-	
+
+    public static void drop(String keyspace, Session session, Class<?>[] classes) {
+    	for (Class<?> clazz: classes) {
+    		drop(keyspace, session, clazz);
+    	}
+    }
+    
+    public static void drop(String keyspace, Session session, Class<?> clazz) {
+    	EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
+    	String table = entityMetadata.getTableName();
+
+    	Cluster cluster = session.getCluster();
+    	KeyspaceMetadata keyspaceMetadata = cluster.getMetadata().getKeyspace(keyspace);
+    	TableMetadata tableMetadata = keyspaceMetadata.getTable(table);
+    	
+    	if (tableMetadata != null) {
+    		
+    		// drop indexes
+    		for (ColumnMetadata columnMetadata: tableMetadata.getColumns()) {
+    			if (columnMetadata.getIndex() != null) {
+    				session.execute(new DropIndex(columnMetadata.getName(), columnMetadata.getIndex().getName()));
+    			}
+    		}
+    		
+    		// drop table
+    		session.execute(new DropTable(keyspace, entityMetadata));
+    	}
+	}
+    
     /**
-     * Built a new BATCH statement on the provided class.
+     * Built create statements on the provided class for table and indexes.
      * <p>
-     * BATCH statement will contain one CREATE TABLE and many or zero CREATE INDEX statements
-     * This method will build a logged batch (this is the default in CQL3). 
+     * Statement will contain one CREATE TABLE and many or zero CREATE INDEX statements
      *
      * @param class the class to generate statements for.
-     * @return a new {@code RegularStatement} that batch {@code statements}.
+     * @return a new {@code List<RegularStatement>}.
      */
     private static <T> List<RegularStatement> createTableStatements(String keyspace, EntityTypeMetadata entityMetadata) {
     	List<RegularStatement> statements = new ArrayList<RegularStatement>();
@@ -71,13 +97,12 @@ public final class SchemaSync {
     
 
     /**
-     * Compare TableMetadata against Entity metadata and generate alter statements.
+     * Compare TableMetadata against Entity metadata and generate alter statements if necessary.
      * <p>
-     * BATCH statement will contain at least one ALTER TABLE statements.
      * Cannot alter clustered and primary key columns. 
      *
      * @param class the class to generate statements for or indexed
-     * @return a new {@code RegularStatement} that batch {@code statements} or null.
+     * @return a new {@code List<RegularStatement>}.
      */
     private static <T> List<RegularStatement> alterTableStatements(String keyspace, Session session, EntityTypeMetadata entityMetadata) {
     
@@ -151,5 +176,5 @@ public final class SchemaSync {
     	return statements;
     }    
     
-   
+ 
 }

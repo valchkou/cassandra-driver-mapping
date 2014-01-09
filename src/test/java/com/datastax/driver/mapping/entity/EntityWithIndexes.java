@@ -19,7 +19,7 @@ import javax.persistence.Transient;
 public class EntityWithIndexes {
 	
 	@Id
-	private UUID uuid;
+	private UUID uuid = UUID.randomUUID();
 	private String email;
 	private Date timestamp;
 	
