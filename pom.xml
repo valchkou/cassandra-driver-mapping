@@ -3,12 +3,12 @@
   <groupId>com.datastax.cassandra</groupId>
   <artifactId>cassandra-driver-mapping</artifactId>
   <version>2.0.0-rc2-SNAPSHOT</version>
-
-  <name>JPA Plugin for DataStax Java Driver for Apache Cassandra</name>
-  <description>Entity Mapping plugin for DataStax Java Driver 2.0+ for Cassandra.</description>
+  <packaging>jar</packaging>	
+  <name>Entity Mapping Plugin for DataStax Java Driver</name>
+  <description>Entity Mapping Plugin for DataStax Java Driver 2.0+ for Cassandra.</description>
   <url>https://github.com/valchkou/cassandra-driver-mapping</url>
 	<properties>
-		<java-src-version>1.7</java-src-version>
+		<java-src-version>1.6</java-src-version>
 		<java-compile-version>1.6</java-compile-version>
 	</properties>
 
@@ -74,6 +74,20 @@
 					<mainClass>org.test.int1.Main</mainClass>
 				</configuration>
 			</plugin>
+
+	      <plugin>
+	        <groupId>org.apache.maven.plugins</groupId>
+	        <artifactId>maven-gpg-plugin</artifactId>
+	        <executions>
+	          <execution>
+	            <id>sign-artifacts</id>
+	            <phase>verify</phase>
+	            <goals>
+	              <goal>sign</goal>
+	            </goals>
+	          </execution>
+	        </executions>
+	      </plugin>			
 		</plugins>
 	</build>
 
@@ -89,6 +103,16 @@
       <organization>valchkou</organization>
     </developer>
   </developers>
+  
+  <licenses>
+    <license>
+      <name>Apache 2</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+      <comments>Apache License Version 2.0</comments>
+    </license>
+  </licenses>
+  
 
 </project>
 

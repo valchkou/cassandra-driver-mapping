@@ -63,6 +63,7 @@ public final class SchemaSync {
     	if (tableMetadata != null) {
     		
     		// drop indexes
+    		session.execute("USE "+keyspace);
     		for (ColumnMetadata columnMetadata: tableMetadata.getColumns()) {
     			if (columnMetadata.getIndex() != null) {
     				session.execute(new DropIndex(columnMetadata.getName(), columnMetadata.getIndex().getName()));

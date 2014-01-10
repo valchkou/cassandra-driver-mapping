@@ -97,8 +97,8 @@ public class EntityTypeMetadata {
 	private Class<?> entityClass;
 	private String tableName;
 	private FieldData idField;
-	private List<FieldData> fields = new ArrayList<>();
-	private Map<String, String> indexes = new HashMap<>();
+	private List<FieldData> fields = new ArrayList<FieldData>();
+	private Map<String, String> indexes = new HashMap<String, String>();
 
 	public EntityTypeMetadata(Class<?> entityClass) {
 		this(entityClass, entityClass.getSimpleName());

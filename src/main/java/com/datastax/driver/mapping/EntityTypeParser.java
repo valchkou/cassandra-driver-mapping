@@ -21,8 +21,8 @@ import com.datastax.driver.core.DataType;
 
 public class EntityTypeParser {
 //	private static final Logger log = Logger.getLogger(EntityMetadataParser.class.getName());
-	private static Map<Class<?>, DataType.Name> javaTypeToDataType = new HashMap<>();
-	private static final Map<Class<?>, EntityTypeMetadata> entityData = new HashMap<>();
+	private static Map<Class<?>, DataType.Name> javaTypeToDataType = new HashMap<Class<?>, DataType.Name>();
+	private static final Map<Class<?>, EntityTypeMetadata> entityData = new HashMap<Class<?>, EntityTypeMetadata>();
 	
 	static {
 		// Mapping java types to DATASTAX driver types

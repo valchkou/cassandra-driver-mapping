@@ -17,14 +17,15 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Select;
 
 public class MappingSession {
 	
 	private Session session;
 	private String keyspace;
 //	private static Map<String, PreparedStatement> insertCache = new HashMap<>();
-	private static Map<String, PreparedStatement> deleteCache = new HashMap<>();
-	private static Map<String, PreparedStatement> selectCache = new HashMap<>();
+	private static Map<String, PreparedStatement> deleteCache = new HashMap<String, PreparedStatement>();
+	private static Map<String, PreparedStatement> selectCache = new HashMap<String, PreparedStatement>();
 	
 	public MappingSession(String keyspace, Session session) {
 		this.session = session;
@@ -65,7 +66,19 @@ public class MappingSession {
 		Statement insert = prepareInsert(entity);
 		session.execute(insert);
 		return entity;
-	}	
+	}
+	
+	/**
+	 * 
+	 * 
+	 * @param clazz
+	 * @param query
+	 * @return 
+	 * @throws Exception
+	 */
+	public <T> List<T> getByQuery(Class<T> clazz,  Select query) throws Exception {
+		return populateFromResultSet(clazz, session.execute(query));
+	}
 
 	/**
 	 * create Statement to persist the instance in Cassandra
@@ -134,7 +147,7 @@ public class MappingSession {
 	 * and retrieve the value from the ResultSet by the field name
 	 * @throws Exception */
 	private <T> List<T> populateFromResultSet(Class<T> clazz, ResultSet rs) throws Exception {
-		List<T> result = new ArrayList<>();
+		List<T> result = new ArrayList<T>();
 		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
 		for (Row row: rs.all()) {
 			T entity = clazz.newInstance();
