@@ -11,15 +11,16 @@ Features
 
 The features provided by the plugin module includes:
   - Generate Schema
-  	* Create table from any Java Bean without annotations.
-  	* Create table with indexes from the JPA 2.1 annotated entities.
-  	* Alter tables and indexes if entity class has changed.
+  	* Create table from any Java Bean even without annotations. 
+  	* Create tables and indexes from the JPA 2.1 annotated entities.
+  	* Alter tables and indexes if entities definition has changed.
   	* Drop tables and indexes.
 
   - Manipulate Entity
   	* Get entity from Cassandra.
   	* Save entity to Cassandra.
-	* Delete entity from Cassandra.  
+	* Delete entity from Cassandra.
+	* Transform Queries built with datastax.QueryBuilder into entities
 
 Getting Started
 ---------------
@@ -32,7 +33,7 @@ Drop Tables and Indexes::
     
     SchemaSync.drop(keyspace, session, Entity1.class, Entity2.class, Entity3.class ...);
 
-Work with Entity::
+Manipulate Entity::
     
     MappingSession msession = new MappingSession(keyspace, session);
     
@@ -42,6 +43,18 @@ Work with Entity::
     
     msession.delete(entity);	
 
+Query Entities::
+    
+    MappingSession msession = new MappingSession(keyspace, session);
+    
+    Statement query = QueryBuilder
+    	.select()
+    	.all()
+    	.from(keyspace, table)
+    	.where(eq(column, value));
+    	
+    List<Entity> items = target.getByQuery(Entity.class, query);
+			
 
 Installing
 ----------
