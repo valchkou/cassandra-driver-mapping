@@ -1,16 +1,17 @@
 cassandra-driver-mapping
 ========================
 
-This is the Plugin for the core module of the DataStax Java Driver for Apache Cassandra (C*), 
-The main goal of the module is to enable JPA-like behavour for entities to be persisted in C*.
-The module is not replacement for the DataStax Java Driver but handy utility of top of it.
+This is the Plugin for the DataStax Java Driver for Apache Cassandra (C*), 
+The module is not replacement for the DataStax Java Driver but small handy add-on to it.
+The main goal is to enable JPA-like behavour for entities to be persisted in C*.
+
 
 Features
 --------
 
 The features provided by the plugin module includes:
-  - Create table from any Java Bean. No annotations are required. Id property and public getters/sestters are required.
-  - Create table with indexes from the JPA annotated entities.
+  - Create table from any Java Bean without annotations. Id property and public getters/sestters are required.
+  - Create table with indexes from the JPA 2.1 annotated entities.
   - Alter tables and indexes if entity class has changed.
   - Drop tables and indexes.
 
@@ -32,8 +33,11 @@ Drop Tables and Indexes::
 Work with Entity::
     
     MappingSession msession = new MappingSession(keyspace, session);
+    
     Entity entity = msession.get(Entity.class, id);
-    entity = msession.save(entity);
+    
+    msession.save(entity);
+    
     msession.delete(entity);	
 
 
