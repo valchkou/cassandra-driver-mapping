@@ -10,8 +10,8 @@ Features
 --------
 
 The features provided by the plugin module includes:
--Generate Schema
-  -- Create table from any Java Bean without annotations. Id property and public getters/sestters are required.
+  -Generate Schema
+  	- Create table from any Java Bean without annotations. Id property and public getters/sestters are required.
   - Create table with indexes from the JPA 2.1 annotated entities.
   - Alter tables and indexes if entity class has changed.
   - Drop tables and indexes.
