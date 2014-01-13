@@ -53,7 +53,7 @@ Query Entities::
     	.from(keyspace, table)
     	.where(eq(column, value));
     	
-    List<Entity> items = target.getByQuery(Entity.class, query);
+    List<Entity> items = msession.getByQuery(Entity.class, query);
 			
 
 Installing
