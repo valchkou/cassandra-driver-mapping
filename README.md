@@ -1,22 +1,26 @@
 cassandra-driver-mapping
 ========================
 
-This is the Plugin for the core module of the DataStax Java Driver for Apache Cassandra (C*), 
-The main goal of the module is to enable JPA-like behavour for entities to be persisted in C*.
-The module is not replacement for the DataStax Java Driver but handy utility of top of it.
+This is the Plugin for the DataStax Java Driver for Apache Cassandra (C*), 
+The module is not replacement for the DataStax Java Driver but small handy add-on to it.
+The main goal is to enable JPA-like behavour for entities to be persisted in C*.
+
 
 Features
 --------
 
 The features provided by the plugin module includes:
-  - Create table from any Java Bean. No annotations are required. Id property and public getters/sestters are required.
-  - Create table with indexes from the JPA annotated entities.
-  - Alter tables and indexes if entity class has changed.
-  - Drop tables and indexes.
+  - Generate Schema
+  	* Create table from any Java Bean even without annotations. 
+  	* Create tables and indexes from the JPA 2.1 annotated entities.
+  	* Alter tables and indexes if entities definition has changed.
+  	* Drop tables and indexes.
 
-  - Get entity from Cassandra.
-  - Save entity to Cassandra.
-  - Delete entity from Cassandra.  
+  - Manipulate Entity
+  	* Get entity from Cassandra.
+  	* Save entity to Cassandra.
+	* Delete entity from Cassandra.
+	* Transform Queries built with datastax.QueryBuilder into entities
 
 Getting Started
 ---------------
@@ -29,13 +33,28 @@ Drop Tables and Indexes::
     
     SchemaSync.drop(keyspace, session, Entity1.class, Entity2.class, Entity3.class ...);
 
-Work with Entity::
+Manipulate Entity::
     
     MappingSession msession = new MappingSession(keyspace, session);
+    
     Entity entity = msession.get(Entity.class, id);
-    entity = msession.save(entity);
+    
+    msession.save(entity);
+    
     msession.delete(entity);	
 
+Query Entities::
+    
+    MappingSession msession = new MappingSession(keyspace, session);
+    
+    Statement query = QueryBuilder
+    	.select()
+    	.all()
+    	.from(keyspace, table)
+    	.where(eq(column, value));
+    	
+    List<Entity> items = msession.getByQuery(Entity.class, query);
+			
 
 Installing
 ----------
