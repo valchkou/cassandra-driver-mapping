@@ -1,103 +1,35 @@
+/*
+ *      Copyright (C) 2014 Eugene Valchkou.
+ *
+ *   Licensed under the Apache License, Version 2.0 (the "License");
+ *   you may not use this file except in compliance with the License.
+ *   You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
+ */
 package com.datastax.driver.mapping;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
-
-import com.datastax.driver.core.DataType;
 
 /**
- * Meta info for entity and entity fields retrieved by reflection
- * 
- * @author Eugene Volchkov
- *
+ * Meta info for the entity and entity fields retrieved by reflection
  */
 public class EntityTypeMetadata {
-	private static final Logger log = Logger.getLogger(EntityTypeMetadata.class.getName());
+//	private static final Logger log = Logger.getLogger(EntityTypeMetadata.class.getName());
 	
-	/************ Start FieldData nested class *********************
-	 * 
-	 * Nested class to encapsulate data for a field of the Entity
-	 *
-	 **************************************************************/
-	public static class FieldData {
-		private boolean isIdField = false;
-		private Field field;
-		private Method getter;
-		private Method setter;
-		private String genericDef;
-		private DataType.Name dataType;
-		private String columnName;
-
-
-		public FieldData(Field field, DataType.Name dataType, Method getter, Method setter, String columnName, boolean isIdField) {
-			this.field = field;
-			this.getter = getter;
-			this.setter = setter;
-			this.dataType = dataType;
-			this.isIdField = isIdField;
-			this.columnName = columnName;
-		}
-		
-		public Class<?> getType() {
-			return field.getType();
-		}
-		
-		public DataType.Name getDataType() {
-			return dataType;
-		}
-		
-		public String getName() {
-			return field.getName();
-		}
-		
-		public boolean isIdField() {
-			return isIdField;
-		}
-		
-		public <E> Object getValue(E entity) {
-			try {
-				return getter.invoke(entity, new Object[]{});
-			} catch (Exception e) {
-				log.info("Can't get value for obj:"+entity+", method:"+getter.getName());
-			}
-			return null;
-		}
-		
-		public <E> void setValue(E entity, Object val) {
-			try {
-				setter.invoke(entity, new Object[]{val});
-			} catch (Exception e) {
-				log.info("Can't set value for obj:"+entity+", method:"+setter.getName());
-			}
-		}
-
-		public String getGenericDef() {
-			return genericDef;
-		}
-
-		public void setGenericDef(String genericDef) {
-			this.genericDef = genericDef;
-		}
-		
-		public boolean isGenericType() {
-			return genericDef != null;
-		}
-
-		public String getColumnName() {
-			return columnName;
-		}
-	}	
-	/************ End FieldData nested class *********************/
-
 	private Class<?> entityClass;
 	private String tableName;
-	private FieldData idField;
-	private List<FieldData> fields = new ArrayList<FieldData>();
+	private EntityFieldMetaData idField;
+	private List<EntityFieldMetaData> fields = new ArrayList<EntityFieldMetaData>();
 	private Map<String, String> indexes = new HashMap<String, String>();
 
 	public EntityTypeMetadata(Class<?> entityClass) {
@@ -109,16 +41,25 @@ public class EntityTypeMetadata {
 			throw new IllegalArgumentException("entityClass and table Name are required for com.datastax.driver.mapping.EntityTypeMetadata");
 		}
 		this.entityClass = entityClass;
-		this.tableName = tableName;
+		this.tableName = tableName.toLowerCase();
 	}
 	
-	public void addField(FieldData fieldData) {
+	public void addField(EntityFieldMetaData fieldData) {
 		fields.add(fieldData);
 		if (fieldData.isIdField) {
 			idField = fieldData;
 		}
 	}
 
+	public EntityFieldMetaData getFieldMetadata(String field) {
+		for (EntityFieldMetaData fieldMeta: fields) {
+			if (field.equalsIgnoreCase(fieldMeta.getName())) {
+				return fieldMeta;
+			}
+		}
+		return null;
+	}
+	
 	public Class<?> getEntityClass() {
 		return entityClass;
 	}
@@ -127,11 +68,11 @@ public class EntityTypeMetadata {
 		return tableName;
 	}
 
-	public FieldData getIdField() {
+	public EntityFieldMetaData getIdField() {
 		return idField;
 	}
 
-	public List<FieldData> getFields() {
+	public List<EntityFieldMetaData> getFields() {
 		return fields;
 	}
 
@@ -142,13 +83,9 @@ public class EntityTypeMetadata {
 	public String getIndex(String column) {
 		return indexes.get(column);
 	}
-	
-	public void setIndexes(Map<String, String> indexes) {
-		this.indexes = indexes;
-	}
 
 	public void addindex(String name, String column) {
-		indexes.put(column, name);
+		indexes.put(column.toLowerCase(), name.toLowerCase());
 	}
 
 }

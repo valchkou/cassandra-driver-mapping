@@ -1,3 +1,18 @@
+/*
+ *      Copyright (C) 2014 Eugene Valchkou.
+ *
+ *   Licensed under the Apache License, Version 2.0 (the "License");
+ *   you may not use this file except in compliance with the License.
+ *   You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
+ */
 package com.datastax.driver.mapping;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
@@ -17,7 +32,6 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
 
 public class MappingSession {
 	
@@ -43,13 +57,19 @@ public class MappingSession {
 	 */
 	public <T> T get(Class<T> clazz, Object id) throws Exception {
 		BoundStatement bs = prepareSelect(clazz, id);
-		List<T> all = populateFromResultSet(clazz, session.execute(bs));
+		List<T> all = getFromResultSet(clazz, session.execute(bs));
 		if (all.size() > 0) {
 			return all.get(0);
 		}	
 		return null;
 	}
 
+	/**
+	 * Delete the given instance 
+	 * Entity must have a property id or a property annotated with @Id
+	 * @param entity - an instance of a persistent class
+	 * @throws Exception
+	 */	
 	public <E> void delete(E entity) throws Exception {
 		BoundStatement bs = prepareDelete(entity);
 		session.execute(bs);
@@ -69,15 +89,15 @@ public class MappingSession {
 	}
 	
 	/**
-	 * 
+	 * Execute the query and populate the list with items of given class.
 	 * 
 	 * @param clazz
-	 * @param query
-	 * @return 
+	 * @param query Statement
+	 * @return List of items
 	 * @throws Exception
 	 */
-	public <T> List<T> getByQuery(Class<T> clazz,  Select query) throws Exception {
-		return populateFromResultSet(clazz, session.execute(query));
+	public <T> List<T> getByQuery(Class<T> clazz,  Statement query) throws Exception {
+		return getFromResultSet(clazz, session.execute(query));
 	}
 
 	/**
@@ -90,7 +110,7 @@ public class MappingSession {
 		Class<?> clazz = entity.getClass();
 		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
 		String table = entityMetadata.getTableName();
-		List<EntityTypeMetadata.FieldData> fields = entityMetadata.getFields(); 
+		List<EntityFieldMetaData> fields = entityMetadata.getFields(); 
 
 		String[] columns = new String[fields.size()];
 		Object[] values = new Object[fields.size()];
@@ -98,7 +118,7 @@ public class MappingSession {
 			columns[i] = fields.get(i).getColumnName();
 			values[i] = fields.get(i).getValue(entity);
 		}		
-		// TODO : create bound statement
+		// TODO : consider building bound statement
 		return insertInto(keyspace, table).values(columns, values);
 	}	
 	
@@ -143,15 +163,15 @@ public class MappingSession {
 	
 	/** 
 	 * Convert ResultSet into List<T>. Create an instance of <T> for each row.
-	 * To populate instance of <T> iterate through the entity metadata 
+	 * To populate instance of <T> iterate through the entity fields
 	 * and retrieve the value from the ResultSet by the field name
 	 * @throws Exception */
-	private <T> List<T> populateFromResultSet(Class<T> clazz, ResultSet rs) throws Exception {
+	public <T> List<T> getFromResultSet(Class<T> clazz, ResultSet rs) throws Exception {
 		List<T> result = new ArrayList<T>();
 		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
 		for (Row row: rs.all()) {
 			T entity = clazz.newInstance();
-			for (EntityTypeMetadata.FieldData field: entityMetadata.getFields()) {
+			for (EntityFieldMetaData field: entityMetadata.getFields()) {
 				DataType.Name dataType = field.getDataType();
 				Object value = null;
 				try {

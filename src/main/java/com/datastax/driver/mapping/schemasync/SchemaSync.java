@@ -1,3 +1,18 @@
+/*
+ *      Copyright (C) 2014 Eugene Valchkou.
+ *
+ *   Licensed under the Apache License, Version 2.0 (the "License");
+ *   you may not use this file except in compliance with the License.
+ *   You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
+ */
 package com.datastax.driver.mapping.schemasync;
 
 import java.util.ArrayList;
@@ -10,17 +25,19 @@ import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
+import com.datastax.driver.mapping.EntityFieldMetaData;
 import com.datastax.driver.mapping.EntityTypeMetadata;
 import com.datastax.driver.mapping.EntityTypeParser;
-import com.datastax.driver.mapping.EntityTypeMetadata.FieldData;
 
-
+/**
+ * Static methods to synchronize entities' definition with Cassandra tables
+ */
 public final class SchemaSync {
 	
 	private SchemaSync() {}
 	
     public static void sync(String keyspace, Session session, Class<?> clazz) {
-    	
+    	session.execute("USE "+keyspace);
     	EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
     	String table = entityMetadata.getTableName();
 
@@ -63,7 +80,6 @@ public final class SchemaSync {
     	if (tableMetadata != null) {
     		
     		// drop indexes
-    		session.execute("USE "+keyspace);
     		for (ColumnMetadata columnMetadata: tableMetadata.getColumns()) {
     			if (columnMetadata.getIndex() != null) {
     				session.execute(new DropIndex(columnMetadata.getName(), columnMetadata.getIndex().getName()));
@@ -117,22 +133,39 @@ public final class SchemaSync {
     	KeyspaceMetadata keyspaceMetadata = cluster.getMetadata().getKeyspace(keyspace);
     	TableMetadata tableMetadata = keyspaceMetadata.getTable(table);    	
   
-    	
     	// build statements for a new column or a columns with changed datatype.
-  
-    	for (FieldData field: entityMetadata.getFields()) {
+    	for (EntityFieldMetaData field: entityMetadata.getFields()) {
     		String column = field.getColumnName();
     		String fieldType = field.getDataType().name();
     		ColumnMetadata columnMetadata = tableMetadata.getColumn(column);
     		
+    		String colIndex = null;
+    		if (columnMetadata!= null && columnMetadata.getIndex() != null) {
+    			colIndex = columnMetadata.getIndex().getName();
+    		}
+    		
+    		String fieldIndex = null;
+    		if (entityMetadata.getIndex(column) != null) {
+    			fieldIndex = entityMetadata.getIndex(column);
+    		}
     		
     		if (columnMetadata == null) {
     			// if column not exists in TableMetadata then add column
     			AlterTable statement = new AlterTable.Builder().addColumn(keyspace, table, column, fieldType);
     			statements.add(statement);
+    		} else if (colIndex!=null || fieldIndex!=null) {
+    			if (colIndex == null) {
+    				statements.add(new CreateIndex(keyspace, table, column, entityMetadata.getIndex(column)));
+    			} else if (fieldIndex == null) {
+    				statements.add(new DropIndex(column, columnMetadata.getIndex().getName()));
+    			} else if (!fieldIndex.equals(colIndex)) {
+    				statements.add(new DropIndex(column, columnMetadata.getIndex().getName()));
+    				statements.add(new CreateIndex(keyspace, table, column, entityMetadata.getIndex(column)));
+    			}
+    			
     		} else if (!fieldType.equals(columnMetadata.getType().getName().name())) {
     			
-    			// can't change datatype for clustered or indexed columns
+    			// can't change datatype for clustered columns
     			if (tableMetadata.getClusteringColumns().contains(columnMetadata)) {
     				continue;
     			}
@@ -154,7 +187,6 @@ public final class SchemaSync {
 				if (entityMetadata.getIndex(column) != null) {
 					statements.add(new CreateIndex(keyspace, table, column, entityMetadata.getIndex(column)));
 				}	    			
-    			
     		}
     	}
     	
@@ -162,7 +194,7 @@ public final class SchemaSync {
 		for (ColumnMetadata colmeta: tableMetadata.getColumns()) {
 			colmeta.getName();
 			boolean exists = false;
-			for (FieldData field: entityMetadata.getFields()) {
+			for (EntityFieldMetaData field: entityMetadata.getFields()) {
 				if (colmeta.getName().equals(field.getColumnName())) {
 					exists = true;
 					break;
