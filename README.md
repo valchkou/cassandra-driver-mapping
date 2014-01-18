@@ -1,9 +1,12 @@
 cassandra-driver-mapping
 ========================
 
-This is the Plugin for the DataStax Java Driver for Apache Cassandra (C*), 
-The module is not replacement for the DataStax Java Driver but small handy add-on to it.
+This is addon for the DataStax Java Driver for Apache Cassandra (C*), 
 The main goal is to enable JPA-like behavour for entities to be persisted in C*.
+The module is not replacement for the DataStax Java Driver but compact enhancement to it.
+The module uses DataStax Java Driver version 2.0 and JPA 2.1.
+
+For Datastax Java Driver info please refer to the (http://www.datastax.com/drivers/java/apidocs/).
 
 
 Features
@@ -21,9 +24,18 @@ The features provided by the plugin module includes:
   	* Save entity to Cassandra.
 	* Delete entity from Cassandra.
 	* Transform Queries built with datastax.QueryBuilder into entities
+	* Transform datastax ResultSet into entities
 
 Getting Started
 ---------------
+
+Install it in your application from Maven Central using the following dependency::
+
+    <dependency>
+      <groupId>com.valchkou.datastax</groupId>
+      <artifactId>cassandra-driver-mapping</artifactId>
+      <version>2.0.0-rc2</version>
+    </dependency>
 
 Create or alter Tables and Indexes::
     
@@ -56,28 +68,31 @@ Query Entities::
     List<Entity> items = msession.getByQuery(Entity.class, query);
 			
 
-Installing
-----------
+Upcoming Features
+-----------
+   - Support composite Primary Keys
+   - Support TTL and Timestamp
+   - Enable optimistic lock for Entities (TBD)
+   - Support options for Create Table 
 
-The last release of the plugin is available on Maven Central. You can install
-it in your application using the following Maven dependency::
+Mapping Examples
+----------------
+   - comins soon
+   - Simple Bean
+   - JPA Entity
+   - JPA Entity with indexes 
+   - Transient property
+   - Collections
 
-    <dependency>
-      <groupId>com.datastax.cassandra</groupId>
-      <artifactId>cassandra-driver-mapping</artifactId>
-      <version>2.0.0-rc2</version>
-    </dependency>
+Alter Behaviour
+----------------
+   - comins soon
 
-Prerequisite
-------------
-The module doesn't have its own versioning system insted it piggybacks DataStax Java Driver version.
-The module uses DataStax Java Driver version 2.0 and JPA 2.1
-
-Coming Features
+Entity Metadata
 ---------------
-   - Support composite Primary Keys with Embedded Annotation
-   - Support optimistic lock with timestamp or versioning	
+   - comins soon
 
-Please see wiki page for complete information about mapping plugin.
-For Datastax Java Driver please refer to the (http://www.datastax.com/drivers/java/apidocs/).
-
+Using with Spring Framework 
+---------------------------
+   - comins soon
+	
