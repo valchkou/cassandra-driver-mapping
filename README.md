@@ -3,7 +3,7 @@ cassandra-driver-mapping
 
 Enjoy this cool addon for the DataStax Java Driver which will bring you piece and serenity while working with Apache Cassandra (C*).
 The main goal is to enable improved JPA-like behaviour for entities to be persisted in C*.
-The module is not replacement for the DataStax Java Driver but smart addon to it.
+The module is not replacement for the DataStax Java Driver but time-saver addon to it.
 The module relies on DataStax Java Driver version 2.0 and JPA 2.1.
 
 You can read more about Datastax Java Driver at (http://www.datastax.com/drivers/java/apidocs/).
@@ -34,8 +34,9 @@ Play with your entity::
     
     mappingSession.delete(entity);	
 
-If tables and indexes do not yet exist they will be automatically created on the fist entity use.
-
+Very simple, isn't it. Right, no mapping files, no scripts. You don't have to generate your scripts to create the Table and Indexes for the Entity.
+All is built-in and taken care. If tables and indexes do not yet exist they will be automatically created when you fist use entity.
+If you add or remove property on you entity it will be automatically synchronized with C*. 
 
 Features
 --------
