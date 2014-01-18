@@ -20,38 +20,21 @@ Install it in your application from Maven Central using the following dependency
     </dependency>
 
 Create MappingSession instance::
-    
-    MappingSession msession = new MappingSession(keyspace, session);
+
+	import com.datastax.driver.mapping.MappingSession;
+    ...
+    MappingSession mappingSession = new MappingSession(keyspace, session);
  
 Play with your entity::   
 
 	Entity entity = new Entity();
-    msession.save(entity);
+    mappingSession.save(entity);
     
-    entity = msession.get(Entity.class, id);
+    entity = mappingSession.get(Entity.class, id);
     
-    msession.delete(entity);	
+    mappingSession.delete(entity);	
 
-If tables and indexes do not exist they will be automatically created on the fist entity use.
-
-You can also run custom Queries like this::
-    
-    MappingSession msession = new MappingSession(keyspace, session);
-    
-    Statement query = QueryBuilder
-    	.select()
-    	.all()
-    	.from(keyspace, table)
-    	.where(eq(column, value));
-    	
-    List<Entity> items = msession.getByQuery(Entity.class, query);
-
-You can also Create, Alter and Drop Tables and Indexes::
-    
-    SchemaSync.sync(keyspace, session, Entity1.class, Entity2.class, Entity3.class ...);
-	
-    SchemaSync.drop(keyspace, session, Entity1.class, Entity2.class, Entity3.class ...);
-			
+If tables and indexes do not yet exist they will be automatically created on the fist entity use.
 
 
 Features
@@ -80,22 +63,27 @@ Upcoming Features
 
 Mapping Examples
 ----------------
-   - comins soon
+
    - Simple Bean
    - JPA Entity
    - JPA Entity with indexes 
    - Transient property
    - Collections
 
+Custom Queries
+--------------
+	- building and running queries with custom where conditions
+
 Alter Behaviour
 ----------------
-   - comins soon
+   - Explanation of internals how the create and alter work
 
 Entity Metadata
 ---------------
-   - comins soon
+   - Why and How to access Metadata
+   - How to override Data Type mapping
 
 Using with Spring Framework 
 ---------------------------
-   - comins soon
+   - Simple Sample with Spring Framework
 	
