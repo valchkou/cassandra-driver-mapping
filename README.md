@@ -175,58 +175,59 @@ Using with Spring Framework
 		<context:component-scan base-package="your.package.path" />
 	 </beans:beans> 
    
-	- Create a class which will initialize connection to C*::
+	- Create a class which will initialize connection to C*:
 	
-	import org.springframework.beans.factory.annotation.Value;
-	import org.springframework.stereotype.Repository;
-	
-	import com.datastax.driver.core.Cluster;
-	import com.datastax.driver.core.Session;
-	import com.datastax.driver.mapping.MappingSession;
-	import com.datastax.driver.mapping.schemasync.SchemaSync;
-	
-	@Repository
-	public class CassandraSessionFactory {
+	```java
+		import org.springframework.beans.factory.annotation.Value;
+		import org.springframework.stereotype.Repository;
+		import com.datastax.driver.core.Cluster;
+		import com.datastax.driver.core.Session;
+		import com.datastax.driver.mapping.MappingSession;
+		import com.datastax.driver.mapping.schemasync.SchemaSync;
 		
-		@Value("${cassandra.keyspace}")
-		private String keyspace;
-		
-		@Value("${cassandra.node}")
-		private String node;
-		
-		private Cluster cluster;
-		private Session session;
-		private MappingSession mappingSession;
+		@Repository
+		public class CassandraSessionFactory {
 			
-		public Session getSession() {
-			if (session == null) {
-				connect();
+			@Value("${cassandra.keyspace}")
+			private String keyspace;
+			
+			@Value("${cassandra.node}")
+			private String node;
+			
+			private Cluster cluster;
+			private Session session;
+			private MappingSession mappingSession;
+				
+			public Session getSession() {
+				if (session == null) {
+					connect();
+				}
+				return session;
 			}
-			return session;
-		}
-	
-		public MappingSession getMappingSession() {
-			if (session == null) {
-				connect();
-			}
-			return mappingSession;
-		}
-	
-		public String getKeyspace() {
-			return keyspace;
-		}
 		
-		protected synchronized void connect() {
-			if (session == null) {
-				cluster = Cluster.builder().addContactPoint(node).build();
-				session = cluster.connect();
-				session.execute("CREATE KEYSPACE IF NOT EXISTS "+ getKeyspace() +
-					" WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 3 }");
-					
-				mappingSession = new MappingSession(getKeyspace(), getSession());
-			}	
+			public MappingSession getMappingSession() {
+				if (session == null) {
+					connect();
+				}
+				return mappingSession;
+			}
+		
+			public String getKeyspace() {
+				return keyspace;
+			}
+			
+			protected synchronized void connect() {
+				if (session == null) {
+					cluster = Cluster.builder().addContactPoint(node).build();
+					session = cluster.connect();
+					session.execute("CREATE KEYSPACE IF NOT EXISTS "+ getKeyspace() +
+						" WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 3 }");
+						
+					mappingSession = new MappingSession(getKeyspace(), getSession());
+				}	
+			}
 		}
-	}
+	```
 	
 	- inject your factory in YourEntityDAO::
 	
