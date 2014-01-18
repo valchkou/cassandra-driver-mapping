@@ -15,14 +15,21 @@
  */
 package com.datastax.driver.mapping;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
 
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -36,8 +43,8 @@ import com.datastax.driver.mapping.EntityFieldMetaData;
 import com.datastax.driver.mapping.EntityTypeMetadata;
 import com.datastax.driver.mapping.EntityTypeParser;
 import com.datastax.driver.mapping.MappingSession;
+import com.datastax.driver.mapping.entity.EntityWithCollections;
 import com.datastax.driver.mapping.entity.EntityWithIndexes;
-import com.datastax.driver.mapping.schemasync.SchemaSync;
 
 public class MappingSessionTest {
 
@@ -52,14 +59,6 @@ public class MappingSessionTest {
 		String node = "127.0.0.1";
 		cluster = Cluster.builder().addContactPoint(node).build();
 		session = cluster.connect();
-		session.execute("CREATE KEYSPACE IF NOT EXISTS "+ keyspace +" WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 3 }");
-		try {
-			SchemaSync.drop(keyspace, session, EntityWithIndexes.class);
-			SchemaSync.sync(keyspace, session, EntityWithIndexes.class);	
-		} catch (Exception e) {
-			System.out.println(e);
-		}
-		
 	}
 
 	@AfterClass 
@@ -72,9 +71,19 @@ public class MappingSessionTest {
 		}
 		
 	}	
+	
 	@Before
 	public void setUp() {
+		session.execute("CREATE KEYSPACE IF NOT EXISTS "+ keyspace +" WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 3 }");
+		session.execute("USE "+keyspace);
 		target = new MappingSession(keyspace, session);
+	}
+	
+	@After
+	public void cleanUp() {
+		session.execute("DROP KEYSPACE IF EXISTS "+ keyspace);
+		EntityTypeParser.getEntityMetadata(EntityWithIndexes.class).markUnSynced();
+		EntityTypeParser.getEntityMetadata(EntityWithCollections.class).markUnSynced();
 	}
 	
 	@Test
@@ -90,9 +99,8 @@ public class MappingSessionTest {
 		EntityWithIndexes loaded = target.get(EntityWithIndexes.class, uuid);
 		assertNull(loaded);
 		
-		obj = target.save(obj);
+		target.save(obj);
 		loaded = target.get(EntityWithIndexes.class, uuid);
-		
 		assertEquals(obj, loaded);
 		
 		target.delete(loaded);
@@ -120,5 +128,42 @@ public class MappingSessionTest {
 		assertEquals(3, items.size());
 	}
 	
+	@Test
+	public void testCollections() throws Exception {
+		EntityWithCollections obj = new EntityWithCollections();
+		
+		UUID uuid = UUID.randomUUID();
+		obj.setId(uuid);
+		
+		target.save(obj);
+		EntityWithCollections loaded = target.get(EntityWithCollections.class, uuid);
+		
+		assertEquals(obj, loaded);
+		
+		
+		Map<String, BigDecimal> map = new HashMap<String, BigDecimal>();
+		map.put("key1", new BigDecimal(100.55));
+		map.put("key1", new BigDecimal(100.55555));
+		map.put("key1", new BigDecimal(101.5500000333));
+		obj.setRates(map);
+		
+		List<Integer> list = new ArrayList<Integer>();
+		list.add(100);
+		list.add(200);
+		list.add(300);
+		obj.setTrades(list);
+		
+		Set<Integer> set = new HashSet<Integer>();
+		set.add(100);
+		set.add(200);
+		set.add(300);
+		obj.setRefs(set);
+
+		target.save(obj);
+		loaded = target.get(EntityWithCollections.class, uuid);
+		
+		assertEquals(obj, loaded);		
+				
+	}
 	
 }

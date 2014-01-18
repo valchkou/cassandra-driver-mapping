@@ -21,16 +21,17 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Meta info for the entity and entity fields retrieved by reflection
+ * This class is Meta Info for the persistent entity and entity fields
+ * EntityTypeMetadata is used to produce CQL Statements for entities.  
  */
 public class EntityTypeMetadata {
-//	private static final Logger log = Logger.getLogger(EntityTypeMetadata.class.getName());
 	
 	private Class<?> entityClass;
 	private String tableName;
 	private EntityFieldMetaData idField;
 	private List<EntityFieldMetaData> fields = new ArrayList<EntityFieldMetaData>();
 	private Map<String, String> indexes = new HashMap<String, String>();
+	private boolean synced = false;
 
 	public EntityTypeMetadata(Class<?> entityClass) {
 		this(entityClass, entityClass.getSimpleName());
@@ -88,4 +89,15 @@ public class EntityTypeMetadata {
 		indexes.put(column.toLowerCase(), name.toLowerCase());
 	}
 
+	public boolean isSynced() {
+		return synced;
+	}
+
+	public void markSynced() {
+		this.synced = true;
+	}
+
+	public void markUnSynced() {
+		this.synced = false;
+	}
 }

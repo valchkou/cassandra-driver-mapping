@@ -24,10 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-//import java.util.logging.Logger;
-
-
-
 
 import javax.persistence.Column;
 import javax.persistence.Id;
@@ -38,8 +34,10 @@ import javax.persistence.Transient;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.mapping.EntityFieldMetaData;
 
+/**
+ * This class parses persistent Entity.class and creates EntityTypeMetadata instance.
+ */
 public class EntityTypeParser {
-//	private static final Logger log = Logger.getLogger(EntityMetadataParser.class.getName());
 	private static Map<Class<?>, DataType.Name> javaTypeToDataType = new HashMap<Class<?>, DataType.Name>();
 	private static final Map<Class<?>, EntityTypeMetadata> entityData = new HashMap<Class<?>, EntityTypeMetadata>();
 	
@@ -72,6 +70,15 @@ public class EntityTypeParser {
 	 */
 	public static void setDataTypeMapping(Map<Class<?>, DataType.Name> mapping) {
 		javaTypeToDataType = mapping;
+	}
+
+	/**
+	 * Override individual entry for java type to datastax type
+	 * @param clazz the class of a java data type
+	 * @param type the datastax DataType.Name
+	 */
+	public static void overrideDataTypeMapping(Class<?> clazz, DataType.Name type) {
+		javaTypeToDataType.put(clazz, type);
 	}
 	
 	/** 

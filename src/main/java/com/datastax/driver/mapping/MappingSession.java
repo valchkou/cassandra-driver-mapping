@@ -32,12 +32,21 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.mapping.schemasync.SchemaSync;
 
+/**
+ * MappingSession is API to work with entities to be persisted in Cassandra.is 
+ * This is lightweight wrapper for the datastax Session
+ * Usage: create one instance per datastax Session or have a new one for each request.
+ * <code> MappingSession msession = new MappingSession(keyspace, session); </code>
+ * <code> msession.save(entity); </code>
+ * <code> msession.get(Entity.class, id); </code>
+ * <code> msession.delete(entity); </code>
+ */
 public class MappingSession {
 	
 	private Session session;
 	private String keyspace;
-//	private static Map<String, PreparedStatement> insertCache = new HashMap<>();
 	private static Map<String, PreparedStatement> deleteCache = new HashMap<String, PreparedStatement>();
 	private static Map<String, PreparedStatement> selectCache = new HashMap<String, PreparedStatement>();
 	
@@ -53,9 +62,9 @@ public class MappingSession {
 	 * @param clazz - a persistent class
 	 * @param id - an identifier
 	 * @return a persistent instance or null
-	 * @throws Exception
 	 */
-	public <T> T get(Class<T> clazz, Object id) throws Exception {
+	public <T> T get(Class<T> clazz, Object id) {
+		maybeSync(clazz);
 		BoundStatement bs = prepareSelect(clazz, id);
 		List<T> all = getFromResultSet(clazz, session.execute(bs));
 		if (all.size() > 0) {
@@ -66,11 +75,10 @@ public class MappingSession {
 
 	/**
 	 * Delete the given instance 
-	 * Entity must have a property id or a property annotated with @Id
 	 * @param entity - an instance of a persistent class
-	 * @throws Exception
 	 */	
-	public <E> void delete(E entity) throws Exception {
+	public <E> void delete(E entity) {
+		maybeSync(entity.getClass());
 		BoundStatement bs = prepareDelete(entity);
 		session.execute(bs);
 	}
@@ -80,12 +88,11 @@ public class MappingSession {
 	 * Entity must have a property id or a property annotated with @Id
 	 * @param entity - an instance of a persistent class
 	 * @return saved instance
-	 * @throws Exception
 	 */
-	public <E> E save(E entity) throws Exception {
+	public <E> void save(E entity) {
+		maybeSync(entity.getClass());
 		Statement insert = prepareInsert(entity);
 		session.execute(insert);
-		return entity;
 	}
 	
 	/**
@@ -96,7 +103,8 @@ public class MappingSession {
 	 * @return List of items
 	 * @throws Exception
 	 */
-	public <T> List<T> getByQuery(Class<T> clazz,  Statement query) throws Exception {
+	public <T> List<T> getByQuery(Class<T> clazz,  Statement query) {
+		maybeSync(clazz);
 		return getFromResultSet(clazz, session.execute(query));
 	}
 
@@ -106,7 +114,7 @@ public class MappingSession {
 	 * @return com.datastax.driver.core.BoundStatement
 	 * @throws Exception
 	 */
-	private <E> Statement prepareInsert(E entity) throws Exception {
+	private <E> Statement prepareInsert(E entity) {
 		Class<?> clazz = entity.getClass();
 		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
 		String table = entityMetadata.getTableName();
@@ -118,14 +126,13 @@ public class MappingSession {
 			columns[i] = fields.get(i).getColumnName();
 			values[i] = fields.get(i).getValue(entity);
 		}		
-		// TODO : consider building bound statement
 		return insertInto(keyspace, table).values(columns, values);
 	}	
 	
 	/**
 	 * Prepare BoundStatement to select row by id
 	 */
-	private <T> BoundStatement prepareSelect(Class<T> clazz, Object id) throws Exception {
+	private <T> BoundStatement prepareSelect(Class<T> clazz, Object id) {
 		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
 		String table = entityMetadata.getTableName();
 		
@@ -143,7 +150,7 @@ public class MappingSession {
 		return bs;
 	}
 	
-	private <E> BoundStatement prepareDelete(E entity) throws Exception {
+	private <E> BoundStatement prepareDelete(E entity) {
 		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(entity.getClass());
 		Object id = entityMetadata.getIdField().getValue(entity);
 		String table = entityMetadata.getTableName();
@@ -166,11 +173,16 @@ public class MappingSession {
 	 * To populate instance of <T> iterate through the entity fields
 	 * and retrieve the value from the ResultSet by the field name
 	 * @throws Exception */
-	public <T> List<T> getFromResultSet(Class<T> clazz, ResultSet rs) throws Exception {
+	public <T> List<T> getFromResultSet(Class<T> clazz, ResultSet rs) {
 		List<T> result = new ArrayList<T>();
 		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
 		for (Row row: rs.all()) {
-			T entity = clazz.newInstance();
+			T entity = null;
+			try {
+				entity = clazz.newInstance();
+			} catch (Exception e) {
+				return null;
+			}
 			for (EntityFieldMetaData field: entityMetadata.getFields()) {
 				DataType.Name dataType = field.getDataType();
 				Object value = null;
@@ -234,6 +246,14 @@ public class MappingSession {
 		
 		return result;
 	}
-
+	
+	/** run sync if not yet done */
+	private void maybeSync(Class<?> clazz) {
+		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
+		if (!entityMetadata.isSynced()) {
+			SchemaSync.sync(keyspace, session, clazz);
+		}
+	}
+	
 
 }

@@ -15,12 +15,13 @@
  */
 package com.datastax.driver.mapping.schemasync;
 
+import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -46,7 +47,7 @@ public class SchemaSyncTest {
 		String node = "127.0.0.1";
 		cluster = Cluster.builder().addContactPoint(node).build();
 		session = cluster.connect();
-		session.execute("CREATE KEYSPACE IF NOT EXISTS "+ keyspace +" WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 3 }");
+		
 	}	
 	
 	@AfterClass 
@@ -59,33 +60,18 @@ public class SchemaSyncTest {
 		
 	}	
 	
-	@Test
-	public void testCreate() {
-		SchemaSync.sync(keyspace, session, EntityWithIndexes.class);
-		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(EntityWithIndexes.class);
-		TableMetadata tableMetadata = cluster.getMetadata().getKeyspace(keyspace).getTable(entityMetadata.getTableName());
-		assertNotNull(tableMetadata);
-		assertEquals("test_entity", tableMetadata.getName());
-		assertEquals(5, tableMetadata.getColumns().size());
+	@Before
+	public void setUp() {
+		session.execute("CREATE KEYSPACE IF NOT EXISTS "+ keyspace +" WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 3 }");
+		session.execute("USE "+keyspace);
 		
-		ColumnMetadata columnMetadata = tableMetadata.getColumn("uuid");
-		assertNull(columnMetadata.getIndex());
-		
-		columnMetadata = tableMetadata.getColumn("email");
-		assertNotNull(columnMetadata.getIndex());
-		assertEquals("test_entity_email_idx", columnMetadata.getIndex().getName());
-		
-		columnMetadata = tableMetadata.getColumn("timestamp");
-		assertNotNull(columnMetadata.getIndex());
-		assertEquals("test_entity_timestamp_idx", columnMetadata.getIndex().getName());	
-		
-		columnMetadata = tableMetadata.getColumn("counter");
-		assertNull(columnMetadata.getIndex());		
-		
-		columnMetadata = tableMetadata.getColumn("name");
-		assertNotNull(columnMetadata);		
 	}
-
+	
+	@After
+	public void cleanUp() {
+		session.execute("DROP KEYSPACE IF EXISTS "+ keyspace);
+	}	
+	
 	@Test
 	public void testDrop() {
 		SchemaSync.sync(keyspace, session, EntityWithIndexes.class);
@@ -126,4 +112,33 @@ public class SchemaSyncTest {
 		columnMetadata = tableMetadata.getColumn("ref");
 		assertNotNull(columnMetadata);		
 	}	
+	
+	@Test
+	public void testCreate() {
+		EntityTypeParser.getEntityMetadata(EntityWithIndexes.class).markUnSynced();
+		SchemaSync.sync(keyspace, session, EntityWithIndexes.class);
+		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(EntityWithIndexes.class);
+		TableMetadata tableMetadata = cluster.getMetadata().getKeyspace(keyspace).getTable(entityMetadata.getTableName());
+		assertNotNull(tableMetadata);
+		assertEquals("test_entity", tableMetadata.getName());
+		assertEquals(5, tableMetadata.getColumns().size());
+		
+		ColumnMetadata columnMetadata = tableMetadata.getColumn("uuid");
+		assertNull(columnMetadata.getIndex());
+		
+		columnMetadata = tableMetadata.getColumn("email");
+		assertNotNull(columnMetadata.getIndex());
+		assertEquals("test_entity_email_idx", columnMetadata.getIndex().getName());
+		
+		columnMetadata = tableMetadata.getColumn("timestamp");
+		assertNotNull(columnMetadata.getIndex());
+		assertEquals("test_entity_timestamp_idx", columnMetadata.getIndex().getName());	
+		
+		columnMetadata = tableMetadata.getColumn("counter");
+		assertNull(columnMetadata.getIndex());		
+		
+		columnMetadata = tableMetadata.getColumn("name");
+		assertNotNull(columnMetadata);		
+	}
+	
 }

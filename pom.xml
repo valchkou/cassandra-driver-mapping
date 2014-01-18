@@ -44,6 +44,7 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.7.5</version>
+			<scope>test</scope>
 		</dependency>
 
   </dependencies>
@@ -96,7 +97,7 @@
 	</build>
 
   <scm>
-    <connection>scm:git:git@github.com:valchkou/cassandra-driver-mapping.git</connection>
+    <connection>scm:git:git://github.com/valchkou/cassandra-driver-mapping.git</connection>
     <developerConnection>scm:git:git@github.com:valchkou/cassandra-driver-mapping.git</developerConnection>
     <url>https://github.com/valchkou/cassandra-driver-mapping</url>
     <tag>cassandra-driver-mapping-2.0.0-rc2</tag>

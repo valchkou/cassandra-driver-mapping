@@ -36,11 +36,14 @@ public final class SchemaSync {
 	
 	private SchemaSync() {}
 	
-    public static void sync(String keyspace, Session session, Class<?> clazz) {
-    	session.execute("USE "+keyspace);
+    public static synchronized void sync(String keyspace, Session session, Class<?> clazz) {
+    	
     	EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
-    	String table = entityMetadata.getTableName();
+    	if (entityMetadata.isSynced()) return;
 
+    	String table = entityMetadata.getTableName();
+    	
+    	session.execute("USE "+keyspace);
     	Cluster cluster = session.getCluster();
     	KeyspaceMetadata keyspaceMetadata = cluster.getMetadata().getKeyspace(keyspace);
     	TableMetadata tableMetadata = keyspaceMetadata.getTable(table);
@@ -55,6 +58,8 @@ public final class SchemaSync {
     	for (RegularStatement stmt: statements) {
     		session.execute(stmt);
     	}
+    	
+    	entityMetadata.markSynced();
     }
     
     public static void sync(String keyspace, Session session, Class<?>[] classes) {
@@ -69,10 +74,11 @@ public final class SchemaSync {
     	}
     }
     
-    public static void drop(String keyspace, Session session, Class<?> clazz) {
+    public static synchronized void drop(String keyspace, Session session, Class<?> clazz) {
     	EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
+    	entityMetadata.markUnSynced();
     	String table = entityMetadata.getTableName();
-
+    	
     	Cluster cluster = session.getCluster();
     	KeyspaceMetadata keyspaceMetadata = cluster.getMetadata().getKeyspace(keyspace);
     	TableMetadata tableMetadata = keyspaceMetadata.getTable(table);
