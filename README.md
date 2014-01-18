@@ -11,34 +11,34 @@ You can read more about Datastax Java Driver at (http://www.datastax.com/drivers
 Jump Start
 ----------
 
-Install it in your application from Maven Central using the following dependency::
-
+Install it in your application from Maven Central using the following dependency:
+```
     <dependency>
       <groupId>com.valchkou.datastax</groupId>
       <artifactId>cassandra-driver-mapping</artifactId>
       <version>2.0.0-rc2</version>
     </dependency>
-
-Create MappingSession instance::
-
+```
+Create MappingSession instance:
+```
 	import com.datastax.driver.mapping.MappingSession;
     ...
     MappingSession mappingSession = new MappingSession(keyspace, session);
-    
+```    
 Note: You need to open the session and create the keyspace in prior to use MappingSession.
 If you are not familiar with procedure please refer to http://www.datastax.com/docs for Developers.
 Or look  at the Spring Framework section at the bottom.
  
-Now play with your entity::   
-
+Now you can play with your entity: 
+```java
 	Entity entity = new Entity();
     mappingSession.save(entity);
     
     entity = mappingSession.get(Entity.class, id);
     
     mappingSession.delete(entity);	
-
-Very simple, isn't it? Exactly, no mapping files, no scripts, no configuration files. 
+```
+Very simple, isn't it? No mapping files, no scripts, no configuration files. 
 You don't have to worry about creating the Table and Indexes for your Entity.
 All is built-in and taken care of. If table and indexes do not yet exist they will be automatically created when you fist use of the entity.
 If you add or remove property on you entity it will be automatically synchronized with C*. 
@@ -103,18 +103,24 @@ Entity Metadata
    
 You may want to access Entity metadata if you are building custom Statements.
 Entity Metadata contains corresponding table and column names.
-Metadata can be accessed any where in you code as::
-	
+Metadata can be accessed any where in you code as:
+```java	
 	EntityTypeMetadata emeta = EntityTypeParser.getEntityMetadata(Entity.class)
 	emeta.getTableName(); // corresponding table name in C*
-	EntityFieldMetaData fdata = emeta.getFieldMetadata("email"); // get field meta info by property name
-	fdata.getColumnName(); // corresponding column name in C*
-	emeta.getFields(); // all the persistent fields on entity
 	
+	// get field meta info by property name
+	EntityFieldMetaData fdata = emeta.getFieldMetadata("email");
+	 
+	// corresponding column name in C*
+	String columnName = fdata.getColumnName(); 
+	
+	 // all the persistent fields on entity
+	List<EntityFieldMetaData> fields = emeta.getFields();
+```	
    
 The core part of mapping addon is a mapping between datastax DataTypes and Java types.
-Default mapping is::
-
+Default mapping is:
+```java
 		DataType.Name.BLOB.asJavaClass(), 		DataType.Name.BLOB
 		DataType.Name.BOOLEAN.asJavaClass(),    DataType.Name.BOOLEAN
 	    DataType.Name.TEXT.asJavaClass(),     	DataType.Name.TEXT
@@ -134,30 +140,31 @@ Default mapping is::
 	    long.class, 							DataType.Name.BIGINT
 	    double.class, 							DataType.Name.DOUBLE
 	    float.class, 							DataType.Name.FLOAT
-
+```
 You can override defaults as:
+```java
 	Map<Class<?>, DataType.Name> mapping = new HashMap<Class<?>, DataType.Name>();
 	.... populate the map
 	EntityTypeParser.setDataTypeMapping(mapping);
-
-Or override individual type::
+```
+Or override individual type:
+```java
 	EntityTypeParser.overrideDataTypeMapping(javaClass, DataType.Name)
-
+```
 This is very internal so you have to understand what you are doing.
 Java type must match data type defined in core driver com.datastax.driver.core.DataType.
 
 
 Using with Spring Framework 
 ---------------------------
-   - Configure propertyews such as keyspace and nodes::
-   Let's guess you create a property file /META-INF/cassandra.properties:
- 
- 	```
+- Configure propertyews such as keyspace and nodes.
+Let's guess you have a property file /META-INF/cassandra.properties:
+  ```
    		cassandra.keyspace=your_keyspace
 		cassandra.node=127.0.0.1
    ```
    
-   - Include properties in your spring config:
+- Include properties in your spring config:
    ```xml
     <?xml version="1.0" encoding="UTF-8"?>
 	<beans:beans xmlns="http://www.springframework.org/schema/mvc"
@@ -178,7 +185,7 @@ Using with Spring Framework
 	 </beans:beans> 
    ```
    
-	- Create a class which will initialize connection to C*:
+- Create a class which will initialize connection to C*:
 	
 	```java
 		import org.springframework.beans.factory.annotation.Value;
@@ -232,7 +239,7 @@ Using with Spring Framework
 		}
 	```
 	
-	- inject your factory in YourEntityDAO::
+- inject your factory in YourEntityDAO::
 		
 	```java		
 		@Repository
