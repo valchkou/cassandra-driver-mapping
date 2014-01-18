@@ -265,7 +265,7 @@ Let's guess you have a property file /META-INF/cassandra.properties:
 				sf.getMappingSession().save(account);	
 			}
 			
-			public void save(Account account) {
+			public void delete(Account account) {
 				sf.getMappingSession().delete(account);	
 			}
 			
@@ -273,16 +273,27 @@ Let's guess you have a property file /META-INF/cassandra.properties:
 				return sf.getMappingSession().get(ChatAccount.class, id);	
 			}
 			
-			public Account getByEmail(String email) {
+			public Account getByEmail(String email) throws Exception {
+				
+				Statement stmt = buildQueryForColumn("email", email);
+				if (stmt==null) return null;
+				
+				List<Account> result = sf.getMappingSession().getByQuery(Account.class, stmt);
+				if (result == null || result.size()==0) return null;
+		
+				return result.get(0);
+			}
+		
+			
+			/** Sample Building Select Statement for a single column with Datastax QueryBuilder */
+			protected Statement buildQueryForColumn(String propName, Object propVal) {
 				EntityTypeMetadata emeta = EntityTypeParser.getEntityMetadata(Account.class);
-				EntityFieldMetaData fmeta = emeta.getFieldMetadata("email");
-				Statement stmt = QueryBuilder
-						.select().all()
-						.from(sf.getKeyspace(), emeta.getTableName())
-						.where(eq(fmeta.getColumnName(), email));
-				List<ChatAccount> result = sf.getMappingSession().getByQuery(Account.class, stmt);
-				if (result != null && result.size()>0) {
-					return result.get(0);
+				EntityFieldMetaData fmeta = emeta.getFieldMetadata(propName);
+				if (fmeta != null) {
+					return QueryBuilder
+							.select().all()
+							.from(sf.getKeyspace(), emeta.getTableName())
+							.where(eq(fmeta.getColumnName(), propVal));
 				}
 				return null;
 			}
