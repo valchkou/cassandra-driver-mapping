@@ -24,6 +24,9 @@ Create MappingSession instance::
 	import com.datastax.driver.mapping.MappingSession;
     ...
     MappingSession mappingSession = new MappingSession(keyspace, session);
+    
+    Note: you need to open the session and create the keyspace in prior to use MappingSession.
+    If you are not familiar with procedure please refer to http://www.datastax.com/docs for Developers.
  
 Play with your entity::   
 
