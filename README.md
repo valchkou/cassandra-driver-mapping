@@ -173,8 +173,7 @@ Using with Spring Framework
 		<context:property-placeholder location="classpath*:/META-INF/cassandra.properties"/>  
 	
 		<context:component-scan base-package="your.package.path" />
-	
-	</beans:beans> 
+	 </beans:beans> 
    
 	- Create a class which will initialize connection to C*::
 	
@@ -226,14 +225,12 @@ Using with Spring Framework
 					
 				mappingSession = new MappingSession(getKeyspace(), getSession());
 			}	
-			
 		}
-	 
 	}
 	
 	- inject your factory in YourEntityDAO::
 	
-			@Repository
+		@Repository
 		public class AccountDAO {
 			
 			@Autowired
@@ -264,7 +261,6 @@ Using with Spring Framework
 				}
 				return null;
 			}
-		
 		}
 	
 	
