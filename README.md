@@ -150,13 +150,15 @@ Java type must match data type defined in core driver com.datastax.driver.core.D
 Using with Spring Framework 
 ---------------------------
    - Configure propertyews such as keyspace and nodes::
-   Let's guess you create a property file /META-INF/cassandra.properties::
+   Let's guess you create a property file /META-INF/cassandra.properties:
  
-   	cassandra.keyspace=your_keyspace
-	cassandra.node=127.0.0.1
+ 	```
+   		cassandra.keyspace=your_keyspace
+		cassandra.node=127.0.0.1
+   ```
    
-   - Include properties in your spring config::
-   
+   - Include properties in your spring config:
+   ```xml
     <?xml version="1.0" encoding="UTF-8"?>
 	<beans:beans xmlns="http://www.springframework.org/schema/mvc"
 		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -174,6 +176,7 @@ Using with Spring Framework
 	
 		<context:component-scan base-package="your.package.path" />
 	 </beans:beans> 
+   ```
    
 	- Create a class which will initialize connection to C*:
 	
@@ -230,7 +233,8 @@ Using with Spring Framework
 	```
 	
 	- inject your factory in YourEntityDAO::
-	
+		
+	```java		
 		@Repository
 		public class AccountDAO {
 			
@@ -263,7 +267,6 @@ Using with Spring Framework
 				return null;
 			}
 		}
-	
-	
+	```
 	
 
