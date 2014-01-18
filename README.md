@@ -25,10 +25,11 @@ Create MappingSession instance::
     ...
     MappingSession mappingSession = new MappingSession(keyspace, session);
     
-    Note: you need to open the session and create the keyspace in prior to use MappingSession.
-    If you are not familiar with procedure please refer to http://www.datastax.com/docs for Developers.
+Note: You need to open the session and create the keyspace in prior to use MappingSession.
+If you are not familiar with procedure please refer to http://www.datastax.com/docs for Developers.
+Or look  at the Spring Framework section at the bottom.
  
-Play with your entity::   
+Now play with your entity::   
 
 	Entity entity = new Entity();
     mappingSession.save(entity);
@@ -37,8 +38,9 @@ Play with your entity::
     
     mappingSession.delete(entity);	
 
-Very simple, isn't it. Right, no mapping files, no scripts. You don't have to generate your scripts to create the Table and Indexes for the Entity.
-All is built-in and taken care. If tables and indexes do not yet exist they will be automatically created when you fist use entity.
+Very simple, isn't it? Exactly, no mapping files, no scripts, no configuration files. 
+You don't have to worry about creating the Table and Indexes for your Entity.
+All is built-in and taken care of. If table and indexes do not yet exist they will be automatically created when you fist use of the entity.
 If you add or remove property on you entity it will be automatically synchronized with C*. 
 
 Features
