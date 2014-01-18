@@ -160,8 +160,8 @@ Using with Spring Framework
 - Configure propertyews such as keyspace and nodes.
 Let's guess you have a property file /META-INF/cassandra.properties:
   ```
-   		cassandra.keyspace=your_keyspace
-		cassandra.node=127.0.0.1
+   	cassandra.keyspace=your_keyspace
+	cassandra.node=127.0.0.1
    ```
    
 - Include properties in your spring config:
@@ -239,9 +239,22 @@ Let's guess you have a property file /META-INF/cassandra.properties:
 		}
 	```
 	
-- inject your factory in YourEntityDAO::
+- inject your factory in YourEntityDAO:
 		
 	```java		
+		import java.util.List;
+		
+		import org.springframework.beans.factory.annotation.Autowired;
+		import org.springframework.stereotype.Repository;
+		
+		import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
+		import com.datastax.driver.core.Statement;
+		import com.datastax.driver.core.querybuilder.QueryBuilder;
+		import com.datastax.driver.mapping.EntityFieldMetaData;
+		import com.datastax.driver.mapping.EntityTypeMetadata;
+		import com.datastax.driver.mapping.EntityTypeParser;
+		import com.datastax.driver.mapping.MappingSession;	
+		
 		@Repository
 		public class AccountDAO {
 			
