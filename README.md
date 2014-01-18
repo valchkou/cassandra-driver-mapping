@@ -1,33 +1,15 @@
 cassandra-driver-mapping
 ========================
 
-This is addon for the DataStax Java Driver for Apache Cassandra (C*), 
-The main goal is to enable JPA-like behavour for entities to be persisted in C*.
-The module is not replacement for the DataStax Java Driver but compact enhancement to it.
-The module uses DataStax Java Driver version 2.0 and JPA 2.1.
+Enjoy this cool addon for the DataStax Java Driver which will bring you piece and serenity while working with Apache Cassandra (C*).
+The main goal is to enable improved JPA-like behaviour for entities to be persisted in C*.
+The module is not replacement for the DataStax Java Driver but smart addon to it.
+The module relies on DataStax Java Driver version 2.0 and JPA 2.1.
 
-For Datastax Java Driver info please refer to the (http://www.datastax.com/drivers/java/apidocs/).
+You can read more about Datastax Java Driver at (http://www.datastax.com/drivers/java/apidocs/).
 
-
-Features
---------
-
-The features provided by the plugin module includes:
-  - Generate Schema
-  	* Create table from any Java Bean even without annotations. 
-  	* Create tables and indexes from the JPA 2.1 annotated entities.
-  	* Alter tables and indexes if entities definition has changed.
-  	* Drop tables and indexes.
-
-  - Manipulate Entity
-  	* Get entity from Cassandra.
-  	* Save entity to Cassandra.
-	* Delete entity from Cassandra.
-	* Transform Queries built with datastax.QueryBuilder into entities
-	* Transform datastax ResultSet into entities
-
-Getting Started
----------------
+Jump Start
+----------
 
 Install it in your application from Maven Central using the following dependency::
 
@@ -37,25 +19,22 @@ Install it in your application from Maven Central using the following dependency
       <version>2.0.0-rc2</version>
     </dependency>
 
-Create or alter Tables and Indexes::
-    
-    SchemaSync.sync(keyspace, session, Entity1.class, Entity2.class, Entity3.class ...);
-	
-Drop Tables and Indexes::
-    
-    SchemaSync.drop(keyspace, session, Entity1.class, Entity2.class, Entity3.class ...);
-
-Manipulate Entity::
+Create MappingSession instance::
     
     MappingSession msession = new MappingSession(keyspace, session);
-    
-    Entity entity = msession.get(Entity.class, id);
-    
+ 
+Play with your entity::   
+
+	Entity entity = new Entity();
     msession.save(entity);
+    
+    entity = msession.get(Entity.class, id);
     
     msession.delete(entity);	
 
-Query Entities::
+If tables and indexes do not exist they will be automatically created on the fist entity use.
+
+You can also run custom Queries like this::
     
     MappingSession msession = new MappingSession(keyspace, session);
     
@@ -66,7 +45,31 @@ Query Entities::
     	.where(eq(column, value));
     	
     List<Entity> items = msession.getByQuery(Entity.class, query);
+
+You can also Create, Alter and Drop Tables and Indexes::
+    
+    SchemaSync.sync(keyspace, session, Entity1.class, Entity2.class, Entity3.class ...);
+	
+    SchemaSync.drop(keyspace, session, Entity1.class, Entity2.class, Entity3.class ...);
 			
+
+
+Features
+--------
+
+The features provided by the plugin module includes:
+  - Manipulate Entity
+  	* Get entity from Cassandra.
+  	* Save entity to Cassandra.
+	* Delete entity from Cassandra.
+	* Run custom Queries built with datastax.QueryBuilder
+	* Convert ResultSet into List of Entities
+
+  - Generate Schema
+  	* Create table from any Java Bean even without annotations. 
+  	* Create tables and indexes from the JPA 2.1 annotated entities.
+  	* Alter tables and indexes if entities definition has changed.
+  	* Drop tables and indexes.
 
 Upcoming Features
 -----------
