@@ -15,7 +15,7 @@ You can read more about Datastax Java Driver itself at (http://www.datastax.com/
 [Coming Features](#comingfeatures)  
 [Mapping Examples](#mapping)  
 [Custom Queries](#queries)  
-[Entity Metadata](#metadata)  
+[Accessing Entity Metadata](#metadata)  
 [Spring Framework Example](#spring)  
 
 <a name="start"/>
@@ -96,22 +96,21 @@ The features provided by the plugin module includes:
 ### Alter Behaviour
 
    As your project is evolving you may want to refactor entity, add or delete properties and indexes.    
-   Please read to understand what will and will not be altered.    
+   Please read to understand what will and will not be altered.
    
-   - Not alterable
-		* add/delete/rename primary key columns.
-   		* change column data type to incompatible one, such as string to number.	
-   		* change property name which is not annotated as @Column. This will be understood as a new property.
+   Not alterable
+   - add/delete/rename primary key columns.
+   - change column data type to incompatible one, such as string to number.	
+   - change property name which is not annotated as @Column. This will be understood as a new property.
    	
-   - Alterable
-   		* add new property.
-   		* delete property.
-   		* add index on column
-   		* change datatype to compatible one. Compatibility is enforced by C*.	
+   Alterable
+   - add new property.
+   - delete property.
+   - add index on column
+   - change datatype to compatible one. Compatibility is enforced by C*.	
    		
 <a name="metadata"/>
-Entity Metadata
----------------
+### Accessing Entity Metadata
    
 You may want to access Entity metadata if you are building custom Statements.    
 Entity Metadata contains corresponding table and column names.  
@@ -167,8 +166,8 @@ Or override individual type:
 Java type must match DataType defined in core driver com.datastax.driver.core.DataType.
 
 <a name="spring"/>
-Spring Framework Example 
----------------------------
+### Spring Framework Example 
+
 - Configure propertyews such as keyspace and nodes.
 Let's guess you have a property file /META-INF/cassandra.properties:
   ```
