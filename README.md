@@ -1,13 +1,24 @@
 cassandra-driver-mapping
 ========================
 
-Enjoy this cool addon for the DataStax Java Driver which will bring you piece and serenity while working with Apache Cassandra (C*).
-The main goal is to enable improved JPA-like behaviour for entities to be persisted in C*.
-The module is not replacement for the DataStax Java Driver but time-saver addon to it.
-The module relies on DataStax Java Driver version 2.0 and JPA 2.1.
+Apache Cassandra (C*) never was easier.   
+Enjoy this addon for the DataStax Java Driver which will bring you piece and serenity.     
+The main goal is to enable JPA -like behaviour for entities to be persisted in C*.  
+The module is not replacement for the DataStax Java Driver but time-saver addon to it.  
+The module relies on DataStax Java Driver version 2.0 and JPA 2.1.  
 
-You can read more about Datastax Java Driver at (http://www.datastax.com/drivers/java/apidocs/).
+You can read more about Datastax Java Driver itself at (http://www.datastax.com/drivers/java/apidocs/).
 
+##### Table of Contents  
+[Jump Start](#start)  
+[Features](#features)  
+[Coming Features](#comingfeatures)
+[Mapping Examples](#mapping)
+[Custom Queries](#queries)
+[Entity Metadata](#metadata)
+[Spring Framework Example](#spring)  
+
+<a name="start"/>
 Jump Start
 ----------
 
@@ -25,9 +36,9 @@ Create MappingSession instance:
     ...
     MappingSession mappingSession = new MappingSession(keyspace, session);
 ```    
-Note: You need to open the session and create the keyspace in prior to use MappingSession.
-If you are not familiar with procedure please refer to http://www.datastax.com/docs for Developers.
-Or look  at the Spring Framework section at the bottom.
+You need to open the session and create the keyspace in prior to use MappingSession.  
+If you are not familiar with procedure please refer to http://www.datastax.com/docs for Developers.  
+Or look at the [Spring Framework Example](#spring) below.
  
 Now you can play with your entity: 
 ```java
@@ -38,11 +49,11 @@ Now you can play with your entity:
     
     mappingSession.delete(entity);	
 ```
-Very simple, isn't it? No mapping files, no scripts, no configuration files. 
-You don't have to worry about creating the Table and Indexes for your Entity.
-All is built-in and taken care of. If table and indexes do not yet exist they will be automatically created when you fist use of the entity.
-If you add or remove property on you entity it will be automatically synchronized with C*. 
+Very simple, isn't it? No mapping files, no scripts, no configuration files.   
+You don't have to worry about creating the Table and Indexes for your Entity.  
+All is built-in and taken care of. Entity definition will be automatically synchronized with C*. 
 
+<a name="features"/>
 Features
 --------
 
@@ -60,6 +71,7 @@ The features provided by the plugin module includes:
   	* Alter tables and indexes if entities definition has changed.
   	* Drop tables and indexes.
 
+<a name="comingfeatures"/>
 Upcoming Features
 -----------
    - Support composite Primary Keys
@@ -67,6 +79,7 @@ Upcoming Features
    - Enable optimistic lock for Entities (TBD)
    - Support options for Create Table 
 
+<a name="mapping"/>
 Mapping Examples
 ----------------
 
@@ -76,15 +89,16 @@ Mapping Examples
    - Transient property
    - Collections
 
+<a name="queries"/>
 Custom Queries
 --------------
+
 	- building and running queries with custom where conditions
 
 Alter Behaviour
 ----------------
-   Please read to understand what will and will not be altered.
-   Module creates tables and indexes based on entity definition.
-   As your project is evolving you may want to refactor entity, add or delete properties and indexes.
+   As your project is evolving you may want to refactor entity, add or delete properties and indexes.  
+   Please read to understand what will and will not be altered.    
    
    Not alterable
    		- add/delete/rename primary key columns
@@ -97,13 +111,13 @@ Alter Behaviour
    		- add index on column
    		- change datatype to compatible one. Compatibility is enforced by C*.	
    		
-
+<a name="metadata"/>
 Entity Metadata
 ---------------
    
-You may want to access Entity metadata if you are building custom Statements.
-Entity Metadata contains corresponding table and column names.
-Metadata can be accessed any where in you code as:
+You may want to access Entity metadata if you are building custom Statements.    
+Entity Metadata contains corresponding table and column names.  
+Entity Metadata can be easily accessed anywhere in your code as:
 ```java	
 	EntityTypeMetadata emeta = EntityTypeParser.getEntityMetadata(Entity.class)
 	emeta.getTableName(); // corresponding table name in C*
@@ -118,8 +132,9 @@ Metadata can be accessed any where in you code as:
 	List<EntityFieldMetaData> fields = emeta.getFields();
 ```	
    
-The core part of mapping addon is a mapping between datastax DataTypes and Java types.
-Default mapping is:
+The core part of mapping addon is a mapping between datastax DataTypes and Java types.  
+Datastax driver has mapping of datastax types to java. Mapping module holds opposite reference.
+
 ```java
 		DataType.Name.BLOB.asJavaClass(), 		DataType.Name.BLOB
 		DataType.Name.BOOLEAN.asJavaClass(),    DataType.Name.BOOLEAN
@@ -151,11 +166,10 @@ Or override individual type:
 ```java
 	EntityTypeParser.overrideDataTypeMapping(javaClass, DataType.Name)
 ```
-This is very internal so you have to understand what you are doing.
-Java type must match data type defined in core driver com.datastax.driver.core.DataType.
+Java type must match DataType defined in core driver com.datastax.driver.core.DataType.
 
-
-Using with Spring Framework 
+<a name="spring"/>
+Spring Framework Example 
 ---------------------------
 - Configure propertyews such as keyspace and nodes.
 Let's guess you have a property file /META-INF/cassandra.properties:
@@ -184,8 +198,41 @@ Let's guess you have a property file /META-INF/cassandra.properties:
 		<context:component-scan base-package="your.package.path" />
 	 </beans:beans> 
    ```
-   
-- Create a class which will initialize connection to C*:
+
+- Define Entity
+	```java
+		import java.util.UUID;
+		
+		import javax.persistence.Entity;
+		import javax.persistence.Column;
+		import javax.persistence.Id;
+		import javax.persistence.Table;
+		
+		@Entity
+		@Table(name="account", indexes = {@Index(name="account_email_idx", columnList="email" )})
+		public class Account {
+			@Id
+			private String id = UUID.randomUUID().toString();
+			
+			@Column(name="email") 
+			private String email;			
+			
+			public String getId() {
+				return id;
+			}
+			public void setId(String id) {
+				this.id = id;
+			}			
+			public String getEmail() {
+				return email;
+			}
+			public void setEmail(String email) {
+				this.email = email;
+			}
+		}
+	```
+		   
+- Create session factory for C*:
 	
 	```java
 		import org.springframework.beans.factory.annotation.Value;
@@ -226,6 +273,7 @@ Let's guess you have a property file /META-INF/cassandra.properties:
 				return keyspace;
 			}
 			
+			/** only 1 thread is permitted to open connection */
 			protected synchronized void connect() {
 				if (session == null) {
 					cluster = Cluster.builder().addContactPoint(node).build();
@@ -239,7 +287,7 @@ Let's guess you have a property file /META-INF/cassandra.properties:
 		}
 	```
 	
-- inject your factory in YourEntityDAO:
+- Create DAO and inject factory into it:
 		
 	```java		
 		import java.util.List;
