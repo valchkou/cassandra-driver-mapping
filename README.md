@@ -9,18 +9,18 @@ The module relies on DataStax Java Driver version 2.0 and JPA 2.1.
 
 You can read more about Datastax Java Driver itself at (http://www.datastax.com/drivers/java/apidocs/).
 
-##### Table of Contents  
+### Table of Contents  
 [Jump Start](#start)  
-[Features](#features)  
-[Coming Features](#comingfeatures)
-[Mapping Examples](#mapping)
-[Custom Queries](#queries)
-[Entity Metadata](#metadata)
+[Features](#features)    
+[Coming Features](#comingfeatures)  
+[Mapping Examples](#mapping)  
+[Custom Queries](#queries)  
+[Entity Metadata](#metadata)  
 [Spring Framework Example](#spring)  
 
 <a name="start"/>
-Jump Start
-----------
+### Jump Start
+
 
 Install it in your application from Maven Central using the following dependency:
 ```
@@ -54,10 +54,10 @@ You don't have to worry about creating the Table and Indexes for your Entity.
 All is built-in and taken care of. Entity definition will be automatically synchronized with C*. 
 
 <a name="features"/>
-Features
---------
+### Features
 
 The features provided by the plugin module includes:
+
   - Manipulate Entity
   	* Get entity from Cassandra.
   	* Save entity to Cassandra.
@@ -72,16 +72,15 @@ The features provided by the plugin module includes:
   	* Drop tables and indexes.
 
 <a name="comingfeatures"/>
-Upcoming Features
------------
+### Upcoming Features
+
    - Support composite Primary Keys
    - Support TTL and Timestamp
    - Enable optimistic lock for Entities (TBD)
    - Support options for Create Table 
 
 <a name="mapping"/>
-Mapping Examples
-----------------
+### Mapping Examples
 
    - Simple Bean
    - JPA Entity
@@ -90,26 +89,25 @@ Mapping Examples
    - Collections
 
 <a name="queries"/>
-Custom Queries
---------------
+### Custom Queries
 
 	- building and running queries with custom where conditions
 
-Alter Behaviour
-----------------
-   As your project is evolving you may want to refactor entity, add or delete properties and indexes.  
+### Alter Behaviour
+
+   As your project is evolving you may want to refactor entity, add or delete properties and indexes.    
    Please read to understand what will and will not be altered.    
    
-   Not alterable
-   		- add/delete/rename primary key columns
-   		- change column data type to incompatible one, such as string to number.	
-   		- change property name which is not annotated as @Column. This will be understood as a new property.
+   - Not alterable
+		* add/delete/rename primary key columns.
+   		* change column data type to incompatible one, such as string to number.	
+   		* change property name which is not annotated as @Column. This will be understood as a new property.
    	
-   Alterable
-   		- add new property.
-   		- delete property.
-   		- add index on column
-   		- change datatype to compatible one. Compatibility is enforced by C*.	
+   - Alterable
+   		* add new property.
+   		* delete property.
+   		* add index on column
+   		* change datatype to compatible one. Compatibility is enforced by C*.	
    		
 <a name="metadata"/>
 Entity Metadata
