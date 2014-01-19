@@ -95,18 +95,18 @@ The features provided by the plugin module includes:
 
 ### Alter Behaviour
 
-   As your project is evolving you may want to refactor entity, add or delete properties and indexes.    
-   Please read to understand what will and will not be altered.
+As your project is evolving you may want to refactor entity, add or delete properties and indexes.    
+Please read to understand what will and will not be altered.
    
-   Not alterable
+Not Alterable
    - add/delete/rename primary key columns.
-   - change column data type to incompatible one, such as string to number.	
+   - change column data type to incompatible one, such as string to number.
    - change property name which is not annotated as @Column. This will be understood as a new property.
    	
-   Alterable
+Alterable
    - add new property.
    - delete property.
-   - add index on column
+   - add index on column.
    - change datatype to compatible one. Compatibility is enforced by C*.	
    		
 <a name="metadata"/>
