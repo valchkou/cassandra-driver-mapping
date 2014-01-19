@@ -56,7 +56,7 @@ All is built-in and taken care of. Entity definition will be automatically synch
 <a name="features"/>
 ### Features
 
-The features provided by the plugin module includes:
+The features provided by the module include:
 
   - Manipulate Entity
   	* Get entity from Cassandra.
