@@ -169,6 +169,33 @@ The features provided by the module include:
 	```     
    
    - Collections
+	import java.math.BigInteger;
+	import java.util.Date;
+	import java.util.List;
+	import java.util.Map;
+	import java.util.Set;
+	
+	import javax.persistence.Id;
+	import javax.persistence.Table;
+	
+	@Table(name="entity")
+	public class Entity {
+		@Id
+		private java.util.UUID id;
+		private List<String> cats;
+		private Set<Date> dogs;
+		private Map<String, BigInteger> pets;
+		
+		// public getters/setters ...
+	}
+	```
+	Generates CQL3
+	```
+   		CREATE TABLE IF NOT EXISTS ks.entity (id uuid, cats list<text>, dogs set<timestamp>, pets map<text, varint>,  PRIMARY KEY(id))
+	```     
+Collections must have generic type.  
+Only java.util.List, Map, Set are allowed.
+Read Datastax CQL documentation [Use Collection] (http://www.datastax.com/documentation/cql/3.1/webhelp/index.html#cql/cql_using/use_collections_c.html#useCollections)
 
 <a name="queries"/>
 ### Custom Queries
