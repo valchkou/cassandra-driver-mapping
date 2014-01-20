@@ -7,7 +7,7 @@ The main goal is to enable JPA -like behaviour for entities to be persisted in C
 The module is not replacement for the DataStax Java Driver but time-saver addon to it.  
 The module relies on DataStax Java Driver version 2.0 and JPA 2.1.  
 
-You can read more about Datastax Java Driver itself at (http://www.datastax.com/drivers/java/apidocs/).
+Read more about [Cassandra, Datastax Driver and CQL3](http://www.datastax.com/documentation/gettingstarted/index.html).
 
 ### Table of Contents  
 [Features](#features)  
