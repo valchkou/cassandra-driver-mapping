@@ -83,7 +83,7 @@ All is built-in and taken care of. Entity definition will be automatically synch
     - Index name must be unique within the keyspace.  
     - In C* you can have only one column per index.
 
-   - [Sample: Simple Bean]
+   - [Sample: Simple Bean]( )
 	```java
 	public class Entity {
 	
