@@ -83,10 +83,13 @@ The features provided by the module include:
 ### Various Mappings
 
 	IMPORTANT!:   
-	All names are converted to lowercase.  
-	JPA annotations give you more features though are not required.  
-	If entity or field is not annotated it will provide its name as default.    
-	Id field is required for the entity.
+	- All names are converted to lowercase.  
+	- JPA annotations give you more features though are not required.  
+	- If entity or field is not annotated it will provide its name as default.    
+	- Id field is required for the entity.
+	- Index annotation supported starting JPA 2.1.    
+    - Index name must be unique within the keyspace.  
+    - In C* you can have only one column per index.
 
    - Simple Bean
 	```java
@@ -120,9 +123,7 @@ The features provided by the module include:
    		CREATE TABLE IF NOT EXISTS ks.mytable (id bigint, myname text,  PRIMARY KEY(id))
 	```     
 	
-   - JPA Entity with indexes  
-   Index name must be unique within the keyspace.  
-   In C* you can have only one column per index.    
+   - JPA Entity with indexes    
 	```java
 	@javax.persistence.Entity
 	@javax.persistence.Table (name="mytable", 
