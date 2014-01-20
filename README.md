@@ -10,13 +10,31 @@ The module relies on DataStax Java Driver version 2.0 and JPA 2.1.
 You can read more about Datastax Java Driver itself at (http://www.datastax.com/drivers/java/apidocs/).
 
 ### Table of Contents  
+[Features](#features)  
 [Jump Start](#start)  
-[Features](#features)    
-[Coming Features](#comingfeatures)  
-[Mapping Examples](#mapping)  
+[Various Mappings](#mapping)  
 [Custom Queries](#queries)  
 [Accessing Entity Metadata](#metadata)  
 [Spring Framework Example](#spring)  
+[Coming Features](#comingfeatures)
+
+<a name="features"/>
+### Features
+
+The features provided by the module include:
+
+  - Manipulate Entity
+  	* Get entity from Cassandra.
+  	* Save entity to Cassandra.
+	* Delete entity from Cassandra.
+	* Run custom Queries built with datastax.QueryBuilder
+	* Convert ResultSet into List of Entities
+
+  - Generate Schema
+  	* Create table from any Java Bean even without annotations. 
+  	* Create tables and indexes from the JPA 2.1 annotated entities.
+  	* Alter tables and indexes if entities definition has changed.
+  	* Drop tables and indexes.
 
 <a name="start"/>
 ### Jump Start
@@ -52,32 +70,6 @@ Now you can play with your entity:
 Very simple, isn't it? No mapping files, no scripts, no configuration files.   
 You don't have to worry about creating the Table and Indexes for your Entity.  
 All is built-in and taken care of. Entity definition will be automatically synchronized with C*. 
-
-<a name="features"/>
-### Features
-
-The features provided by the module include:
-
-  - Manipulate Entity
-  	* Get entity from Cassandra.
-  	* Save entity to Cassandra.
-	* Delete entity from Cassandra.
-	* Run custom Queries built with datastax.QueryBuilder
-	* Convert ResultSet into List of Entities
-
-  - Generate Schema
-  	* Create table from any Java Bean even without annotations. 
-  	* Create tables and indexes from the JPA 2.1 annotated entities.
-  	* Alter tables and indexes if entities definition has changed.
-  	* Drop tables and indexes.
-
-<a name="comingfeatures"/>
-### Upcoming Features
-
-   - Support composite Primary Keys
-   - Support TTL and Timestamp
-   - Enable optimistic lock for Entities (TBD)
-   - Support options for Create Table 
 
 <a name="mapping"/>
 ### Various Mappings
@@ -453,5 +445,13 @@ Let's guess you have a property file /META-INF/cassandra.properties:
 			}
 		}
 	```
+	
+<a name="comingfeatures"/>
+### Upcoming Features
+
+   - Support composite Primary Keys
+   - Support TTL and Timestamp
+   - Enable optimistic lock for Entities (TBD)
+   - Support options for Create Table 
 	
 
