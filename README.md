@@ -14,7 +14,7 @@ You can read more about Datastax Java Driver itself at (http://www.datastax.com/
 [Jump Start](#start)  
 [Various Mappings](#mapping)  
 [Custom Queries](#queries)  
-[Accessing Entity Metadata](#metadata)  
+[Entity Metadata and Data Types](#metadata)  
 [Spring Framework Example](#spring)  
 [Coming Features](#comingfeatures)
 
@@ -241,7 +241,7 @@ Alterable
    - change datatype to compatible one. Compatibility is enforced by C*.	
    		
 <a name="metadata"/>
-### Entity Metadata & Data Types
+### Entity Metadata and Data Types
    
 You may want to access Entity metadata if you are building custom Statements.    
 Entity Metadata contains corresponding table and column names.  
@@ -287,15 +287,18 @@ java.util.List|list
 
 You can override defaults as:
 ```java
+	import com.datastax.driver.core.DataType;
+	...
 	Map<Class<?>, DataType.Name> mapping = new HashMap<Class<?>, DataType.Name>();
 	.... populate the map
 	EntityTypeParser.setDataTypeMapping(mapping);
 ```
 Or override individual type:
 ```java
+	import com.datastax.driver.core.DataType;
+	...
 	EntityTypeParser.overrideDataTypeMapping(javaClass, DataType.Name)
 ```
-Java type must match DataType defined in core driver com.datastax.driver.core.DataType.
 
 <a name="spring"/>
 ### Spring Framework Example 
