@@ -119,7 +119,33 @@ The features provided by the module include:
 	```
    		CREATE TABLE IF NOT EXISTS ks.mytable (id bigint, myname text,  PRIMARY KEY(id))
 	```     
-   - JPA Entity with indexes 
+	
+   - JPA Entity with indexes
+   index name must be unique within keyspace.
+   In C* you can have only one column per index.  
+	```java
+	@javax.persistence.Entity
+	@javax.persistence.Table (name="mytable", 
+	indexes = {
+		@javax.persistence.Index(name="entity_email_idx", columnList="email" ), 
+		@javax.persistence.Index(name="entity_name_idx", columnList="name" ) 
+	})
+	public class Entity {
+		
+		@javax.persistence.Id
+		private java.util.UUID code;
+		private String name;
+		private String email;
+		// public getters/setters ...
+	}
+	```
+	Generates CQL3
+	```
+   		CREATE TABLE IF NOT EXISTS ks.mytable (code uuid, name text, email text,  PRIMARY KEY(code)); 
+		CREATE INDEX IF NOT EXISTS entity_email_idx ON ks.mytable(email);  
+		CREATE INDEX IF NOT EXISTS entity_name_idx ON ks.mytable(name);
+	```   
+   
    - Transient property
    - Collections
 
