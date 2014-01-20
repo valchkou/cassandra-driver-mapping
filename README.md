@@ -80,10 +80,26 @@ The features provided by the module include:
    - Support options for Create Table 
 
 <a name="mapping"/>
-### Mapping Examples
+### Various Mappings
+
+	IMPORTANT!: All names are converted to lowercase.
 
    - Simple Bean
+	```java
+	public class Entity {
+		
+		private long Id;
+		private String name;
+		
+		// public getters/setters ...
+	}
+	```
+	Generates CQL3
+	```
+   CREATE TABLE IF NOT EXISTS ks.entity (id bigint, name text,  PRIMARY KEY(id))
+	```   
    - JPA Entity
+   
    - JPA Entity with indexes 
    - Transient property
    - Collections
