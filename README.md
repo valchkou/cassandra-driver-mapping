@@ -91,6 +91,7 @@ The features provided by the module include:
    - Simple Bean
 	```java
 	public class Entity {
+	
 		private long Id;
 		private String name;
 		// public getters/setters ...
@@ -98,7 +99,7 @@ The features provided by the module include:
 	```
 	Generates CQL3
 	```
-   CREATE TABLE IF NOT EXISTS ks.entity (id bigint, name text,  PRIMARY KEY(id))
+   		CREATE TABLE IF NOT EXISTS ks.entity (id bigint, name text,  PRIMARY KEY(id))
 	```   
    - JPA Entity
 	```java
@@ -116,7 +117,7 @@ The features provided by the module include:
 	```
 	Generates CQL3
 	```
-   CREATE TABLE IF NOT EXISTS ks.mytable (id bigint, myname text,  PRIMARY KEY(id))
+   		CREATE TABLE IF NOT EXISTS ks.mytable (id bigint, myname text,  PRIMARY KEY(id))
 	```     
    - JPA Entity with indexes 
    - Transient property
