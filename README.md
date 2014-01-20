@@ -83,7 +83,7 @@ All is built-in and taken care of. Entity definition will be automatically synch
     - Index name must be unique within the keyspace.  
     - In C* you can have only one column per index.
 
-   - Sample: Simple Bean
+- Sample: Simple Bean
 	```java
 	public class Entity {
 	
@@ -99,7 +99,7 @@ All is built-in and taken care of. Entity definition will be automatically synch
 	  
 	      
 	  	  
-   - Sample:JPA Entity
+- Sample:JPA Entity
 	```java
 	@javax.persistence.Entity
 	@javax.persistence.Table (name="mytable")
@@ -119,7 +119,7 @@ All is built-in and taken care of. Entity definition will be automatically synch
 	```     
 	
 	
-   - Sample: JPA Entity with Indexes    
+- Sample: JPA Entity with Indexes    
 	```java
 	@javax.persistence.Entity
 	@javax.persistence.Table (name="mytable", 
@@ -146,7 +146,7 @@ All is built-in and taken care of. Entity definition will be automatically synch
 	```   
    
    
-   - Sample: Transient property
+- Sample: Transient property
 	```java
 	@javax.persistence.Entity
 	public class Entity {
@@ -166,7 +166,7 @@ All is built-in and taken care of. Entity definition will be automatically synch
 	```     
    
    
-   - Sample: Collections
+- Sample: Collections
    	```java
 	import java.math.BigInteger;
 	import java.util.Date;
@@ -192,7 +192,7 @@ All is built-in and taken care of. Entity definition will be automatically synch
 	```
    		CREATE TABLE IF NOT EXISTS ks.entity (id uuid, cats list<text>, dogs set<timestamp>, pets map<text, varint>,  PRIMARY KEY(id))
 	```     
-Collections must have generic type. Only java.util.List, Map and Set are allowed.  
+Collections must have generic type defined. Only java.util.List, Map and Set are allowed.  
 Please refer Datastax CQL documentation [Use Collection] (http://www.datastax.com/documentation/cql/3.1/webhelp/index.html#cql/cql_using/use_collections_c.html#useCollections)
 
 <a name="queries"/>
