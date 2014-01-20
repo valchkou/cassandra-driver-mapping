@@ -303,14 +303,14 @@ Or override individual type:
 <a name="spring"/>
 ### Spring Framework Example 
 
-- Configure propertyews such as keyspace and nodes.
-Let's guess you have a property file /META-INF/cassandra.properties:
+- Configure properties.  
+Let's imagine we have a property file /META-INF/cassandra.properties:
   ```
    	cassandra.keyspace=your_keyspace
 	cassandra.node=127.0.0.1
    ```
    
-- Include properties in your spring config:
+- Include properties in spring config:
    ```xml
     <?xml version="1.0" encoding="UTF-8"?>
 	<beans:beans xmlns="http://www.springframework.org/schema/mvc"
