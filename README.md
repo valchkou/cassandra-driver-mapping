@@ -120,20 +120,22 @@ The features provided by the module include:
    		CREATE TABLE IF NOT EXISTS ks.mytable (id bigint, myname text,  PRIMARY KEY(id))
 	```     
 	
-   - JPA Entity with indexes
-   index name must be unique within keyspace.
-   In C* you can have only one column per index.  
+   - JPA Entity with indexes  
+   Index name must be unique within the keyspace.  
+   In C* you can have only one column per index.    
 	```java
 	@javax.persistence.Entity
 	@javax.persistence.Table (name="mytable", 
 	indexes = {
 		@javax.persistence.Index(name="entity_email_idx", columnList="email" ), 
-		@javax.persistence.Index(name="entity_name_idx", columnList="name" ) 
+		@javax.persistence.Index(name="entity_name_idx", columnList="myname" ) 
 	})
 	public class Entity {
 		
 		@javax.persistence.Id
 		private java.util.UUID code;
+		
+		@javax.persistence.Column(name = "myname")
 		private String name;
 		private String email;
 		// public getters/setters ...
@@ -141,12 +143,30 @@ The features provided by the module include:
 	```
 	Generates CQL3
 	```
-   		CREATE TABLE IF NOT EXISTS ks.mytable (code uuid, name text, email text,  PRIMARY KEY(code)); 
+   		CREATE TABLE IF NOT EXISTS ks.mytable (code uuid, myname text, email text,  PRIMARY KEY(code)); 
 		CREATE INDEX IF NOT EXISTS entity_email_idx ON ks.mytable(email);  
-		CREATE INDEX IF NOT EXISTS entity_name_idx ON ks.mytable(name);
+		CREATE INDEX IF NOT EXISTS entity_name_idx ON ks.mytable(myname);
 	```   
    
    - Transient property
+	```java
+	@javax.persistence.Entity
+	public class Entity {
+		
+		private java.util.UUID id;
+		private String name;
+		
+		@Transient
+		private BigDecimal calculable;
+		
+		// public getters/setters ...
+	}
+	```
+	Generates CQL3
+	```
+   		CREATE TABLE IF NOT EXISTS ks.entity (id uuid, name text,  PRIMARY KEY(id))
+	```     
+   
    - Collections
 
 <a name="queries"/>
