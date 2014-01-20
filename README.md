@@ -192,8 +192,38 @@ Please refer Datastax CQL documentation [Use Collection] (http://www.datastax.co
 <a name="queries"/>
 ### Custom Queries
 
-	- building and running queries with custom where conditions
+Datastax Driver shipped with a tool which allows us to build custom queries.  
+You have 2 options to map your query on your Entity.  
+- Option1: Build a query Statement and pass it to mappingSession.  
+- Option2: Build and run the query with Datastax session and pass the Datastax ResultSet into mappingSession.  
+The mappingSession will return you the result as List<Entity>.  
+Highly recommended to use EntityTypeMetadata for retrieving table and column names when building Statements.
+	```java
+			// Option 1	
+				EntityTypeMetadata emeta = EntityTypeParser.getEntityMetadata(Entity.class);
+				EntityFieldMetaData fmeta = emeta.getFieldMetadata(field_name);
+				Statement query = QueryBuilder
+							.select().all()
+							.from(sf.getKeyspace(), emeta.getTableName())
+							.where(eq(fmeta.getColumnName(), value));
+							
+				List<Account> result = mappingSession.getByQuery(Entity.class, query);
+	 ```
 
+	```java
+			// Option 2	
+				EntityTypeMetadata emeta = EntityTypeParser.getEntityMetadata(Entity.class);
+				EntityFieldMetaData fmeta = emeta.getFieldMetadata(field_name);
+				Statement query = QueryBuilder
+							.select().all()
+							.from(sf.getKeyspace(), emeta.getTableName())
+							.where(eq(fmeta.getColumnName(), value));
+				
+				ResultSet rs = session.execute(query);	
+						
+				List<Entity> result = mappingSession.getFromResultSet(Entity.class, rs);
+				
+	 ```
 ### Alter Behaviour
 
 As your project is evolving you may want to refactor entity, add or delete properties and indexes.    
@@ -211,7 +241,7 @@ Alterable
    - change datatype to compatible one. Compatibility is enforced by C*.	
    		
 <a name="metadata"/>
-### Accessing Entity Metadata
+### Entity Metadata & Data Types
    
 You may want to access Entity metadata if you are building custom Statements.    
 Entity Metadata contains corresponding table and column names.  
@@ -229,31 +259,32 @@ Entity Metadata can be easily accessed anywhere in your code as:
 	 // all the persistent fields on entity
 	List<EntityFieldMetaData> fields = emeta.getFields();
 ```	
-   
-The core part of mapping addon is a mapping between datastax DataTypes and Java types.  
-Datastax driver has mapping of datastax types to java. Mapping module holds opposite reference.
+Datastax driver has mapping of datastax types to java. But not all types are mapped as 1-to-1.  
+[CQL3 data types to Java types](http://www.datastax.com/documentation/developer/java-driver/1.0/webhelp/index.html#java-driver/reference/javaClass2Cql3Datatypes_r.html)  
+In order the mapping to work the module defines backward mapping for the types.  
 
-```java
-		DataType.Name.BLOB.asJavaClass(), 		DataType.Name.BLOB
-		DataType.Name.BOOLEAN.asJavaClass(),    DataType.Name.BOOLEAN
-	    DataType.Name.TEXT.asJavaClass(),     	DataType.Name.TEXT
-		DataType.Name.TIMESTAMP.asJavaClass(),  DataType.Name.TIMESTAMP
-	    DataType.Name.UUID.asJavaClass(),       DataType.Name.UUID
-	    DataType.Name.INT.asJavaClass(),    	DataType.Name.INT
-	    DataType.Name.DOUBLE.asJavaClass(),     DataType.Name.DOUBLE
-	    DataType.Name.FLOAT.asJavaClass(),     	DataType.Name.FLOAT
-	    DataType.Name.BIGINT.asJavaClass(),     DataType.Name.BIGINT
-	    DataType.Name.DECIMAL.asJavaClass(), 	DataType.Name.DECIMAL
-	    DataType.Name.VARINT.asJavaClass(),  	DataType.Name.VARINT
-	    DataType.Name.MAP.asJavaClass(), 	   	DataType.Name.MAP
-	    DataType.Name.LIST.asJavaClass(), 	   	DataType.Name.LIST
-	    DataType.Name.SET.asJavaClass(), 	   	DataType.Name.SET  
-	    boolean.class, 							DataType.Name.BOOLEAN 
-	    int.class, 								DataType.Name.INT
-	    long.class, 							DataType.Name.BIGINT
-	    double.class, 							DataType.Name.DOUBLE
-	    float.class, 							DataType.Name.FLOAT
-```
+Java type | CQL3 data type
+--- | ---
+int|int
+long|bigint
+float|float
+double|double
+boolean|boolean
+java.lang.Double|double
+java.nio.ByteBuffer|blob
+java.math.BigDecimal|decimal
+java.lang.String|text
+java.util.Date|timestamp
+java.lang.Boolean|boolean
+java.lang.Integer|int
+java.lang.Long|bigint
+java.util.Map|map
+java.lang.Float|float
+java.util.Set|set
+java.math.BigInteger|varint
+java.util.UUID|uuid
+java.util.List|list
+
 You can override defaults as:
 ```java
 	Map<Class<?>, DataType.Name> mapping = new HashMap<Class<?>, DataType.Name>();
