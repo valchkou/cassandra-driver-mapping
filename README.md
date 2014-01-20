@@ -83,7 +83,7 @@ All is built-in and taken care of. Entity definition will be automatically synch
     - Index name must be unique within the keyspace.  
     - In C* you can have only one column per index.
 
-   - Simple Bean
+   > Sample: Simple Bean
 	```java
 	public class Entity {
 	
@@ -95,8 +95,9 @@ All is built-in and taken care of. Entity definition will be automatically synch
 	Generates CQL3
 	```
    		CREATE TABLE IF NOT EXISTS ks.entity (id bigint, name text,  PRIMARY KEY(id))
-	```   
-   - JPA Entity
+	``` 
+	  
+   > Sample:JPA Entity
 	```java
 	@javax.persistence.Entity
 	@javax.persistence.Table (name="mytable")
@@ -115,7 +116,7 @@ All is built-in and taken care of. Entity definition will be automatically synch
    		CREATE TABLE IF NOT EXISTS ks.mytable (id bigint, myname text,  PRIMARY KEY(id))
 	```     
 	
-   - JPA Entity with indexes    
+   > Sample: JPA Entity with Indexes    
 	```java
 	@javax.persistence.Entity
 	@javax.persistence.Table (name="mytable", 
@@ -141,7 +142,7 @@ All is built-in and taken care of. Entity definition will be automatically synch
 		CREATE INDEX IF NOT EXISTS entity_name_idx ON ks.mytable(myname);
 	```   
    
-   - Transient property
+   > Sample: Transient property
 	```java
 	@javax.persistence.Entity
 	public class Entity {
@@ -160,7 +161,7 @@ All is built-in and taken care of. Entity definition will be automatically synch
    		CREATE TABLE IF NOT EXISTS ks.entity (id uuid, name text,  PRIMARY KEY(id))
 	```     
    
-   - Collections
+   > Sample: Collections
    	```java
 	import java.math.BigInteger;
 	import java.util.Date;
