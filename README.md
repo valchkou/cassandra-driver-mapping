@@ -82,15 +82,17 @@ The features provided by the module include:
 <a name="mapping"/>
 ### Various Mappings
 
-	IMPORTANT!: All names are converted to lowercase.
+	IMPORTANT!:   
+	All names are converted to lowercase.  
+	JPA annotations give you more features though are not required.  
+	If entity or field is not annotated it will provide its name as default.    
+	Id field is required for the entity.
 
    - Simple Bean
 	```java
 	public class Entity {
-		
 		private long Id;
 		private String name;
-		
 		// public getters/setters ...
 	}
 	```
@@ -99,7 +101,23 @@ The features provided by the module include:
    CREATE TABLE IF NOT EXISTS ks.entity (id bigint, name text,  PRIMARY KEY(id))
 	```   
    - JPA Entity
-   
+	```java
+	@javax.persistence.Entity
+	@javax.persistence.Table (name="mytable")
+	public class Entity {
+		
+		@javax.persistence.Id
+		private long Id;
+		
+		@javax.persistence.Column(name = "myname")
+		private String name;
+		// public getters/setters ...
+	}
+	```
+	Generates CQL3
+	```
+   CREATE TABLE IF NOT EXISTS ks.mytable (id bigint, myname text,  PRIMARY KEY(id))
+	```     
    - JPA Entity with indexes 
    - Transient property
    - Collections
