@@ -14,6 +14,7 @@ Read more about [Cassandra, Datastax Driver and CQL3](http://www.datastax.com/do
 [Jump Start](#start)  
 [Various Mappings](#mapping)  
 [Custom Queries](#queries)  
+[How Entity get synchronized](#sync)  
 [Entity Metadata and Data Types](#metadata)  
 [Spring Framework Example](#spring)  
 [Coming Features](#comingfeatures)
@@ -69,8 +70,9 @@ Now you can play with your entity:
 ```
 Very simple, isn't it? No mapping files, no scripts, no configuration files.   
 You don't have to worry about creating the Table and Indexes for your Entity.  
-All is built-in and taken care of. Entity definition will be automatically synchronized with C*. 
-
+All is built-in and taken care of. Entity definition will be automatically [synchronized with C*](#sync).  
+  
+    
 <a name="mapping"/>
 ### Various Mappings
 
@@ -81,7 +83,7 @@ All is built-in and taken care of. Entity definition will be automatically synch
 	- Id field is required for the entity.
 	- Index annotation supported starting JPA 2.1.    
     - Index name must be unique within the keyspace.  
-    - In C* you can have only one column per index.
+    - C* supports only single-column-index.
 
 - Sample: Simple Bean
 	```java
@@ -230,15 +232,37 @@ Highly recommended to use EntityTypeMetadata for retrieving table and column nam
 				List<Entity> result = mappingSession.getFromResultSet(Entity.class, rs);
 				
 	 ```
-### Alter Behaviour
+	   
+<a name="sync"/>	   
+### How Entity get synchronized
+The table structure is automatically synchronized with the entity definition on the first use of the entity.  
+Any SessionMapping internally will check if the entity has already been synchronized and if not   
+it will run SchemaSync.sync first. You can use sync API directly as:  
+```java
+	// drop table
+	import com.datastax.driver.mapping.schemasync.SchemaSync;
+	...
+	SchemaSync.drop(keyspace, session, Entity.class);
+```
 
-As your project is evolving you may want to refactor entity, add or delete properties and indexes.    
-Please read to understand what will and will not be altered.
+```java
+	// create or alter
+	import com.datastax.driver.mapping.schemasync.SchemaSync;
+	...
+	SchemaSync.sync(keyspace, session, Entity.class);
+```
+You don't need to use this API unless you have reasons.   
+Such as unittests or if you want to gain few milliseconds on the first use  
+you may want to invoke the synchronization on the application start up. 
+
+As the project is evolving sometimes there is need to refactor entity, add or delete properties and indexes. 
+Again this all taken care automatically but with certain restrictions.     
+Please read to understand what will and will not be altered and synchronized.
    
 Not Alterable
-   - add/delete/rename primary key columns.
-   - change column data type to incompatible one, such as string to number.
-   - change property name which is not annotated as @Column. This will be understood as a new property.
+   - add/delete/rename primary key columns. (C* restriction)  
+   - change column data type to incompatible one, such as string to number. (C* restriction)  
+   - change property name which is not annotated as @Column. This will be understood as a new property. 
    	
 Alterable
    - add new property.
