@@ -204,8 +204,8 @@ Datastax Driver shipped with a tool which allows us to build custom queries.
 You have 2 options to map your query on your Entity.  
 - Option1: Build a query Statement and pass it to mappingSession.  
 - Option2: Build and run the query with Datastax session and pass the Datastax ResultSet into mappingSession.  
-The mappingSession will return you the result as List<Entity>.  
-Highly recommended to use EntityTypeMetadata for retrieving table and column names when building Statements.
+The mappingSession will return you the result as a List<Entity>.  
+EntityTypeMetadata useful for providing table and column names when building Statements.
 	```java
 			// Option 1	
 				EntityTypeMetadata emeta = EntityTypeParser.getEntityMetadata(Entity.class);
@@ -236,8 +236,8 @@ Highly recommended to use EntityTypeMetadata for retrieving table and column nam
 <a name="sync"/>	   
 ### How Entity get synchronized
 The table structure is automatically synchronized with the entity definition on the first use of the entity.  
-Any SessionMapping internally will check if the entity has already been synchronized and if not   
-it will run SchemaSync.sync first. You can use sync API directly as:  
+Any SessionMapping call internally will check if the entity has already been synchronized and if not   
+it will run SchemaSync.sync. You can use sync API directly as:  
 ```java
 	// drop table
 	import com.datastax.driver.mapping.schemasync.SchemaSync;
@@ -253,7 +253,7 @@ it will run SchemaSync.sync first. You can use sync API directly as:
 ```
 You don't need to use this API unless you have reasons.   
 Such as unittests or if you want to gain few milliseconds on the first use  
-you may want to invoke the synchronization on the application start up. 
+you may want to invoke the synchronization on the application start up instead. 
 
 As the project is evolving sometimes there is need to refactor entity, add or delete properties and indexes. 
 Again this all taken care automatically but with certain restrictions.     
