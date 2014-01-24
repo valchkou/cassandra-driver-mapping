@@ -2,10 +2,10 @@ cassandra-driver-mapping
 ========================
 
 Apache Cassandra (C*) never was easier.   
-Enjoy this addon for the DataStax Java Driver which will bring you piece and serenity.     
-The main goal is to enable JPA -like behaviour for entities to be persisted in C*.  
-The module is not replacement for the DataStax Java Driver but time-saver addon to it.  
-The module relies on DataStax Java Driver version 2.0 and JPA 2.1.  
+Enjoy this time-saver addon for the DataStax Java Driver (DJD*).   
+You still have the full power of DJD* and the same time you can drastically
+improve you experience with your JPA annotated entities persisted in C*. 
+Mapping Add-on relies on DataStax Java Driver version 2.0 and JPA 2.1.  
 
 Read more about [Cassandra, Datastax Driver and CQL3](http://www.datastax.com/documentation/gettingstarted/index.html).
 
