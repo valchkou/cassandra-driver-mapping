@@ -1,13 +1,13 @@
 cassandra-driver-mapping
 ========================
+  
+Enjoy this time-saver Add-on for the DataStax Java Driver (Driver) for Cassandra (C*).  
+This Add-on is the easiest way to use JPA annotated entities with C* including schema generation.  
+Add-on is not replacement nor wrapper for the Driver but lightweight addition to it.   
+Add-on does not modify the driver and you still can utilize the full power of Driver API and Datastax documentation.    
+Mapping Add-on relies on Driver version 2.0 and JPA 2.1.    
 
-Apache Cassandra (C*) never was easier.   
-Enjoy this time-saver addon for the DataStax Java Driver (DJD*).   
-You still have the full power of DJD* and the same time you can drastically
-improve you experience with your JPA annotated entities persisted in C*. 
-Mapping Add-on relies on DataStax Java Driver version 2.0 and JPA 2.1.  
-
-Read more about [Cassandra, Datastax Driver and CQL3](http://www.datastax.com/documentation/gettingstarted/index.html).
+Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.com/documentation/gettingstarted/index.html).
 
 ### Table of Contents  
 [Features](#features)  
@@ -55,11 +55,12 @@ Create MappingSession instance:
     ...
     MappingSession mappingSession = new MappingSession(keyspace, session);
 ```    
-You need to open the session and create the keyspace in prior to use MappingSession.  
+MappingSession is not replacement for Datastax Session. It is lightweight and cheap to instantiate.  
+You need to open the session and create the keyspace using the standard Datastax Driver API.   
 If you are not familiar with procedure please refer to http://www.datastax.com/docs for Developers.  
 Or look at the [Spring Framework Example](#spring) below.
  
-Now you can play with your entity: 
+Manage your entity: 
 ```java
 	Entity entity = new Entity();
     mappingSession.save(entity);
@@ -200,14 +201,10 @@ Please refer Datastax CQL documentation [Use Collection] (http://www.datastax.co
 <a name="queries"/>
 ### Custom Queries
 
-Datastax Driver shipped with a tool which allows us to build custom queries.  
-You have 2 options to map your query on your Entity.  
+Datastax Driver shipped with a tool which helps us to build CQL queries.  
+You have 2 options to map query results on Entity.  
 - Option1: Build a query Statement and pass it to mappingSession.  
-- Option2: Build and run the query with Datastax session and pass the Datastax ResultSet into mappingSession.  
-The mappingSession will return you the result as a List<Entity>.  
-EntityTypeMetadata useful for providing table and column names when building Statements.
 	```java
-			// Option 1	
 				EntityTypeMetadata emeta = EntityTypeParser.getEntityMetadata(Entity.class);
 				EntityFieldMetaData fmeta = emeta.getFieldMetadata(field_name);
 				Statement query = QueryBuilder
@@ -218,8 +215,8 @@ EntityTypeMetadata useful for providing table and column names when building Sta
 				List<Account> result = mappingSession.getByQuery(Entity.class, query);
 	 ```
 
+- Option2: Build and run the query with Datastax session and pass the Datastax ResultSet into mappingSession. 
 	```java
-			// Option 2	
 				EntityTypeMetadata emeta = EntityTypeParser.getEntityMetadata(Entity.class);
 				EntityFieldMetaData fmeta = emeta.getFieldMetadata(field_name);
 				Statement query = QueryBuilder
@@ -232,6 +229,8 @@ EntityTypeMetadata useful for providing table and column names when building Sta
 				List<Entity> result = mappingSession.getFromResultSet(Entity.class, rs);
 				
 	 ```
+The mappingSession will return you the result as a List<Entity>.  
+EntityTypeMetadata useful for providing table and column names when building Statements.
 	   
 <a name="sync"/>	   
 ### How Entity get synchronized
