@@ -87,10 +87,12 @@ public class MappingSessionTest {
 	public void cleanUp() {
 		session.execute("DROP KEYSPACE IF EXISTS "+ keyspace);
 		EntityTypeParser.getEntityMetadata(EntityWithIndexes.class).markUnSynced();
+		EntityTypeParser.getEntityMetadata(EntityWithKey.class).markUnSynced();
 		EntityTypeParser.getEntityMetadata(EntityWithCollections.class).markUnSynced();
 		EntityTypeParser.getEntityMetadata(EntityWithCompositeKey.class).markUnSynced();
 		
 		EntityTypeParser.remove(EntityWithIndexes.class);
+		EntityTypeParser.remove(EntityWithKey.class);
 		EntityTypeParser.remove(EntityWithCollections.class);
 		EntityTypeParser.remove(EntityWithCompositeKey.class);
 	}

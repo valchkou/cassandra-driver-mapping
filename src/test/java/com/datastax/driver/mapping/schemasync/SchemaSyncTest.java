@@ -91,7 +91,7 @@ public class SchemaSyncTest {
 		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(EntityWithIndexes.class);
 		TableMetadata tableMetadata = cluster.getMetadata().getKeyspace(keyspace).getTable(entityMetadata.getTableName());
 		assertNotNull(tableMetadata);
-		assertEquals("test_entity", tableMetadata.getName());
+		assertEquals("test_entity_index", tableMetadata.getName());
 		assertEquals(5, tableMetadata.getColumns().size());
 		
 		ColumnMetadata columnMetadata = tableMetadata.getColumn("uuid");
@@ -121,7 +121,7 @@ public class SchemaSyncTest {
 		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(EntityWithIndexes.class);
 		TableMetadata tableMetadata = cluster.getMetadata().getKeyspace(keyspace).getTable(entityMetadata.getTableName());
 		assertNotNull(tableMetadata);
-		assertEquals("test_entity", tableMetadata.getName());
+		assertEquals("test_entity_index", tableMetadata.getName());
 		assertEquals(5, tableMetadata.getColumns().size());
 		
 		ColumnMetadata columnMetadata = tableMetadata.getColumn("uuid");

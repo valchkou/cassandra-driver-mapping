@@ -26,7 +26,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 @Entity
-@Table(name="test_entity", 
+@Table(name="test_entity_index", 
 	   indexes = {
 		@Index(name="test_entity_email_idx", columnList="email" ), 
 		@Index(name="test_entity_timestamp_idx", columnList="timestamp" ) 

@@ -25,7 +25,7 @@ import javax.persistence.Index;
 import javax.persistence.Table;
 
 @Entity
-@Table(name="test_entity", 
+@Table(name="test_entity_index", 
 	   indexes = {
 		@Index(name="test_entity_email_idx", columnList="email" ), 
 		@Index(name="test_entity_counter_idx", columnList="counter" ) 

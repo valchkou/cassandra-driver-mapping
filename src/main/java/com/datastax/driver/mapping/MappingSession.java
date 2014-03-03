@@ -37,7 +37,7 @@ import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.mapping.schemasync.SchemaSync;
 
 /**
- * MappingSession is API to work with entities to be persisted in Cassandra.is 
+ * MappingSession is API to work with entities to be persisted in Cassandra.
  * This is lightweight wrapper for the datastax Session
  * Usage: create one instance per datastax Session or have a new one for each request.
  * <code> MappingSession msession = new MappingSession(keyspace, session); </code>

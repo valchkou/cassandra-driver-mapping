@@ -79,28 +79,12 @@ All is built-in and taken care of. Entity definition will be automatically [sync
 
 	IMPORTANT!:   
 	- All names are converted to lowercase.  
-	- JPA annotations give you more features though are not required.  
 	- If entity or field is not annotated it will provide its name as default.    
-	- Id field is required for the entity.
+	- Id field is required for the entity and must be annotated with @Id or @EmbeddedId.
 	- Index annotation supported starting JPA 2.1.    
-    - Index name must be unique within the keyspace.  
-    - C* supports only single-column-index.
+        - Index name must be unique within the keyspace.  
+        - C* supports only single-column-index.
 
-- Sample: Simple Bean
-	```java
-	public class Entity {
-	
-		private long Id;
-		private String name;
-		// public getters/setters ...
-	}
-	```
-	Generates CQL3
-	```
-   		CREATE TABLE IF NOT EXISTS ks.entity (id bigint, name text,  PRIMARY KEY(id))
-	``` 
-	  
-	      
 	  	  
 - Sample:JPA Entity
 	```java
@@ -512,7 +496,6 @@ Let's imagine we have a property file /META-INF/cassandra.properties:
 <a name="comingfeatures"/>
 ### Upcoming Features
 
-   - Support composite Primary Keys
    - Support TTL and Timestamp
    - Enable optimistic lock for Entities (TBD)
    - Support options for Create Table 
