@@ -56,6 +56,7 @@ public final class SchemaSync {
     	}
     	
     	for (RegularStatement stmt: statements) {
+    		System.out.println(stmt);
     		session.execute(stmt);
     	}
     	

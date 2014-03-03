@@ -27,24 +27,20 @@ import com.datastax.driver.core.DataType.Name;
  */
 public class EntityFieldMetaData {
 	private static final Logger log = Logger.getLogger(EntityFieldMetaData.class.getName());
-	public boolean isIdField;
-	public Field field;
-	public Method getter;
-	public Method setter;
-	public String genericDef;
-	public Name dataType;
-	public String columnName;
-
-	public EntityFieldMetaData(boolean isIdField) {
-		this.isIdField = isIdField;
-	}
+	private Field field;
+	private Method getter;
+	private Method setter;
+	private String genericDef;
+	private Name dataType;
+	private String columnName;
+	private boolean isPrimary;
+	private boolean isPartition;
 	
-	public EntityFieldMetaData(Field field, DataType.Name dataType, Method getter, Method setter, String columnName, boolean isIdField) {
+	public EntityFieldMetaData(Field field, DataType.Name dataType, Method getter, Method setter, String columnName) {
 		this.field = field;
 		this.getter = getter;
 		this.setter = setter;
 		this.dataType = dataType;
-		this.isIdField = isIdField;
 		this.columnName = columnName.toLowerCase();
 	}
 	
@@ -60,10 +56,10 @@ public class EntityFieldMetaData {
 		return field.getName();
 	}
 	
-	public boolean isIdField() {
-		return isIdField;
-	}
-	
+	/**
+	 * get the value from given object using reflection on public getter method
+	 * @param entity - object instance the value will be retrieved from
+	 */	
 	public <E> Object getValue(E entity) {
 		try {
 			return getter.invoke(entity, new Object[]{});
@@ -74,7 +70,7 @@ public class EntityFieldMetaData {
 	}
 	
 	/**
-	 * set the value on given object using reflection and public setter method
+	 * set the value on given object using reflection on public setter method
 	 * @param entity - object instance the value will be set to
 	 * @param value
 	 */
@@ -119,5 +115,22 @@ public class EntityFieldMetaData {
 	public String getColumnName() {
 		return columnName;
 	}
+
+	public boolean isPrimary() {
+		return isPrimary;
+	}
+
+	public void setPrimary(boolean isPrimary) {
+		this.isPrimary = isPrimary;
+	}
+
+	public boolean isPartition() {
+		return isPartition;
+	}
+
+	public void setPartition(boolean isPartition) {
+		this.isPartition = isPartition;
+	}
+
 	
 }

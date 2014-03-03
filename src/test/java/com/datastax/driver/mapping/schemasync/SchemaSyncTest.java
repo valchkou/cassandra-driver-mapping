@@ -31,6 +31,7 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.mapping.EntityTypeMetadata;
 import com.datastax.driver.mapping.EntityTypeParser;
+import com.datastax.driver.mapping.entity.EntityWithCompositeKey;
 import com.datastax.driver.mapping.entity.EntityWithIndexes;
 import com.datastax.driver.mapping.entity.EntityWithIndexesV2;
 import com.datastax.driver.mapping.schemasync.SchemaSync;
@@ -140,5 +141,38 @@ public class SchemaSyncTest {
 		columnMetadata = tableMetadata.getColumn("name");
 		assertNotNull(columnMetadata);		
 	}
+	
+	@Test
+	public void testCreateWithCompositeKey() {
+		EntityTypeParser.getEntityMetadata(EntityWithCompositeKey.class).markUnSynced();
+		SchemaSync.sync(keyspace, session, EntityWithCompositeKey.class);
+		
+		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(EntityWithCompositeKey.class);
+		TableMetadata tableMetadata = cluster.getMetadata().getKeyspace(keyspace).getTable(entityMetadata.getTableName());
+		assertNotNull(tableMetadata);
+		assertEquals("test_entity_composites", tableMetadata.getName());
+		assertEquals(6, tableMetadata.getColumns().size());
+		
+		ColumnMetadata columnMetadata = tableMetadata.getColumn("timestamp");
+		assertNotNull(columnMetadata);	
+		
+		columnMetadata = tableMetadata.getColumn("asof");
+		assertNotNull(columnMetadata);	
+		
+		columnMetadata = tableMetadata.getColumn("created");
+		assertNotNull(columnMetadata);	
+		
+		columnMetadata = tableMetadata.getColumn("email");
+		assertNotNull(columnMetadata);	
+		
+		columnMetadata = tableMetadata.getColumn("name");
+		assertNotNull(columnMetadata);	
+		
+		columnMetadata = tableMetadata.getColumn("rank");
+		assertNotNull(columnMetadata);		
+		
+		columnMetadata = tableMetadata.getColumn("key");
+		assertNull(columnMetadata);		
+	}	
 	
 }

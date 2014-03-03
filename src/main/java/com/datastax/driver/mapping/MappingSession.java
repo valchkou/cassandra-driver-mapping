@@ -31,7 +31,9 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.mapping.schemasync.SchemaSync;
 
 /**
@@ -66,7 +68,8 @@ public class MappingSession {
 	public <T> T get(Class<T> clazz, Object id) {
 		maybeSync(clazz);
 		BoundStatement bs = prepareSelect(clazz, id);
-		List<T> all = getFromResultSet(clazz, session.execute(bs));
+		ResultSet rs = session.execute(bs);
+		List<T> all = getFromResultSet(clazz, rs);
 		if (all.size() > 0) {
 			return all.get(0);
 		}	
@@ -101,7 +104,6 @@ public class MappingSession {
 	 * @param clazz
 	 * @param query Statement
 	 * @return List of items
-	 * @throws Exception
 	 */
 	public <T> List<T> getByQuery(Class<T> clazz,  Statement query) {
 		maybeSync(clazz);
@@ -109,10 +111,9 @@ public class MappingSession {
 	}
 
 	/**
-	 * create Statement to persist the instance in Cassandra
+	 * Statement to persist an entity in Cassandra
 	 * @param entity to be inserted
 	 * @return com.datastax.driver.core.BoundStatement
-	 * @throws Exception
 	 */
 	private <E> Statement prepareInsert(E entity) {
 		Class<?> clazz = entity.getClass();
@@ -120,11 +121,23 @@ public class MappingSession {
 		String table = entityMetadata.getTableName();
 		List<EntityFieldMetaData> fields = entityMetadata.getFields(); 
 
+		List<String> pkCols = entityMetadata.getPkColumns();
+		List<Object> pkVals = entityMetadata.getEntityPKValues(entity);
+		
 		String[] columns = new String[fields.size()];
 		Object[] values = new Object[fields.size()];
+		
 		for (int i=0; i<fields.size(); i++) {
-			columns[i] = fields.get(i).getColumnName();
-			values[i] = fields.get(i).getValue(entity);
+			String colName = fields.get(i).getColumnName();
+			Object colVal = null;
+			if (pkCols.contains(colName)) {
+				int idx = pkCols.indexOf(colName);
+				colVal = pkVals.get(idx);
+			} else {
+				colVal = fields.get(i).getValue(entity);
+			}
+			columns[i] = colName;
+			values[i] = colVal;
 		}		
 		return insertInto(keyspace, table).values(columns, values);
 	}	
@@ -134,37 +147,55 @@ public class MappingSession {
 	 */
 	private <T> BoundStatement prepareSelect(Class<T> clazz, Object id) {
 		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
+		List<String> pkCols = entityMetadata.getPkColumns();
 		String table = entityMetadata.getTableName();
 		
 		// get prepared statement
 		PreparedStatement ps = selectCache.get(table);
 		if (ps == null) {
-			String idColumn = entityMetadata.getIdField().getColumnName();
-			Statement select = select().all().from(keyspace, table).where(eq(idColumn, QueryBuilder.bindMarker()));
-	        ps = session.prepare(select.toString());
+			Select select = select().all().from(keyspace, table);
+			Select.Where where = null;
+			for (String col: pkCols) {
+				if (where == null) {
+					where = select.where(eq(col, QueryBuilder.bindMarker()));
+				} else {
+					where = where.and(eq(col, QueryBuilder.bindMarker()));
+				}
+			}		
+	        ps = session.prepare(where.toString());
 			selectCache.put(table, ps);
 		}
 		
 		// bind parameters
-		BoundStatement bs = ps.bind(id);
+		Object[] values = entityMetadata.getIdValues(id).toArray(new Object[pkCols.size()]);
+		BoundStatement bs = ps.bind(values);
 		return bs;
 	}
 	
 	private <E> BoundStatement prepareDelete(E entity) {
 		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(entity.getClass());
-		Object id = entityMetadata.getIdField().getValue(entity);
+		List<String> pkCols = entityMetadata.getPkColumns();
 		String table = entityMetadata.getTableName();
 		
 		PreparedStatement ps = deleteCache.get(table);
 		if (ps == null) {
-			String idColumn = entityMetadata.getIdField().getColumnName();
-			Statement delete = QueryBuilder.delete().from(keyspace, table).where(eq(idColumn, QueryBuilder.bindMarker()));
-			ps = session.prepare(delete.toString());
+			
+			Delete delete = QueryBuilder.delete().from(keyspace, table); 
+			Delete.Where where = null;
+			for (String col: pkCols) {
+				if (where == null) {
+					where = delete.where(eq(col, QueryBuilder.bindMarker()));
+				} else {
+					where = where.and(eq(col, QueryBuilder.bindMarker()));
+				}
+			}
+			ps = session.prepare(where.toString());
 			deleteCache.put(table, ps);
 		}
 		
 		// bind parameters
-		BoundStatement bs = ps.bind(id);
+		Object[] values = entityMetadata.getEntityPKValues(entity).toArray(new Object[pkCols.size()]);
+		BoundStatement bs = ps.bind(values);
 		return bs;
 	}
 	
@@ -178,72 +209,47 @@ public class MappingSession {
 		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
 		for (Row row: rs.all()) {
 			T entity = null;
+			Object primaryKey = null;
+			Object partitionKey = null;
+			
 			try {
 				entity = clazz.newInstance();
+				PrimaryKeyMetadata pkmeta = entityMetadata.getPrimaryKeyMetadata();
+				if (pkmeta.isCompound()) {
+					EntityFieldMetaData pkField = pkmeta.getOwnField();
+					primaryKey = pkField.getType().newInstance();
+					pkField.setValue(entity, primaryKey);
+					if (pkmeta.hasPartitionKey()) {
+						PrimaryKeyMetadata partmeta = pkmeta.getPartitionKey();
+						EntityFieldMetaData partField = partmeta.getOwnField();	
+						partitionKey = partField.getType().newInstance();
+						partField.setValue(primaryKey, partitionKey);
+					}
+				}
 			} catch (Exception e) {
 				return null;
 			}
+			
 			for (EntityFieldMetaData field: entityMetadata.getFields()) {
-				DataType.Name dataType = field.getDataType();
-				Object value = null;
-				try {
-					switch (dataType) {
-						case BLOB:
-							value = row.getBytes(field.getColumnName());
-							break;
-						case BOOLEAN:
-							value = row.getBool(field.getColumnName());
-							break;
-						case TEXT:
-							value = row.getString(field.getColumnName());
-							break;
-						case TIMESTAMP:
-							value = row.getDate(field.getColumnName());
-							break;
-						case UUID:
-							value = row.getUUID(field.getColumnName());
-							break;
-						case INT:
-							value = row.getInt(field.getColumnName());
-							break;
-						case DOUBLE:
-							value = row.getDouble(field.getColumnName());
-							break;
-						case BIGINT:
-							value = row.getLong(field.getColumnName());
-							break;
-						case DECIMAL:
-							value = row.getDecimal(field.getColumnName());
-							break;
-						case VARINT:
-							value = row.getVarint(field.getColumnName());
-							break;
-						case FLOAT:
-							value = row.getFloat(field.getColumnName());
-							break;						
-						case MAP:
-							value = row.getMap(field.getColumnName(), Object.class, Object.class);
-							break;
-						case LIST:
-							value = row.getList(field.getColumnName(), Object.class);
-							break;
-						case SET:
-							value = row.getSet(field.getColumnName(), Object.class);
-							break;
-						default:
-							break;
-					}
-					
+				Object value = getValueFromRow(row, field);
+				try {	
 					if (value != null) {
-						field.setValue(entity, value);
+						if (field.isPartition()) {
+							field.setValue(partitionKey, value);	
+						} else if (field.isPrimary()) {
+							field.setValue(primaryKey, value);
+						} else {
+							field.setValue(entity, value);
+						}
+						
 					}
 				} catch (Exception ex) {
+					ex.printStackTrace();
 					// field is not properly mapped, log debug and skip the error
 				}
 			}
 			result.add(entity);
 		}
-		
 		return result;
 	}
 	
@@ -256,4 +262,59 @@ public class MappingSession {
 	}
 	
 
+	private Object getValueFromRow(Row row, EntityFieldMetaData field) {
+		Object value = null;
+		try {
+			DataType.Name dataType = field.getDataType();
+			switch (dataType) {
+				case BLOB:
+					value = row.getBytes(field.getColumnName());
+					break;
+				case BOOLEAN:
+					value = row.getBool(field.getColumnName());
+					break;
+				case TEXT:
+					value = row.getString(field.getColumnName());
+					break;
+				case TIMESTAMP:
+					value = row.getDate(field.getColumnName());
+					break;
+				case UUID:
+					value = row.getUUID(field.getColumnName());
+					break;
+				case INT:
+					value = row.getInt(field.getColumnName());
+					break;
+				case DOUBLE:
+					value = row.getDouble(field.getColumnName());
+					break;
+				case BIGINT:
+					value = row.getLong(field.getColumnName());
+					break;
+				case DECIMAL:
+					value = row.getDecimal(field.getColumnName());
+					break;
+				case VARINT:
+					value = row.getVarint(field.getColumnName());
+					break;
+				case FLOAT:
+					value = row.getFloat(field.getColumnName());
+					break;						
+				case MAP:
+					value = row.getMap(field.getColumnName(), Object.class, Object.class);
+					break;
+				case LIST:
+					value = row.getList(field.getColumnName(), Object.class);
+					break;
+				case SET:
+					value = row.getSet(field.getColumnName(), Object.class);
+					break;
+				default:
+					break;
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return value;
+	}
 }

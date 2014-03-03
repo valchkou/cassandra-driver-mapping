@@ -43,8 +43,12 @@ import com.datastax.driver.mapping.EntityFieldMetaData;
 import com.datastax.driver.mapping.EntityTypeMetadata;
 import com.datastax.driver.mapping.EntityTypeParser;
 import com.datastax.driver.mapping.MappingSession;
+import com.datastax.driver.mapping.entity.CompositeKey;
 import com.datastax.driver.mapping.entity.EntityWithCollections;
+import com.datastax.driver.mapping.entity.EntityWithCompositeKey;
 import com.datastax.driver.mapping.entity.EntityWithIndexes;
+import com.datastax.driver.mapping.entity.EntityWithKey;
+import com.datastax.driver.mapping.entity.SimpleKey;
 
 public class MappingSessionTest {
 
@@ -84,6 +88,11 @@ public class MappingSessionTest {
 		session.execute("DROP KEYSPACE IF EXISTS "+ keyspace);
 		EntityTypeParser.getEntityMetadata(EntityWithIndexes.class).markUnSynced();
 		EntityTypeParser.getEntityMetadata(EntityWithCollections.class).markUnSynced();
+		EntityTypeParser.getEntityMetadata(EntityWithCompositeKey.class).markUnSynced();
+		
+		EntityTypeParser.remove(EntityWithIndexes.class);
+		EntityTypeParser.remove(EntityWithCollections.class);
+		EntityTypeParser.remove(EntityWithCompositeKey.class);
 	}
 	
 	@Test
@@ -163,7 +172,63 @@ public class MappingSessionTest {
 		loaded = target.get(EntityWithCollections.class, uuid);
 		
 		assertEquals(obj, loaded);		
-				
 	}
+	
+	@Test
+	public void saveAndGetAndDeleteWithCompoundCompositeKeyTest() throws Exception {
+		SimpleKey partition = new SimpleKey();
+		partition.setName("name");
+		partition.setRank(10);
+		
+		CompositeKey key = new CompositeKey();
+		key.setKey(partition);
+		
+		Date created = new Date();
+		key.setCreated(created);
+		key.setEmail("email@at");
+		
+		EntityWithCompositeKey obj = new EntityWithCompositeKey();
+		obj.setKey(key);
+		obj.setTimestamp(1000); 
+		obj.setAsof(created);
+		
+		EntityWithCompositeKey loaded = target.get(EntityWithCompositeKey.class, key);
+		assertNull(loaded);
+		
+		target.save(obj);
+		loaded = target.get(EntityWithCompositeKey.class, key);
+		assertEquals(obj, loaded);
+		
+		target.delete(loaded);
+		loaded = target.get(EntityWithCompositeKey.class, key);
+		assertNull(loaded);
+	}
+	
+	@Test
+	public void saveAndGetAndDeleteWithSimpleCompositeKeyTest() throws Exception {
+		SimpleKey key = new SimpleKey();
+		key.setName("name");
+		key.setRank(10);
+		
+		Date created = new Date();
+		
+		EntityWithKey obj = new EntityWithKey();
+		obj.setKey(key);
+		obj.setTimestamp(1000); 
+		obj.setAsof(created);
+		
+		EntityWithKey loaded = target.get(EntityWithKey.class, key);
+		assertNull(loaded);
+		
+		target.save(obj);
+		loaded = target.get(EntityWithKey.class, key);
+		assertEquals(obj, loaded);
+		
+		target.delete(loaded);
+		loaded = target.get(EntityWithKey.class, key);
+		assertNull(loaded);
+	}
+	
+	
 	
 }

@@ -17,6 +17,7 @@ package com.datastax.driver.mapping;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -28,8 +29,11 @@ public class EntityTypeMetadata {
 	
 	private Class<?> entityClass;
 	private String tableName;
-	private EntityFieldMetaData idField;
+	
+	private PrimaryKeyMetadata primaryKeyMetadata;
 	private List<EntityFieldMetaData> fields = new ArrayList<EntityFieldMetaData>();
+	
+	// indexes<column_name, index_name>
 	private Map<String, String> indexes = new HashMap<String, String>();
 	private boolean synced = false;
 
@@ -47,11 +51,8 @@ public class EntityTypeMetadata {
 	
 	public void addField(EntityFieldMetaData fieldData) {
 		fields.add(fieldData);
-		if (fieldData.isIdField) {
-			idField = fieldData;
-		}
 	}
-
+		
 	public EntityFieldMetaData getFieldMetadata(String field) {
 		for (EntityFieldMetaData fieldMeta: fields) {
 			if (field.equalsIgnoreCase(fieldMeta.getName())) {
@@ -69,14 +70,10 @@ public class EntityTypeMetadata {
 		return tableName;
 	}
 
-	public EntityFieldMetaData getIdField() {
-		return idField;
-	}
-
 	public List<EntityFieldMetaData> getFields() {
 		return fields;
 	}
-
+	
 	public Map<String, String> getIndexes() {
 		return indexes;
 	}
@@ -88,7 +85,7 @@ public class EntityTypeMetadata {
 	public void addindex(String name, String column) {
 		indexes.put(column.toLowerCase(), name.toLowerCase());
 	}
-
+	
 	public boolean isSynced() {
 		return synced;
 	}
@@ -100,4 +97,95 @@ public class EntityTypeMetadata {
 	public void markUnSynced() {
 		this.synced = false;
 	}
+
+	public PrimaryKeyMetadata getPrimaryKeyMetadata() {
+		return primaryKeyMetadata;
+	}
+
+	public void setPrimaryKeyMetadata(PrimaryKeyMetadata primaryKeyMetadata) {
+		this.primaryKeyMetadata = primaryKeyMetadata;
+	}
+	
+
+	public List<String> getPkColumns() {
+		List<String> columns = new ArrayList<String>();
+		if (primaryKeyMetadata.hasPartitionKey()) {
+			PrimaryKeyMetadata pk = primaryKeyMetadata.getPartitionKey();
+			for (EntityFieldMetaData f: pk.getFields()) {
+				columns.add(f.getColumnName());
+			}
+		} 
+		
+		if (primaryKeyMetadata.isCompound()) {
+			for (EntityFieldMetaData f: primaryKeyMetadata.getFields()) {
+				columns.add(f.getColumnName());
+			}			
+		} else {
+			columns.add(primaryKeyMetadata.getOwnField().getColumnName());
+		}
+		
+		return columns;
+	}
+
+	/**
+	 * retrieve values from PK
+	 */	
+	public List<Object> getIdValues(Object id) {
+		List<Object> vals = new ArrayList<Object>();
+		if (primaryKeyMetadata.hasPartitionKey()) {
+			PrimaryKeyMetadata pk = primaryKeyMetadata.getPartitionKey();
+			Object partitionKey = pk.getOwnField().getValue(id);
+			for (EntityFieldMetaData f: pk.getFields()) {
+				vals.add(f.getValue(partitionKey));
+			}
+		} 
+		
+		if (primaryKeyMetadata.isCompound()) {
+			for (EntityFieldMetaData f: primaryKeyMetadata.getFields()) {
+				vals.add(f.getValue(id));
+			}			
+		} else {
+			vals.add(id);
+		}
+		
+		return vals;
+	}
+	
+	public List<Object> getEntityPKValues(Object entity) {
+		Object id = primaryKeyMetadata.getOwnField().getValue(entity);
+		return getIdValues(id);
+	}
+	
+	/**
+	 * (p1, p2), p3, p4
+	 */
+	public String getPkDefinition() {
+		StringBuilder sb = new StringBuilder();
+		if (primaryKeyMetadata.hasPartitionKey()) {
+			PrimaryKeyMetadata pk = primaryKeyMetadata.getPartitionKey();
+			sb.append("(");
+			Iterator<EntityFieldMetaData> it = pk.getFields().iterator();
+			while (it.hasNext()) {
+				sb.append(it.next().getColumnName());
+				if (it.hasNext()) {
+					sb.append(",");
+				}
+			}
+			sb.append("),");
+		} 
+		
+		if (primaryKeyMetadata.isCompound()) {
+			Iterator<EntityFieldMetaData> it = primaryKeyMetadata.getFields().iterator();
+			while (it.hasNext()) {
+				sb.append(it.next().getColumnName());
+				if (it.hasNext()) {
+					sb.append(",");
+				}
+			}
+		} else {
+			sb.append(primaryKeyMetadata.getOwnField().getColumnName());
+		}
+		
+		return sb.toString();
+	}	
 }

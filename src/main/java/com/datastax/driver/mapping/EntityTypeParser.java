@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.persistence.Column;
+import javax.persistence.EmbeddedId;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.Table;
@@ -80,6 +81,13 @@ public class EntityTypeParser {
 	public static void overrideDataTypeMapping(Class<?> clazz, DataType.Name type) {
 		javaTypeToDataType.put(clazz, type);
 	}
+
+	/** 
+	 * Remove entity metadata from the cache.
+	 */
+	public static <T> void remove(Class<T> clazz) {
+		entityData.remove(clazz);
+	}
 	
 	/** 
 	 * Returns List<FieldData> - all the fields which can be persisted for the given Entity type 
@@ -97,7 +105,7 @@ public class EntityTypeParser {
 	/** use reflection to iterate entity properties and collect fields to be persisted */
 	private static <T> EntityTypeMetadata parseEntityClass(Class<T> clazz) {
 		EntityTypeMetadata result = parseEntityLevelMetadata(clazz);
-		parsePropertyLevelMetadata(result);
+		parsePropertyLevelMetadata(result.getEntityClass(), result, null, false);
 		return result;
 	}
 	
@@ -129,55 +137,89 @@ public class EntityTypeParser {
 		return result;
 	}
 	
-	private static EntityTypeMetadata parsePropertyLevelMetadata(EntityTypeMetadata result) {
-		Field[] fields = result.getEntityClass().getDeclaredFields(); 
-		Method[] methods = result.getEntityClass().getDeclaredMethods();
+	private static EntityTypeMetadata parsePropertyLevelMetadata(Class<?> clazz, EntityTypeMetadata result, PrimaryKeyMetadata pkmeta, boolean isPartitionKey) {
+		Field[] fields = clazz.getDeclaredFields(); 
+		Method[] methods = clazz.getDeclaredMethods();
+		
 		for (Field f: fields) {
-			if (f.getAnnotation(Transient.class) == null && javaTypeToDataType.get(f.getType()) != null) {
+			boolean isOwnField = false;
+			PrimaryKeyMetadata pkm = null;
+			// for embedded key go recursive
+			if (f.getAnnotation(EmbeddedId.class) != null || f.getAnnotation(Id.class) != null) {
+				isOwnField = true;
+				pkm = new PrimaryKeyMetadata();
+				pkm.setPartition(isPartitionKey);
+				if (isPartitionKey) {
+					pkmeta.setPartitionKey(pkm);
+				} else {
+					result.setPrimaryKeyMetadata(pkm);					
+				}
+				parsePropertyLevelMetadata(f.getType(), result,  pkm, true);
+			}
+		
+			if ((f.getAnnotation(Transient.class) == null && javaTypeToDataType.get(f.getType()) != null) || isOwnField){
 				Method getter = null;
 				Method setter = null;
 				for (Method m: methods) {
+					
+					// before add a field we need to make sure both getter and setter are defined
 					if (isGetterFor(m, f.getName())) {
 						getter = m;
 					} else if (isSetterFor(m, f.getName())) {
 						setter = m;
 					}
 					if (setter!=null && getter != null) {
-						// by default used the field with name id. @Id annotation may override defaults
-						boolean isIdField = false;
-						if (f.getAnnotation(Id.class) != null) {
-							isIdField = true;
-						} else if (f.getName().equalsIgnoreCase("id")) {
-							isIdField = true;
-						}
-						
-						// by default the field name is a column name. @Column annotation may override defaults
-						String columnName = null;
-						Annotation columnA = f.getAnnotation(Column.class);
-						if (columnA instanceof Column) {
-							columnName = ((Column) columnA).name();
-						}						
-					    if (columnName == null || columnName.length()<1) {
-					    	columnName = f.getName();
+						// by default for id use the field with name id.
+						String columnName = getColumnName(f);
+					    DataType.Name dataType = javaTypeToDataType.get(f.getType());
+					    EntityFieldMetaData fd = new EntityFieldMetaData(f, dataType, getter, setter, columnName);
+					    
+					    if (pkmeta != null && !isOwnField) {
+					    	fd.setPartition(pkmeta.isPartition());
+					    	fd.setPrimary(true);
+					    	pkmeta.addField(fd);
+					    } else if (isOwnField) {
+					    	pkm.setOwnField(fd);
 					    }
 					    
-					    DataType.Name dataType = javaTypeToDataType.get(f.getType());
-						EntityFieldMetaData fd = new EntityFieldMetaData(f, dataType, getter, setter, columnName, isIdField);
-						
-						if (isList(f.getType())) {
-							fd.setGenericDef(genericsOfList(f));
-						} else if(isSet(f.getType())) {
-							fd.setGenericDef(genericsOfSet(f));
-						} else if(isMap(f.getType())) {
-							fd.setGenericDef(genericsOfMap(f));
-						}
-						result.addField(fd);
-						break;
+					    if (f.getAnnotation(EmbeddedId.class) != null) {
+					    	break;
+					    }
+					    
+				    	setCollections(f, fd);
+				    	result.addField(fd);					    	
+						break; // exit inner loop on filed's methods and go to the next field
 					}
 				}
 			}
 		}		
 		return result;		
+	}
+
+	private static void setCollections(Field f, EntityFieldMetaData fd) {
+		if (isList(f.getType())) {
+			fd.setGenericDef(genericsOfList(f));
+		} else if(isSet(f.getType())) {
+			fd.setGenericDef(genericsOfSet(f));
+		} else if(isMap(f.getType())) {
+			fd.setGenericDef(genericsOfMap(f));
+		}
+	}
+
+	/**
+	 * by default the field name is the column name. 
+	 * @Column annotation will override defaults
+	 */
+	private static String getColumnName(Field f) {
+		String columnName = null;
+		Annotation columnA = f.getAnnotation(Column.class);
+		if (columnA instanceof Column) {
+			columnName = ((Column) columnA).name();
+		}						
+		if (columnName == null || columnName.length()<1) {
+			columnName = f.getName();
+		}
+		return columnName;
 	}	
 	
 	private static String genericsOfList(Field f) {
@@ -245,4 +287,16 @@ public class EntityTypeParser {
 		 if(!void.class.equals(method.getReturnType())) return false;
 		 return true;
 	}
+	
+	public static String mappingToString() {
+		StringBuilder b = new StringBuilder();
+		for (Class<?> c: javaTypeToDataType.keySet()) {
+			b.append(c.getName());
+			b.append("|");
+			b.append(javaTypeToDataType.get(c));
+			b.append("\n");
+		}
+		return b.toString();
+	}
+	
 }

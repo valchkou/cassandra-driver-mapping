@@ -44,13 +44,13 @@ public class CreateTable extends RegularStatement {
 				columns.append(fd.getColumnName()+" "+fd.getDataType().toString()+", ");
 			}	
 		}
-		// TODO: support composite id
-		String idColumn = entityMetadata.getIdField().getColumnName();
+
+		String pk = entityMetadata.getPkDefinition();
 		String tableName = entityMetadata.getTableName();
 		if (keyspace != null) {
 			tableName = keyspace+ "." + tableName;
 		}
-		return String.format(CREATE_TABLE_TEMPLATE_CQL, tableName, columns.toString(), idColumn);
+		return String.format(CREATE_TABLE_TEMPLATE_CQL, tableName, columns.toString(), pk);
 
 	}
 
