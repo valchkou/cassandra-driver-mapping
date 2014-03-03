@@ -1,7 +1,7 @@
 cassandra-driver-mapping
 ========================
   
-Enjoy this time-saver Add-on for the DataStax Java Driver (Driver) for Cassandra (C*).  
+Lightweight Add-on for the DataStax Java Driver (Driver) for Cassandra (C*).  
 This Add-on is the easiest way to use JPA annotated entities with C* including schema generation.  
 Add-on is not replacement nor wrapper for the Driver but lightweight addition to it.   
 Add-on does not modify the driver and you still can utilize the full power of Driver API and Datastax documentation.    
@@ -82,8 +82,8 @@ All is built-in and taken care of. Entity definition will be automatically [sync
 	- If entity or field is not annotated it will provide its name as default.    
 	- Id field is required for the entity and must be annotated with @Id or @EmbeddedId.
 	- Index annotation supported starting JPA 2.1.    
-        - Index name must be unique within the keyspace.  
-        - C* supports only single-column-index.
+	- Index name must be unique within the keyspace.  
+	- C* supports only single-column-index.
 
 	  	  
 - Sample:JPA Entity
