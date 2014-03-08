@@ -13,8 +13,12 @@ Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.c
 - [Features](#features)  
 - [Jump Start](#start)  
 - [Various Mappings](#mapping)  
-	* [How Entity get synchronized](#sync)
-	* [How Entity get synchronized](#sync)
+	* [Simple Mapping](#mapping_simple)
+	* [Mapping Indexes](#mapping_index)
+	* [Mapping Collections](#mapping_collections)
+	* [Mapping Indexes](#mapping_index)
+	* [Mapping Composite Id](#mapping_composite)
+	* [Mapping Composite Partition Id](#mapping_partition)
 - [Custom Queries](#queries)  
 - [How Entity get synchronized](#sync)  
 - [Entity Metadata and Data Types](#metadata)  
@@ -79,32 +83,43 @@ All is built-in and taken care of. Entity definition will be automatically [sync
 <a name="mapping"/>
 ### Various Mappings
 
-	IMPORTANT!:   
+	IMPORTANT!!!   
 	- All names are converted to lowercase.  
 	- If entity or field is not annotated it will provide its name as default.    
-	- Id field is required for the entity and must be annotated with @Id or @EmbeddedId.
-	- Index annotation supported starting JPA 2.1.    
+	- Id field is required and must be annotated with @Id or @EmbeddedId.
 	- Index name must be unique within the keyspace.  
 	- C* supports only single-column-index.
 
-	  	  
-- Sample:JPA Entity
+
+<a name="mapping_simple"/>	  	  
+#### Sample Mapping
 	```java
-	@javax.persistence.Entity
-	@javax.persistence.Table (name="mytable")
+	import javax.persistence.Id;
+	import javax.persistence.Table;
+	import javax.persistence.Entity;
+	
+	@Entity
+	@Table (name="mytable")
 	public class Entity {
 		
-		@javax.persistence.Id
+		@Id
 		private long Id;
 		
-		@javax.persistence.Column(name = "myname")
+		@Column(name = "myname")
 		private String name;
+
+		private int age;
+		
+		@Transient
+		private BigDecimal calculable;
+		
 		// public getters/setters ...
 	}
 	```
-	Generates CQL3
+	
+	CQL3 Analogue
 	```
-   		CREATE TABLE IF NOT EXISTS ks.mytable (id bigint, myname text,  PRIMARY KEY(id))
+   		CREATE TABLE IF NOT EXISTS ks.mytable (id bigint, myname text, age int, PRIMARY KEY(id))
 	```     
 	
 	
