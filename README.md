@@ -13,6 +13,7 @@ Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.c
 [Features](#features)  
 [Jump Start](#start)  
 [Various Mappings](#mapping)  
+	[How Entity get synchronized](#sync)
 [Custom Queries](#queries)  
 [How Entity get synchronized](#sync)  
 [Entity Metadata and Data Types](#metadata)  
