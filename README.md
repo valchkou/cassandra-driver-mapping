@@ -185,7 +185,9 @@ All is built-in and taken care of. Entity definition will be automatically [sync
    		CREATE TABLE IF NOT EXISTS ks.entity (id uuid, cats list<text>, dogs set<timestamp>, pets map<text, varint>,  PRIMARY KEY(id))
 	```     
 Collections must have generic type defined. Only java.util.List, Map and Set are allowed.  
-Please refer Datastax CQL documentation [Use Collection] (http://www.datastax.com/documentation/cql/3.1/webhelp/index.html#cql/cql_using/use_collections_c.html#useCollections)
+For more info on collections please refer [Datastax Using Collection] (http://www.datastax.com/documentation/cql/3.1/cql/cql_using/use_collections_c.html)
+
+
 
 <a name="queries"/>
 ### Custom Queries
