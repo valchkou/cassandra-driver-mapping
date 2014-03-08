@@ -2,9 +2,9 @@ cassandra-driver-mapping
 ========================
   
 Lightweight Add-on for the DataStax Java Driver (Driver) for Cassandra (C*).  
-This Add-on is the easiest way to use JPA annotated entities with C* including schema generation.  
-Add-on is not replacement nor wrapper for the Driver but lightweight addition to it.   
-Add-on does not modify the driver and you still can utilize the full power of Driver API and Datastax documentation.    
+This Add-on allows you to use JPA annotated entities with C* including schema generation.  
+Add-on is not replacement for the Driver.   
+You still can utilize the full power of Driver API and Datastax documentation.    
 Mapping Add-on relies on Driver version 2.0 and JPA 2.1.    
 
 Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.com/documentation/gettingstarted/index.html).
@@ -74,7 +74,7 @@ Manage your entity:
     
     mappingSession.delete(entity);	
 ```
-Very simple, isn't it? No mapping files, no scripts, no configuration files.   
+No mapping files, no scripts, no configuration files.   
 You don't have to worry about creating the Table and Indexes for your Entity.  
 All is built-in and taken care of. Entity definition will be automatically [synchronized with C*](#sync).  
   
@@ -119,7 +119,7 @@ All is built-in and taken care of. Entity definition will be automatically [sync
 	```
 	CQL3 Statement
 	```
-   		CREATE TABLE IF NOT EXISTS ks.mytable (id bigint, myname text, age int, PRIMARY KEY(id))
+   	CREATE TABLE IF NOT EXISTS ks.mytable (id bigint, myname text, age int, PRIMARY KEY(id))
 	```     
 	
 <a name="mapping_index"/>	
@@ -298,12 +298,6 @@ EntityTypeMetadata useful for providing table and column names when building Sta
 The table structure is automatically synchronized with the entity definition on the first use of the entity.  
 Any SessionMapping call internally will check if the entity has already been synchronized and if not   
 it will run SchemaSync.sync. You can use sync API directly as:  
-```java
-	// drop table
-	import com.datastax.driver.mapping.schemasync.SchemaSync;
-	...
-	SchemaSync.drop(keyspace, session, Entity.class);
-```
 
 ```java
 	// create or alter
@@ -311,6 +305,13 @@ it will run SchemaSync.sync. You can use sync API directly as:
 	...
 	SchemaSync.sync(keyspace, session, Entity.class);
 ```
+```java
+	// drop table
+	import com.datastax.driver.mapping.schemasync.SchemaSync;
+	...
+	SchemaSync.drop(keyspace, session, Entity.class);
+```
+
 You don't need to use this API unless you have reasons.   
 Such as unittests or if you want to gain few milliseconds on the first use  
 you may want to invoke the synchronization on the application start up instead. 
