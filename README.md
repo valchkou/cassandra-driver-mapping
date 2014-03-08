@@ -125,7 +125,7 @@ All is built-in and taken care of. Entity definition will be automatically [sync
 	```     
 	
 <a name="mapping_index"/>	
-#### Mapping Indexes    
+- Mapping Indexes
 	```java
 	import javax.persistence.Id;
 	import javax.persistence.Table;
