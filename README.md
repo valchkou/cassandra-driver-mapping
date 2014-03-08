@@ -10,9 +10,9 @@ Mapping Add-on relies on Driver version 2.0 and JPA 2.1.
 Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.com/documentation/gettingstarted/index.html).
 
 ### Table of Contents  
-[Features](#features)  
-[Jump Start](#start)  
-[Various Mappings](#mapping)  
+- [Features](#features)  
+- [Jump Start](#start)  
+- [Various Mappings](#mapping)  
 	* [How Entity get synchronized](#sync)
 	* [How Entity get synchronized](#sync)
 [Custom Queries](#queries)  
