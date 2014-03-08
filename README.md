@@ -91,8 +91,7 @@ All is built-in and taken care of. Entity definition will be automatically [sync
 
 
 <a name="mapping_simple"/>	  	  
-#### Simple Mapping
-
+- Simple Mapping
 	```java
 	import javax.persistence.Id;
 	import javax.persistence.Table;
@@ -158,27 +157,7 @@ All is built-in and taken care of. Entity definition will be automatically [sync
 		CREATE INDEX IF NOT EXISTS entity_name_idx ON ks.mytable(myname);
 	```   
    
-   
-- Sample: Transient property
-	```java
-	@javax.persistence.Entity
-	public class Entity {
-		
-		private java.util.UUID id;
-		private String name;
-		
-		@Transient
-		private BigDecimal calculable;
-		
-		// public getters/setters ...
-	}
-	```
-	Generates CQL3
-	```
-   		CREATE TABLE IF NOT EXISTS ks.entity (id uuid, name text,  PRIMARY KEY(id))
-	```     
-   
-   
+<a name="mapping_collections"/>
 - Sample: Collections
    	```java
 	import java.math.BigInteger;
@@ -201,7 +180,7 @@ All is built-in and taken care of. Entity definition will be automatically [sync
 		// public getters/setters ...
 	}
 	```
-	Generates CQL3
+	CQL3 Statement
 	```
    		CREATE TABLE IF NOT EXISTS ks.entity (id uuid, cats list<text>, dogs set<timestamp>, pets map<text, varint>,  PRIMARY KEY(id))
 	```     
