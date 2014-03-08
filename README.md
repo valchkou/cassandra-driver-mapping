@@ -15,11 +15,11 @@ Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.c
 - [Various Mappings](#mapping)  
 	* [How Entity get synchronized](#sync)
 	* [How Entity get synchronized](#sync)
-[Custom Queries](#queries)  
-[How Entity get synchronized](#sync)  
-[Entity Metadata and Data Types](#metadata)  
-[Spring Framework Example](#spring)  
-[Coming Features](#comingfeatures)
+- [Custom Queries](#queries)  
+- [How Entity get synchronized](#sync)  
+- [Entity Metadata and Data Types](#metadata)  
+- [Spring Framework Example](#spring)  
+- [Coming Features](#comingfeatures)
 
 <a name="features"/>
 ### Features
