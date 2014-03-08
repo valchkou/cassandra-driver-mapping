@@ -181,13 +181,13 @@ All is built-in and taken care of. Entity definition will be automatically [sync
 	```
 	CQL3 Statement
 	```
-   		CREATE TABLE IF NOT EXISTS ks.entity (id uuid, cats list<text>, dogs set<timestamp>, pets map<text, varint>,  PRIMARY KEY(id))
+   	CREATE TABLE IF NOT EXISTS ks.entity (id uuid, cats list<text>, dogs set<timestamp>, pets map<text, varint>,  PRIMARY KEY(id))
 	```     
 Collections must have generic type defined. Only java.util.List, Map and Set are allowed.  
 For more info on collections please refer [Datastax Using Collection] (http://www.datastax.com/documentation/cql/3.1/cql/cql_using/use_collections_c.html)
 
 
-<a name="mapping_collections"/>
+<a name="mapping_compound"/>
 - Compound Primary Key
 
    	```java
@@ -195,10 +195,8 @@ For more info on collections please refer [Datastax Using Collection] (http://ww
 
 	@Embeddable
 	public class CompositeKey {
-			
 		private String name;
 		private int rank;
-		
 		// public getters/setters ...
 	}
 	```
@@ -212,15 +210,54 @@ For more info on collections please refer [Datastax Using Collection] (http://ww
 		@EmbeddedId
 		private CompositeKey key;
 		private String email;
-		
 		// public getters/setters ...
 	}
 	```
 	CQL3 Statement
 	```
-   		CREATE TABLE IF NOT EXISTS ks.entity (name text,  rank int, email text,  PRIMARY KEY(name, rank))
+   	CREATE TABLE IF NOT EXISTS ks.entity (name text,  rank int, email text,  PRIMARY KEY(name, rank))
 	```     
 
+<a name="mapping_partition"/>
+- Compound Partition Key
+
+   	```java
+	import javax.persistence.Embeddable;	
+
+	@Embeddable
+	public class PartitionKey {
+		private String firstName;
+		private String lastName;
+		// public getters/setters ...
+	}
+	```
+   	```java
+	import javax.persistence.Embeddable;	
+
+	@Embeddable
+	public class CompositeKey {
+		@EmbeddedId
+		private PartitionKey key;
+		private int age;
+		// public getters/setters ...
+	}
+	```
+   	```java
+	import javax.persistence.Table;
+	import javax.persistence.EmbeddedId;	
+	
+	@Table(name="entity")
+	public class Entity {
+		@EmbeddedId
+		private CompositeKey key;
+		private String email;
+		// public getters/setters ...
+	}
+	```
+	CQL3 Statement
+	```
+   	CREATE TABLE IF NOT EXISTS ks.entity (firstname text, lastname text, age int, email text,  PRIMARY KEY((firstname, lastname), age))
+	```     
 
 <a name="queries"/>
 ### Custom Queries
