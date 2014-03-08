@@ -13,11 +13,11 @@ Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.c
 - [Features](#features)  
 - [Jump Start](#start)  
 - [Various Mappings](#mapping)  
-	* [Simple Mapping](#mapping_simple)
-	* [Mapping Indexes](#mapping_index)
-	* [Mapping Collections](#mapping_collections)
-	* [Mapping Composite Id](#mapping_composite)
-	* [Mapping Composite Partition Id](#mapping_partition)
+	* [Basic](#mapping_basic)
+	* [Indexes](#mapping_index)
+	* [Collections](#mapping_collections)
+	* [Compound Primary Key](#mapping_compound)
+	* [Compound Partition Key](#mapping_partition)
 - [Custom Queries](#queries)  
 - [How Entity get synchronized](#sync)  
 - [Entity Metadata and Data Types](#metadata)  
@@ -90,8 +90,8 @@ All is built-in and taken care of. Entity definition will be automatically [sync
 	- C* supports only single-column-index.
 
 
-<a name="mapping_simple"/>	  	  
-- Simple Mapping
+<a name="mapping_basic"/>	  	  
+- Basic Mapping
 	```java
 	import javax.persistence.Id;
 	import javax.persistence.Table;
@@ -117,7 +117,6 @@ All is built-in and taken care of. Entity definition will be automatically [sync
 		// public getters/setters ...
 	}
 	```
-	
 	CQL3 Statement
 	```
    		CREATE TABLE IF NOT EXISTS ks.mytable (id bigint, myname text, age int, PRIMARY KEY(id))
@@ -158,7 +157,7 @@ All is built-in and taken care of. Entity definition will be automatically [sync
 	```   
    
 <a name="mapping_collections"/>
-- Sample: Collections
+- Collections
    	```java
 	import java.math.BigInteger;
 	import java.util.Date;
@@ -187,6 +186,40 @@ All is built-in and taken care of. Entity definition will be automatically [sync
 Collections must have generic type defined. Only java.util.List, Map and Set are allowed.  
 For more info on collections please refer [Datastax Using Collection] (http://www.datastax.com/documentation/cql/3.1/cql/cql_using/use_collections_c.html)
 
+
+<a name="mapping_collections"/>
+- Compound Primary Key
+
+   	```java
+	import javax.persistence.Embeddable;	
+
+	@Embeddable
+	public class CompositeKey {
+			
+		private String name;
+		private int rank;
+		
+		// public getters/setters ...
+	}
+	```
+   	```java
+
+	import javax.persistence.Table;
+	import javax.persistence.EmbeddedId;	
+	
+	@Table(name="entity")
+	public class Entity {
+		@EmbeddedId
+		private CompositeKey key;
+		private String email;
+		
+		// public getters/setters ...
+	}
+	```
+	CQL3 Statement
+	```
+   		CREATE TABLE IF NOT EXISTS ks.entity (name text,  rank int, email text,  PRIMARY KEY(name, rank))
+	```     
 
 
 <a name="queries"/>
