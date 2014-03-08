@@ -16,7 +16,6 @@ Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.c
 	* [Simple Mapping](#mapping_simple)
 	* [Mapping Indexes](#mapping_index)
 	* [Mapping Collections](#mapping_collections)
-	* [Mapping Indexes](#mapping_index)
 	* [Mapping Composite Id](#mapping_composite)
 	* [Mapping Composite Partition Id](#mapping_partition)
 - [Custom Queries](#queries)  
@@ -97,6 +96,7 @@ All is built-in and taken care of. Entity definition will be automatically [sync
 	import javax.persistence.Id;
 	import javax.persistence.Table;
 	import javax.persistence.Entity;
+	import javax.persistence.Column
 	
 	@Entity
 	@Table (name="mytable")
@@ -107,7 +107,8 @@ All is built-in and taken care of. Entity definition will be automatically [sync
 		
 		@Column(name = "myname")
 		private String name;
-
+		
+		// @Column is not required
 		private int age;
 		
 		@Transient
@@ -117,32 +118,39 @@ All is built-in and taken care of. Entity definition will be automatically [sync
 	}
 	```
 	
-	CQL3 Analogue
+	CQL3 Statement
 	```
    		CREATE TABLE IF NOT EXISTS ks.mytable (id bigint, myname text, age int, PRIMARY KEY(id))
 	```     
 	
-	
-- Sample: JPA Entity with Indexes    
+<a name="mapping_index"/>	
+#### Mapping Indexes    
 	```java
-	@javax.persistence.Entity
-	@javax.persistence.Table (name="mytable", 
+	import javax.persistence.Id;
+	import javax.persistence.Table;
+	import javax.persistence.Entity;
+	import javax.persistence.Column
+	import javax.persistence.Index
+	import java.util.UUID
+	
+	@Entity
+	@Table (name="mytable", 
 	indexes = {
-		@javax.persistence.Index(name="entity_email_idx", columnList="email" ), 
-		@javax.persistence.Index(name="entity_name_idx", columnList="myname" ) 
+		@Index(name="entity_email_idx", columnList="email" ), 
+		@Index(name="entity_name_idx", columnList="myname" ) 
 	})
 	public class Entity {
 		
-		@javax.persistence.Id
+		@Id
 		private java.util.UUID code;
 		
-		@javax.persistence.Column(name = "myname")
+		@Column(name = "myname")
 		private String name;
 		private String email;
 		// public getters/setters ...
 	}
 	```
-	Generates CQL3
+	CQL3 Statement
 	```
    		CREATE TABLE IF NOT EXISTS ks.mytable (code uuid, myname text, email text,  PRIMARY KEY(code)); 
 		CREATE INDEX IF NOT EXISTS entity_email_idx ON ks.mytable(email);  
