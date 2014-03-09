@@ -1,10 +1,10 @@
 cassandra-driver-mapping
 ========================
   
-Lightweight Add-on for the DataStax Java Driver (Driver) for Cassandra (C*).  
-This Add-on allows you to use JPA annotated entities with C* including schema generation.  
-Add-on is not replacement for the Driver.   
-You still can utilize the full power of Driver API and Datastax documentation.    
+Entity mapping Add-on for the DataStax Java Driver (Driver) for Cassandra (C*).  
+This Add-on allows you to generate schema and persist JPA annotated entities in C*.  
+Add-on is not replacement for the Driver but lightweight utility for it. 
+You still can utilize full power of the Driver API and Datastax documentation.    
 Mapping Add-on relies on Driver version 2.0 and JPA 2.1.    
 
 Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.com/documentation/gettingstarted/index.html).
@@ -262,9 +262,11 @@ For more info on collections please refer [Datastax Using Collection] (http://ww
 <a name="queries"/>
 ### Custom Queries
 
-Datastax Driver shipped with a tool which helps us to build CQL queries.  
-You have 2 options to map query results on Entity.  
-- Option1: Build a query Statement and pass it to mappingSession.  
+Datastax Driver shipped with a tool to build CQL queries.  
+You can build your query with Datastax QueryBuilder and map ResultSet on Entity.
+There are 2 ways to map query results on Entity.
+
+- Option 1: Build a query Statement and pass it to mappingSession.  
 	```java
 				EntityTypeMetadata emeta = EntityTypeParser.getEntityMetadata(Entity.class);
 				EntityFieldMetaData fmeta = emeta.getFieldMetadata(field_name);
@@ -276,7 +278,7 @@ You have 2 options to map query results on Entity.
 				List<Account> result = mappingSession.getByQuery(Entity.class, query);
 	 ```
 
-- Option2: Build and run the query with Datastax session and pass the Datastax ResultSet into mappingSession. 
+- Option 2: Build and run the query with Datastax session and pass the Datastax ResultSet into mappingSession. 
 	```java
 				EntityTypeMetadata emeta = EntityTypeParser.getEntityMetadata(Entity.class);
 				EntityFieldMetaData fmeta = emeta.getFieldMetadata(field_name);
