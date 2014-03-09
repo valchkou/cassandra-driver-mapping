@@ -16,7 +16,7 @@ Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.c
 	* [Basic](#mapping_basic)
 	* [Indexes](#mapping_index)
 	* [Collections](#mapping_collections)
-	* [Compound Primary Key](#mapping_compound)
+	* [Composite Primary Key](#mapping_composite)
 	* [Compound Partition Key](#mapping_partition)
 - [Custom Queries](#queries)  
 - [How Entity get synchronized](#sync)  
@@ -187,8 +187,8 @@ Collections must have generic type defined. Only java.util.List, Map and Set are
 For more info on collections please refer [Datastax Using Collection] (http://www.datastax.com/documentation/cql/3.1/cql/cql_using/use_collections_c.html)
 
 
-<a name="mapping_compound"/>
-- Compound Primary Key
+<a name="mapping_composite"/>
+- Composite Primary Key
 
    	```java
 	import javax.persistence.Embeddable;	
