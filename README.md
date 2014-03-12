@@ -16,8 +16,8 @@ Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.c
 	* [Basic](#mapping_basic)
 	* [Indexes](#mapping_index)
 	* [Collections](#mapping_collections)
-	* [Composite Primary Key](#mapping_composite)
-	* [Compound Partition Key](#mapping_partition)
+	* [Compound Primary Key](#mapping_composite)
+	* [Composite Partition Key](#mapping_partition)
 - [Custom Queries](#queries)  
 - [How Entity get synchronized](#sync)  
 - [Entity Metadata and Data Types](#metadata)  
@@ -188,7 +188,7 @@ For more info on collections please refer [Datastax Using Collection] (http://ww
 
 
 <a name="mapping_composite"/>
-- Composite Primary Key
+- Compound Primary Key
 
    	```java
 	import javax.persistence.Embeddable;	
@@ -219,7 +219,7 @@ For more info on collections please refer [Datastax Using Collection] (http://ww
 	```     
 
 <a name="mapping_partition"/>
-- Compound Partition Key
+- Composite Partition Key
 
    	```java
 	import javax.persistence.Embeddable;	
