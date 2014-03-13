@@ -260,40 +260,40 @@ For more info on collections please refer [Datastax Using Collection] (http://ww
 	```     
 
 <a name="queries"/>
-### Custom Queries
+### Mapping Custom Queries
 
 Datastax Driver shipped with a tool to build CQL queries.  
-You can build your query with Datastax QueryBuilder and map ResultSet on Entity.
-There are 2 ways to map query results on Entity.
+You can build your query with Datastax QueryBuilder and map ResultSet on Entity.  
+There are several ways how you can accomplish this.
 
-- Option 1: Build a query Statement and pass it to mappingSession.  
+
+- Build query yourself.
+- Build query with QueryBuilder (Better)
+- Build query with QueryBuilder using EntityTypeMetadata (Even Better)
 	```java
-				EntityTypeMetadata emeta = EntityTypeParser.getEntityMetadata(Entity.class);
-				EntityFieldMetaData fmeta = emeta.getFieldMetadata(field_name);
-				Statement query = QueryBuilder
-							.select().all()
-							.from(sf.getKeyspace(), emeta.getTableName())
-							.where(eq(fmeta.getColumnName(), value));
+				
+	// Get Entity Metadata
+	EntityTypeMetadata emeta = EntityTypeParser.getEntityMetadata(Entity.class);
+	EntityFieldMetaData fmeta = emeta.getFieldMetadata(field_name);
+	
+	// Build query using metadata for table and column names.
+	Statement query = QueryBuilder.select().all()
+				.from(sf.getKeyspace(), emeta.getTableName())
+				.where(eq(fmeta.getColumnName(), value));
 							
-				List<Account> result = mappingSession.getByQuery(Entity.class, query);
+        // either run using mapping session
+	List<Entity> result = mappingSession.getByQuery(Entity.class, query);
+	
+	// or run with session and map ResultSet
+	ResultSet rs = session.execute(query);	
+	List<Entity> result = mappingSession.getFromResultSet(Entity.class, rs);
 	 ```
 
-- Option 2: Build and run the query with Datastax session and pass the Datastax ResultSet into mappingSession. 
-	```java
-				EntityTypeMetadata emeta = EntityTypeParser.getEntityMetadata(Entity.class);
-				EntityFieldMetaData fmeta = emeta.getFieldMetadata(field_name);
-				Statement query = QueryBuilder
-							.select().all()
-							.from(sf.getKeyspace(), emeta.getTableName())
-							.where(eq(fmeta.getColumnName(), value));
-				
-				ResultSet rs = session.execute(query);	
-						
-				List<Entity> result = mappingSession.getFromResultSet(Entity.class, rs);
-				
-	 ```
-The mappingSession will return you the result as a List<Entity>.  
-EntityTypeMetadata useful for providing table and column names when building Statements.
+
+- Magic Gnomes
+
+
+
 	   
 <a name="sync"/>	   
 ### How Entity get synchronized
