@@ -18,11 +18,11 @@ Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.c
 	* [Collections](#mapping_collections)
 	* [Compound Primary Key](#mapping_composite)
 	* [Composite Partition Key](#mapping_partition)
-- [Mapping Custom Queries](#queries)  
+- [Mapping Queries](#queries)  
 	* [Basics](#queries_basics)
 	* [QueryBuilder](#queries_builder)
 	* [QueryBuilder with EntityMetadata](#queries_meta)
-	* [Magic Gnomes](#queries_gnomes)
+	* [Any-to-Any or Magic Gnomes](#queries_gnomes)
 - [How Entity get synchronized](#sync)  
 - [Entity Metadata and Data Types](#metadata)  
 - [Spring Framework Example](#spring)  
@@ -270,10 +270,19 @@ Datastax Driver shipped with a tool to build CQL queries.
 You can build your query with Datastax QueryBuilder and map ResultSet on Entity.  
 There are several ways how you can accomplish this.
 
+	* [Basics](#queries_basics)
+	* [QueryBuilder](#queries_builder)
+	* [QueryBuilder with EntityMetadata](#queries_meta)
+	* [Any-to-Any or Magic Gnomes](#queries_gnomes)
+<a name="queries_basics"/>
+- Basics
 
-- Build query yourself.
-- Build query with QueryBuilder (Better)
-- Build query with QueryBuilder using EntityTypeMetadata (Even Better)
+
+<a name="queries_builder"/>
+- QueryBuilder (Better)
+
+<a name="queries_meta"/>
+- QueryBuilder with EntityMetadata (Even Better)
 	```java
 				
 	// Get Entity Metadata
