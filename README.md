@@ -276,6 +276,18 @@ There are several ways how you can accomplish this.
 	* [Any-to-Any or Magic Gnomes](#queries_gnomes)
 <a name="queries_basics"/>
 - Basics
+When you want to map teh query result on entity you can do it in 2 ways:
+	
+	- run using mapping session
+	```java
+	List<Entity> result = mappingSession.getByQuery(Entity.class, query);
+	```
+
+	run with DataStax session and map the ResultSet
+	```java
+	ResultSet rs = session.execute(query);	
+	List<Entity> result = mappingSession.getFromResultSet(Entity.class, rs);
+	```
 
 
 <a name="queries_builder"/>
