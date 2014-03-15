@@ -18,11 +18,13 @@ Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.c
 	* [Collections](#mapping_collections)
 	* [Compound Primary Key](#mapping_composite)
 	* [Composite Partition Key](#mapping_partition)
-- [Mapping Queries](#queries)  
-	* [Basics](#queries_basics)
-	* [QueryBuilder](#queries_builder)
-	* [QueryBuilder with EntityMetadata](#queries_meta)
+- [Mapping Custom Queries](#queries_mapping)  
+	* [How To Run](#queries_howto)
 	* [Any-to-Any or Magic Gnomes](#queries_gnomes)
+- [Building Custom Queries](#queries_building)
+	* [CQL String](#queries_cql)
+	* [QueryBuilder (better)](#queries_builder)	
+	* [QueryBuilder with EntityMetadata (even better)](#queries_meta)
 - [How Entity get synchronized](#sync)  
 - [Entity Metadata and Data Types](#metadata)  
 - [Spring Framework Example](#spring)  
@@ -263,24 +265,59 @@ For more info on collections please refer [Datastax Using Collection] (http://ww
    	CREATE TABLE IF NOT EXISTS ks.entity (firstname text, lastname text, age int, email text,  PRIMARY KEY((firstname, lastname), age))
 	```     
 
-<a name="queries"/>
+<a name="queries_mapping"/>
 ### Mapping Custom Queries
 
-<a name="queries_basics"/>
-- Basics  
-When you want to map teh query result on entity you can do it in 2 ways:
-	
-	run using mapping session
+<a name="queries_howto"/>
+- How To Run  
+There are two ways to run and map the query:  
+	1) run using mapping session
 	```java
+	import com.datastax.driver.mapping.MappingSession;
+	...
 	List<Entity> result = mappingSession.getByQuery(Entity.class, query);
 	```
 
-	run with DataStax session and map the ResultSet
+	2) run using DataStax session and map the ResultSet
 	```java
+	import com.datastax.driver.core.Session;
+	import com.datastax.driver.core.ResultSet;
+	import com.datastax.driver.mapping.MappingSession;
+	...
 	ResultSet rs = session.execute(query);	
 	List<Entity> result = mappingSession.getFromResultSet(Entity.class, rs);
 	```
 
+<a name="queries_gnomes"/>
+- Any-to-Any or Magic Gnomes  
+This is the coolest feature. Your Entity doesn't have to match the table.  
+You can populate any entity from any query. That's what I call Ay-to-Any.  
+Consider example: 
+```java
+	public class AnyObject {
+		private String name;
+		private int age;
+		// public getters/setters ...
+	}
+```
+You can populate this object with data which has name and age columns in ResultSet.  
+If ResultSet has more columns they will be ignored and no errors will be thrown.
+```java
+	ResultSet rs = session.execute("SELECT name, age, birth_date, salary FROM person");	
+	List<AnyObject> result = mappingSession.getFromResultSet(AnyObject.class, rs);
+```
+In this case name and age will be populated on AnyObject and birth_date, salary will be ignored.
+You can reuse the same entity to query result from different tables which may contain redundant data.
+
+<a name="queries_building"/>
+### Building Custom Queries
+	
+<a name="queries_cql"/>
+- CQL String
+The most streightforward way is to pass the query string as is:
+```java
+	String cqlQuery = "SELECT name, age, birth_date, salary FROM person");	
+```
 
 <a name="queries_builder"/>
 - QueryBuilder (Better)  
@@ -308,9 +345,6 @@ There are several ways how you can accomplish this.
 	ResultSet rs = session.execute(query);	
 	List<Entity> result = mappingSession.getFromResultSet(Entity.class, rs);
 	 ```
-
-<a name="queries_gnomes"/>
-- Any-to-Any or Magic Gnomes
 
 
 
