@@ -266,19 +266,11 @@ For more info on collections please refer [Datastax Using Collection] (http://ww
 <a name="queries"/>
 ### Mapping Custom Queries
 
-Datastax Driver shipped with a tool to build CQL queries.  
-You can build your query with Datastax QueryBuilder and map ResultSet on Entity.  
-There are several ways how you can accomplish this.
-
-	* [Basics](#queries_basics)
-	* [QueryBuilder](#queries_builder)
-	* [QueryBuilder with EntityMetadata](#queries_meta)
-	* [Any-to-Any or Magic Gnomes](#queries_gnomes)
 <a name="queries_basics"/>
-- Basics
+- Basics  
 When you want to map teh query result on entity you can do it in 2 ways:
 	
-	- run using mapping session
+	run using mapping session
 	```java
 	List<Entity> result = mappingSession.getByQuery(Entity.class, query);
 	```
@@ -291,7 +283,10 @@ When you want to map teh query result on entity you can do it in 2 ways:
 
 
 <a name="queries_builder"/>
-- QueryBuilder (Better)
+- QueryBuilder (Better)  
+Datastax Driver shipped with a tool to build CQL queries.  
+You can build your query with Datastax QueryBuilder and map ResultSet on Entity.  
+There are several ways how you can accomplish this.
 
 <a name="queries_meta"/>
 - QueryBuilder with EntityMetadata (Even Better)
@@ -314,8 +309,8 @@ When you want to map teh query result on entity you can do it in 2 ways:
 	List<Entity> result = mappingSession.getFromResultSet(Entity.class, rs);
 	 ```
 
-
-- Magic Gnomes
+<a name="queries_gnomes"/>
+- Any-to-Any or Magic Gnomes
 
 
 
