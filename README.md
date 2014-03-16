@@ -39,12 +39,11 @@ The features provided by the module include:
   	* Get entity from Cassandra.
   	* Save entity to Cassandra.
 	* Delete entity from Cassandra.
-	* Run custom Queries built with datastax.QueryBuilder
+	* Run and map custom Queries.
 	* Convert ResultSet into List of Entities
 
   - Generate Schema
-  	* Create table from any Java Bean even without annotations. 
-  	* Create tables and indexes from the JPA 2.1 annotated entities.
+  	* Create tables and indexes from Entity. 
   	* Alter tables and indexes if entities definition has changed.
   	* Drop tables and indexes.
 
@@ -63,10 +62,11 @@ Install it in your application from Maven Central using the following dependency
 Create MappingSession instance:
 ```
 	import com.datastax.driver.mapping.MappingSession;
-    ...
-    MappingSession mappingSession = new MappingSession(keyspace, session);
+    	...
+    	
+    	MappingSession mappingSession = new MappingSession(keyspace, session);
 ```    
-MappingSession is not replacement for Datastax Session. It is lightweight and cheap to instantiate.  
+MappingSession is not replacement for Datastax Session. It is cheap to instantiate.  
 You need to open the session and create the keyspace using the standard Datastax Driver API.   
 If you are not familiar with procedure please refer to http://www.datastax.com/docs for Developers.  
 Or look at the [Spring Framework Example](#spring) below.
@@ -74,11 +74,11 @@ Or look at the [Spring Framework Example](#spring) below.
 Manage your entity: 
 ```java
 	Entity entity = new Entity();
-    mappingSession.save(entity);
+    	mappingSession.save(entity);
     
-    entity = mappingSession.get(Entity.class, id);
+    	entity = mappingSession.get(Entity.class, id);
     
-    mappingSession.delete(entity);	
+    	mappingSession.delete(entity);	
 ```
 No mapping files, no scripts, no configuration files.   
 You don't have to worry about creating the Table and Indexes for your Entity.  
