@@ -300,51 +300,78 @@ Consider example:
 		// public getters/setters ...
 	}
 ```
-You can populate this object with data which has name and age columns in ResultSet.  
-If ResultSet has more columns they will be ignored and no errors will be thrown.
+You can populate this object from ResultSet which has 'name' and 'age' columns.  
+If ResultSet has other columns they will be ignored and no errors will be thrown.
 ```java
 	ResultSet rs = session.execute("SELECT name, age, birth_date, salary FROM person");	
 	List<AnyObject> result = mappingSession.getFromResultSet(AnyObject.class, rs);
 ```
-In this case name and age will be populated on AnyObject and birth_date, salary will be ignored.
-You can reuse the same entity to query result from different tables which may contain redundant data.
+In this particular case 'name' and 'age' will be populated on 'AnyObject' and 'birth_date' and 'salary' will be ignored.  
+Huge advantage that we can reuse the same entity to query different results from even different tables.
+Entity doesn't have to match or relate to the table at all. 
+Many thank to magic gnomes under the hood making all these work.
 
 <a name="queries_building"/>
 ### Building Custom Queries
 	
 <a name="queries_cql"/>
 - CQL String
-The most streightforward way is to pass the query string as is:
 ```java
-	String cqlQuery = "SELECT name, age, birth_date, salary FROM person");	
+	import com.datastax.driver.mapping.MappingSession;
+	... 
+	
+	// build query
+	String query = "SELECT name, age, birth_date, salary FROM person");	
+	
+	// run query						
+	List<Entity> result = mappingSession.getByQuery(Entity.class, query);	
 ```
 
 <a name="queries_builder"/>
 - QueryBuilder (Better)  
-Datastax Driver shipped with a tool to build CQL queries.  
+Datastax Driver shipped with a tool to build CQL statement.  
 You can build your query with Datastax QueryBuilder and map ResultSet on Entity.  
-There are several ways how you can accomplish this.
+QueryBuilder guaranties you build correct CQL.
+```java
+				
+	import com.datastax.driver.core.Statement;
+	import com.datastax.driver.core.querybuilder.QueryBuilder;
+	import com.datastax.driver.mapping.MappingSession;
+	...
+
+	// build query
+	Statement query = QueryBuilder.select().all()
+		.from("your_keyspace", "your_table").where(eq("column", value));
+	
+	// run query						
+	List<Entity> result = mappingSession.getByQuery(Entity.class, query);
+```
 
 <a name="queries_meta"/>
-- QueryBuilder with EntityMetadata (Even Better)
-	```java
-				
-	// Get Entity Metadata
+- QueryBuilder with EntityMetadata (Even Better)  
+In early stages you may often change table and column names.  
+To avoid changing queries each time you rename something you can employ entity metadata.
+```java
+	import com.datastax.driver.core.Statement;
+	import com.datastax.driver.core.querybuilder.QueryBuilder;
+	import com.datastax.driver.mapping.MappingSession;
+	import com.datastax.driver.mapping.EntityFieldMetaData;
+	import com.datastax.driver.mapping.EntityTypeMetadata;	
+	...			
+	
+	// get Entity Metadata
 	EntityTypeMetadata emeta = EntityTypeParser.getEntityMetadata(Entity.class);
-	EntityFieldMetaData fmeta = emeta.getFieldMetadata(field_name);
 	
-	// Build query using metadata for table and column names.
+	// get field metadata by property/field name
+	EntityFieldMetaData fmeta = emeta.getFieldMetadata(field_name); 
+	
+	// build query.
 	Statement query = QueryBuilder.select().all()
-				.from(sf.getKeyspace(), emeta.getTableName())
-				.where(eq(fmeta.getColumnName(), value));
+		.from("your_keyspace", emeta.getTableName()).where(eq(fmeta.getColumnName(), value));
 							
-        // either run using mapping session
+	// run query
 	List<Entity> result = mappingSession.getByQuery(Entity.class, query);
-	
-	// or run with session and map ResultSet
-	ResultSet rs = session.execute(query);	
-	List<Entity> result = mappingSession.getFromResultSet(Entity.class, rs);
-	 ```
+```
 
 
 
