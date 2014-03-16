@@ -43,9 +43,9 @@ The features provided by the module include:
 	* Convert ResultSet into List of Entities
 
   - Generate Schema
-  	* Create tables and indexes from Entity. 
-  	* Alter tables and indexes if entities definition has changed.
-  	* Drop tables and indexes.
+  	* Create table and indexes from Entity. 
+  	* Alter table and indexes if entity definition has changed.
+  	* Drop table and indexes.
 
 <a name="start"/>
 ### Jump Start
@@ -62,9 +62,9 @@ Install it in your application from Maven Central using the following dependency
 Create MappingSession instance:
 ```
 	import com.datastax.driver.mapping.MappingSession;
-    	...
+	...
     	
-    	MappingSession mappingSession = new MappingSession(keyspace, session);
+	MappingSession mappingSession = new MappingSession(keyspace, session);
 ```    
 MappingSession is not replacement for Datastax Session. It is cheap to instantiate.  
 You need to open the session and create the keyspace using the standard Datastax Driver API.   
@@ -74,11 +74,11 @@ Or look at the [Spring Framework Example](#spring) below.
 Manage your entity: 
 ```java
 	Entity entity = new Entity();
-    	mappingSession.save(entity);
-    
-    	entity = mappingSession.get(Entity.class, id);
-    
-    	mappingSession.delete(entity);	
+	mappingSession.save(entity);
+
+	entity = mappingSession.get(Entity.class, id);
+
+	mappingSession.delete(entity);	
 ```
 No mapping files, no scripts, no configuration files.   
 You don't have to worry about creating the Table and Indexes for your Entity.  
@@ -291,7 +291,7 @@ There are two ways to run and map the query:
 <a name="queries_gnomes"/>
 - Any-to-Any or Magic Gnomes  
 This is the coolest feature. Your Entity doesn't have to match the table.  
-You can populate any entity from any query. That's what I call Ay-to-Any.  
+You can populate any entity from any query (Any-to-Any).  
 Consider example: 
 ```java
 	public class AnyObject {
@@ -300,7 +300,7 @@ Consider example:
 		// public getters/setters ...
 	}
 ```
-You can populate this object from ResultSet which has 'name' and 'age' columns.  
+You can populate this object from ResultSet with 'name' and 'age' columns.  
 If ResultSet has other columns they will be ignored and no errors will be thrown.
 ```java
 	ResultSet rs = session.execute("SELECT name, age, birth_date, salary FROM person");	
