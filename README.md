@@ -331,7 +331,7 @@ Many thank to magic gnomes under the hood making all these work.
 - QueryBuilder (Better)  
 Datastax Driver shipped with a tool to build CQL statement.  
 You can build your query with Datastax QueryBuilder and map ResultSet on Entity.  
-QueryBuilder guaranties you build correct CQL.
+QueryBuilder ensures you build correct CQL.
 ```java
 				
 	import com.datastax.driver.core.Statement;
