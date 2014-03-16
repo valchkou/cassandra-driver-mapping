@@ -138,6 +138,23 @@ public class MappingSessionTest {
 		List<EntityWithIndexes> items = target.getByQuery(EntityWithIndexes.class, query);
 		assertEquals(3, items.size());
 	}
+
+	@Test
+	public void getByQueryStringTest() throws Exception {
+		for (int i = 0; i < 3; i++) {
+			EntityWithIndexes obj = new EntityWithIndexes();
+			obj.setCount(100);
+			obj.setEmail("email@test");
+			obj.setName("test"+i);
+			obj.setTimestamp(new Date());
+			obj.setUuid(UUID.randomUUID());
+			target.save(obj);
+		}
+		
+		String query = "SELECT * FROM test_entity_index WHERE email='email@test'";
+		List<EntityWithIndexes> items = target.getByQuery(EntityWithIndexes.class, query);
+		assertEquals(3, items.size());
+	}
 	
 	@Test
 	public void testCollections() throws Exception {

@@ -1,5 +1,5 @@
 /*
- *      Copyright (C) 2014 Eugene Valchkou.
+ *   Copyright (C) 2014 Eugene Valchkou.
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -110,6 +110,18 @@ public class MappingSession {
 		return getFromResultSet(clazz, session.execute(query));
 	}
 
+	/**
+	 * Execute the query and populate the list with items of given class.
+	 * 
+	 * @param clazz
+	 * @param query String
+	 * @return List of items
+	 */
+	public <T> List<T> getByQuery(Class<T> clazz,  String query) {
+		maybeSync(clazz);
+		return getFromResultSet(clazz, session.execute(query));
+	}
+	
 	/**
 	 * Statement to persist an entity in Cassandra
 	 * @param entity to be inserted
