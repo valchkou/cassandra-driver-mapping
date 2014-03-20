@@ -18,6 +18,8 @@ package com.datastax.driver.mapping;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.ttl;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.timestamp;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,8 +34,10 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.Delete;
+import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
+import com.datastax.driver.mapping.option.SaveOptions;
 import com.datastax.driver.mapping.schemasync.SchemaSync;
 
 /**
@@ -93,8 +97,18 @@ public class MappingSession {
 	 * @return saved instance
 	 */
 	public <E> void save(E entity) {
+		save(entity, null);
+	}
+
+	/**
+	 * Persist the given instance 
+	 * Entity must have a property id or a property annotated with @Id
+	 * @param entity - an instance of a persistent class
+	 * @return saved instance
+	 */
+	public <E> void save(E entity, SaveOptions options) {
 		maybeSync(entity.getClass());
-		Statement insert = prepareInsert(entity);
+		Statement insert = prepareInsert(entity, options);
 		session.execute(insert);
 	}
 	
@@ -127,7 +141,7 @@ public class MappingSession {
 	 * @param entity to be inserted
 	 * @return com.datastax.driver.core.BoundStatement
 	 */
-	private <E> Statement prepareInsert(E entity) {
+	private <E> Statement prepareInsert(E entity, SaveOptions options) {
 		Class<?> clazz = entity.getClass();
 		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
 		String table = entityMetadata.getTableName();
@@ -150,8 +164,34 @@ public class MappingSession {
 			}
 			columns[i] = colName;
 			values[i] = colVal;
-		}		
-		return insertInto(keyspace, table).values(columns, values);
+		}
+		Insert insert = insertInto(keyspace, table).values(columns, values);
+		
+		// apply options to insert
+		if (options != null) {
+			Statement stmt = null;
+			if (options.getTtl() != -1) {
+				stmt = insert.using(ttl(options.getTtl()));
+				if (options.getTimestamp() != -1) {
+					stmt = ((Insert.Options)stmt).and(timestamp(options.getTimestamp()));
+				}
+			} else if(options.getTimestamp() != -1) {
+				stmt = insert.using(timestamp(options.getTimestamp()));
+			}
+			
+			if (stmt != null && options.getConsistencyLevel() != null) {
+				stmt = stmt.setConsistencyLevel(options.getConsistencyLevel());
+			} else if (options.getConsistencyLevel() != null) {
+				stmt = insert.setConsistencyLevel(options.getConsistencyLevel());
+			}
+			
+			if (stmt != null && options.getRetryPolicy() != null) {
+				stmt = stmt.setRetryPolicy(options.getRetryPolicy());
+			} else if (options.getConsistencyLevel() != null) {
+				stmt = insert.setRetryPolicy(options.getRetryPolicy());
+			}
+		}
+		return insert; 
 	}	
 	
 	/**

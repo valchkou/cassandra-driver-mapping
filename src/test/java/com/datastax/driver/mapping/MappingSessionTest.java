@@ -36,8 +36,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.policies.DefaultRetryPolicy;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.mapping.EntityFieldMetaData;
 import com.datastax.driver.mapping.EntityTypeMetadata;
@@ -48,7 +50,9 @@ import com.datastax.driver.mapping.entity.EntityWithCollections;
 import com.datastax.driver.mapping.entity.EntityWithCompositeKey;
 import com.datastax.driver.mapping.entity.EntityWithIndexes;
 import com.datastax.driver.mapping.entity.EntityWithKey;
+import com.datastax.driver.mapping.entity.Simple;
 import com.datastax.driver.mapping.entity.SimpleKey;
+import com.datastax.driver.mapping.option.SaveOptions;
 
 public class MappingSessionTest {
 
@@ -117,9 +121,31 @@ public class MappingSessionTest {
 		target.delete(loaded);
 		loaded = target.get(EntityWithIndexes.class, uuid);
 		assertNull(loaded);
-		
 	}
 
+	@Test
+	public void saveAndGetWithOptionsTest() throws Exception {
+		UUID uuid = UUID.randomUUID();
+		Simple obj = new Simple();
+		obj.setTimestamp(new Date());
+		obj.setId(uuid);
+		
+		Simple loaded = target.get(Simple.class, uuid);
+		assertNull(loaded);
+		SaveOptions so = new SaveOptions()
+			.setTtl(3)
+			.setTimestamp(42)
+			.setConsistencyLevel(ConsistencyLevel.ANY)
+			.setRetryPolicy(DefaultRetryPolicy.INSTANCE);
+		target.save(obj, so);
+		loaded = target.get(Simple.class, uuid);
+		assertEquals(obj, loaded);
+		
+		Thread.sleep(3000);
+		loaded = target.get(Simple.class, uuid);
+		assertNull(loaded);
+	}
+	
 	@Test
 	public void getByQueryTest() throws Exception {
 		for (int i = 0; i < 3; i++) {
