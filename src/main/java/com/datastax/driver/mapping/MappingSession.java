@@ -37,11 +37,12 @@ import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
-import com.datastax.driver.mapping.option.SaveOptions;
+import com.datastax.driver.mapping.option.ReadOptions;
+import com.datastax.driver.mapping.option.WriteOptions;
 import com.datastax.driver.mapping.schemasync.SchemaSync;
 
 /**
- * MappingSession is API to work with entities to be persisted in Cassandra.
+ * API to work with entities to be persisted in Cassandra.
  * This is lightweight wrapper for the datastax Session
  * Usage: create one instance per datastax Session or have a new one for each request.
  * <code> MappingSession msession = new MappingSession(keyspace, session); </code>
@@ -70,8 +71,21 @@ public class MappingSession {
 	 * @return a persistent instance or null
 	 */
 	public <T> T get(Class<T> clazz, Object id) {
+		return get(clazz, id, null);
+	}
+
+	/**
+	 * Return the persistent instance of the given entity class with the given identifier, 
+	 * or null if there is no such persistent instance
+	 * 
+	 * @param clazz - a persistent class
+	 * @param id - an identifier
+	 * @param options - read options supported by cassandra. such as read consistency
+	 * @return a persistent instance or null
+	 */	
+	public <T> T get(Class<T> clazz, Object id, ReadOptions options) {
 		maybeSync(clazz);
-		BoundStatement bs = prepareSelect(clazz, id);
+		BoundStatement bs = prepareSelect(clazz, id, options);
 		ResultSet rs = session.execute(bs);
 		List<T> all = getFromResultSet(clazz, rs);
 		if (all.size() > 0) {
@@ -96,8 +110,8 @@ public class MappingSession {
 	 * @param entity - an instance of a persistent class
 	 * @return saved instance
 	 */
-	public <E> void save(E entity) {
-		save(entity, null);
+	public <E> E save(E entity) {
+		return save(entity, null);
 	}
 
 	/**
@@ -106,10 +120,11 @@ public class MappingSession {
 	 * @param entity - an instance of a persistent class
 	 * @return saved instance
 	 */
-	public <E> void save(E entity, SaveOptions options) {
+	public <E> E save(E entity, WriteOptions options) {
 		maybeSync(entity.getClass());
 		Statement insert = prepareInsert(entity, options);
 		session.execute(insert);
+		return entity;
 	}
 	
 	/**
@@ -123,7 +138,7 @@ public class MappingSession {
 		maybeSync(clazz);
 		return getFromResultSet(clazz, session.execute(query));
 	}
-
+	
 	/**
 	 * Execute the query and populate the list with items of given class.
 	 * 
@@ -141,7 +156,7 @@ public class MappingSession {
 	 * @param entity to be inserted
 	 * @return com.datastax.driver.core.BoundStatement
 	 */
-	private <E> Statement prepareInsert(E entity, SaveOptions options) {
+	private <E> Statement prepareInsert(E entity, WriteOptions options) {
 		Class<?> clazz = entity.getClass();
 		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
 		String table = entityMetadata.getTableName();
@@ -197,7 +212,7 @@ public class MappingSession {
 	/**
 	 * Prepare BoundStatement to select row by id
 	 */
-	private <T> BoundStatement prepareSelect(Class<T> clazz, Object id) {
+	private <T> BoundStatement prepareSelect(Class<T> clazz, Object id, ReadOptions options) {
 		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
 		List<String> pkCols = entityMetadata.getPkColumns();
 		String table = entityMetadata.getTableName();
@@ -213,7 +228,18 @@ public class MappingSession {
 				} else {
 					where = where.and(eq(col, QueryBuilder.bindMarker()));
 				}
-			}		
+			}	
+			
+			if (options != null) {
+				if (options.getConsistencyLevel() != null){
+					where.setConsistencyLevel(options.getConsistencyLevel());
+				} 
+				
+				if (options.getRetryPolicy() != null) {
+					where.setRetryPolicy(options.getRetryPolicy());
+				}
+			}
+			
 	        ps = session.prepare(where.toString());
 			selectCache.put(table, ps);
 		}
@@ -312,7 +338,6 @@ public class MappingSession {
 			SchemaSync.sync(keyspace, session, clazz);
 		}
 	}
-	
 
 	private Object getValueFromRow(Row row, EntityFieldMetaData field) {
 		Object value = null;
@@ -369,4 +394,5 @@ public class MappingSession {
 		}
 		return value;
 	}
+	
 }

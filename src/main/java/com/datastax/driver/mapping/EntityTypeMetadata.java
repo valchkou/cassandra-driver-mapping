@@ -35,6 +35,9 @@ public class EntityTypeMetadata {
 	
 	// indexes<column_name, index_name>
 	private Map<String, String> indexes = new HashMap<String, String>();
+	// table properties
+	private List<String> properties = new ArrayList<String>();
+	// true if synchronized with Cassandrass
 	private boolean synced = false;
 
 	public EntityTypeMetadata(Class<?> entityClass) {
@@ -52,7 +55,15 @@ public class EntityTypeMetadata {
 	public void addField(EntityFieldMetaData fieldData) {
 		fields.add(fieldData);
 	}
-		
+
+	public void addProperty(String value) {
+		properties.add(value);
+	}
+
+	public List<String> getProperties() {
+		return properties;
+	}
+	
 	public EntityFieldMetaData getFieldMetadata(String field) {
 		for (EntityFieldMetaData fieldMeta: fields) {
 			if (field.equalsIgnoreCase(fieldMeta.getName())) {

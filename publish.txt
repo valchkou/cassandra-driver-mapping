@@ -1,0 +1,9 @@
+﻿This instruction describes how to promote the module to maven central.
+
+1. Need to be done only ones on a machine. Setup env to be able to publish to sonatype
+https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usge+Guide
+(this includes mvn, GPG keys, register on Sonatype)
+
+2. promote build to sonatype using maven command
+
+3. login to sonatype

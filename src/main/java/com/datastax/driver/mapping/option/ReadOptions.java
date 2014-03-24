@@ -15,10 +15,44 @@
  */
 package com.datastax.driver.mapping.option;
 
+import com.datastax.driver.core.ConsistencyLevel;
+import com.datastax.driver.core.policies.RetryPolicy;
+
 /**
  * @author user
  *
  */
 public class ReadOptions {
+	private ConsistencyLevel consistencyLevel;
+	private RetryPolicy retryPolicy;
+	
+	/**
+	 * @return the consistencyLevel
+	 */
+	public ConsistencyLevel getConsistencyLevel() {
+		return consistencyLevel;
+	}
 
+	/**
+	 * @param consistencyLevel the consistencyLevel to set
+	 */
+	public ReadOptions setConsistencyLevel(ConsistencyLevel consistencyLevel) {
+		this.consistencyLevel = consistencyLevel;
+		return this;
+	}
+
+	/**
+	 * @return the retryPolicy
+	 */
+	public RetryPolicy getRetryPolicy() {
+		return retryPolicy;
+	}
+
+	/**
+	 * @param retryPolicy the retryPolicy to set
+	 */
+	public ReadOptions setRetryPolicy(RetryPolicy retryPolicy) {
+		this.retryPolicy = retryPolicy;
+		return this;
+	}
 }

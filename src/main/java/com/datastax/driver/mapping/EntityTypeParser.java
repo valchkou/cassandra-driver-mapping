@@ -1,5 +1,5 @@
 /*
- *      Copyright (C) 2014 Eugene Valchkou.
+ *   Copyright (C) 2014 Eugene Valchkou.
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -34,6 +34,8 @@ import javax.persistence.Transient;
 
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.mapping.EntityFieldMetaData;
+import com.datastax.driver.mapping.annotation.TableProperties;
+import com.datastax.driver.mapping.annotation.TableProperty;
 
 /**
  * This class parses persistent Entity.class and creates EntityTypeMetadata instance.
@@ -125,6 +127,7 @@ public class EntityTypeParser {
 		    } else {
 		    	result = new EntityTypeMetadata(clazz);
 		    }
+		    
 		    Index[] indexes = tableAntn.indexes();
 		    if (indexes!= null && indexes.length>0) {
 		    	for (Index index: indexes) {
@@ -133,7 +136,16 @@ public class EntityTypeParser {
 		    }
 		} else {
 	    	result = new EntityTypeMetadata(clazz);
-		}	
+		}
+		
+		// parse properties
+		annotation = clazz.getAnnotation(TableProperties.class);
+		if(annotation instanceof TableProperties){
+			TableProperty[] props = ((TableProperties)annotation).values();
+			for (TableProperty prop: props) {
+				result.addProperty(prop.value());
+			}
+		}
 		return result;
 	}
 	

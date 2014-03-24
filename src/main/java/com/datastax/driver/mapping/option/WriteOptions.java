@@ -22,7 +22,7 @@ import com.datastax.driver.core.policies.RetryPolicy;
  * Options to insert or update entity 
  *
  */
-public class SaveOptions {
+public class WriteOptions {
 	private int ttl = -1;
 	private long timestamp = -1L;
 	private ConsistencyLevel consistencyLevel;
@@ -38,7 +38,7 @@ public class SaveOptions {
 	/**
 	 * @param consistencyLevel the consistencyLevel to set
 	 */
-	public SaveOptions setConsistencyLevel(ConsistencyLevel consistencyLevel) {
+	public WriteOptions setConsistencyLevel(ConsistencyLevel consistencyLevel) {
 		this.consistencyLevel = consistencyLevel;
 		return this;
 	}
@@ -53,7 +53,7 @@ public class SaveOptions {
 	/**
 	 * @param retryPolicy the retryPolicy to set
 	 */
-	public SaveOptions setRetryPolicy(RetryPolicy retryPolicy) {
+	public WriteOptions setRetryPolicy(RetryPolicy retryPolicy) {
 		this.retryPolicy = retryPolicy;
 		return this;
 	}
@@ -63,7 +63,7 @@ public class SaveOptions {
 	/**
 	 * @param time to live
 	 */	
-	public SaveOptions setTtl(int ttl) {
+	public WriteOptions setTtl(int ttl) {
 		this.ttl = ttl;
 		return this;
 	}
@@ -85,7 +85,7 @@ public class SaveOptions {
 	/**
 	 * @param timestamp the timestamp to set
 	 */
-	public SaveOptions setTimestamp(long timestamp) {
+	public WriteOptions setTimestamp(long timestamp) {
 		this.timestamp = timestamp;
 		return this;
 	}

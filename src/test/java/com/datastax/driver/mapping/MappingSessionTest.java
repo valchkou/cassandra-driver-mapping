@@ -52,7 +52,7 @@ import com.datastax.driver.mapping.entity.EntityWithIndexes;
 import com.datastax.driver.mapping.entity.EntityWithKey;
 import com.datastax.driver.mapping.entity.Simple;
 import com.datastax.driver.mapping.entity.SimpleKey;
-import com.datastax.driver.mapping.option.SaveOptions;
+import com.datastax.driver.mapping.option.WriteOptions;
 
 public class MappingSessionTest {
 
@@ -132,7 +132,7 @@ public class MappingSessionTest {
 		
 		Simple loaded = target.get(Simple.class, uuid);
 		assertNull(loaded);
-		SaveOptions so = new SaveOptions()
+		WriteOptions so = new WriteOptions()
 			.setTtl(3)
 			.setTimestamp(42)
 			.setConsistencyLevel(ConsistencyLevel.ANY)

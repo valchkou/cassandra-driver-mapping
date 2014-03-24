@@ -34,6 +34,7 @@ import com.datastax.driver.mapping.EntityTypeParser;
 import com.datastax.driver.mapping.entity.EntityWithCompositeKey;
 import com.datastax.driver.mapping.entity.EntityWithIndexes;
 import com.datastax.driver.mapping.entity.EntityWithIndexesV2;
+import com.datastax.driver.mapping.entity.EntityWithProperties;
 import com.datastax.driver.mapping.schemasync.SchemaSync;
 
 
@@ -175,4 +176,9 @@ public class SchemaSyncTest {
 		assertNull(columnMetadata);		
 	}	
 	
+	@Test
+	public void testCreateWithProperties() {
+		EntityTypeParser.getEntityMetadata(EntityWithProperties.class).markUnSynced();
+		SchemaSync.sync(keyspace, session, EntityWithProperties.class);
+	}		
 }

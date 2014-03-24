@@ -16,6 +16,7 @@
 package com.datastax.driver.mapping.schemasync;
 
 import java.nio.ByteBuffer;
+import java.util.Iterator;
 
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.mapping.EntityFieldMetaData;
@@ -24,6 +25,8 @@ import com.datastax.driver.mapping.EntityTypeMetadata;
 public class CreateTable extends RegularStatement {
 	
 	private static String CREATE_TABLE_TEMPLATE_CQL = "CREATE TABLE IF NOT EXISTS %s (%s PRIMARY KEY(%s))";
+	private static String OPT_FIST = " WITH %s";
+	private static String OPT_NEXT = " AND %s";
 	
 	final String keyspace;
 	final EntityTypeMetadata entityMetadata;
@@ -50,8 +53,22 @@ public class CreateTable extends RegularStatement {
 		if (keyspace != null) {
 			tableName = keyspace+ "." + tableName;
 		}
-		return String.format(CREATE_TABLE_TEMPLATE_CQL, tableName, columns.toString(), pk);
+		StringBuilder sb = new StringBuilder();
+		sb.append(String.format(CREATE_TABLE_TEMPLATE_CQL, tableName, columns.toString(), pk));
+		
+		if (entityMetadata.getProperties() != null) {
+			Iterator<String> it  = entityMetadata.getProperties().iterator();
 
+			if (it.hasNext()) {
+				sb.append(String.format(OPT_FIST, it.next()));
+			}
+			
+			while (it.hasNext()) {
+				sb.append(String.format(OPT_NEXT, it.next()));
+			}
+		}
+
+		return sb.toString();
 	}
 
 	@Override
