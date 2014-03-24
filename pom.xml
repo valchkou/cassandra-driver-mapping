@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.valchkou.datastax</groupId>
   <artifactId>cassandra-driver-mapping</artifactId>
-  <version>2.0.0</version>
+  <version>2.0.1</version>
   <packaging>jar</packaging>	
   <name>Entity Mapping Addon for DataStax Java Driver</name>
   <description>Entity Mapping Addon JPA 2.1 compatible  for DataStax Java Driver 2.0+ for Cassandra. </description>
@@ -29,7 +29,7 @@
 		<dependency>
 		  <groupId>com.datastax.cassandra</groupId>
 		  <artifactId>cassandra-driver-core</artifactId>
-		  <version>2.0.0</version>
+		  <version>2.0.1</version>
 		</dependency>
 		
 		<!-- Test -->
