@@ -183,7 +183,7 @@ public class EntityTypeParser {
 					if (setter!=null && getter != null) {
 						// by default for id use the field with name id.
 						String columnName = getColumnName(f);
-					    DataType.Name dataType = javaTypeToDataType.get(f.getType());
+					    DataType.Name dataType = getColumnDataType(f); 
 					    EntityFieldMetaData fd = new EntityFieldMetaData(f, dataType, getter, setter, columnName);
 					    
 					    if (pkmeta != null && !isOwnField) {
@@ -233,6 +233,25 @@ public class EntityTypeParser {
 		}
 		return columnName;
 	}	
+
+	/**
+	 * by default data type retrieved from javaTypeToDataType. 
+	 * @Column columnDefinition may override datatype.
+	 */
+	private static DataType.Name getColumnDataType(Field f) {
+		DataType.Name dataType = javaTypeToDataType.get(f.getType()); 
+		Annotation columnA = f.getAnnotation(Column.class);
+		if (columnA instanceof Column) {
+			String typedef = ((Column) columnA).columnDefinition();
+			if (typedef != null && typedef.length()>0) {
+				DataType.Name dt = DataType.Name.valueOf(typedef);
+				if (dt != null) {
+					dataType = dt;
+				}
+			}
+		}
+		return dataType;
+	}
 	
 	private static String genericsOfList(Field f) {
 		Type[] fieldGenerics = getGenericTypes(f);

@@ -5,5 +5,8 @@ https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usge+
 (this includes mvn, GPG keys, register on Sonatype)
 
 2. promote build to sonatype using maven command
+mvn clean javadoc:jar source:jar deploy
 
-3. login to sonatype
+3. login to sonatype https://oss.sonatype.org/
+click "Staging Repositories" under "Build Promotions" on the left
+select repository and click "close" than "release" - this will promote it to maven central.

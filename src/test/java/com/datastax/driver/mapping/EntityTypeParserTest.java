@@ -27,9 +27,11 @@ import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.datastax.driver.core.DataType;
 import com.datastax.driver.mapping.EntityTypeMetadata;
 import com.datastax.driver.mapping.EntityTypeParser;
 import com.datastax.driver.mapping.entity.CompositeKey;
+import com.datastax.driver.mapping.entity.EntityOverrideDataType;
 import com.datastax.driver.mapping.entity.EntityWithCompositeKey;
 import com.datastax.driver.mapping.entity.EntityWithKey;
 import com.datastax.driver.mapping.entity.EntityWithProperties;
@@ -43,6 +45,7 @@ public class EntityTypeParserTest {
 		EntityTypeParser.remove(Simple.class);
 		EntityTypeParser.remove(EntityWithKey.class);
 		EntityTypeParser.remove(EntityWithCompositeKey.class);
+		EntityTypeParser.remove(EntityOverrideDataType.class);
 	}
 	
 	@Test
@@ -166,4 +169,16 @@ public class EntityTypeParserTest {
 		assertTrue(props.contains("read_repair_chance = 1.0"));
 		assertTrue(props.contains("compression ={ 'sstable_compression' : 'DeflateCompressor', 'chunk_length_kb' : 64 }"));
 	}	
+	
+	@Test
+	public void testGetEntityMetadataOverrideDataType() {
+		EntityTypeMetadata meta = EntityTypeParser.getEntityMetadata(EntityOverrideDataType.class);
+		assertEquals(2, meta.getFields().size());
+		
+		EntityFieldMetaData fd = meta.getFieldMetadata("uid");
+		assertEquals(DataType.Name.TIMEUUID, fd.getDataType());
+		
+		fd = meta.getFieldMetadata("name");
+		assertEquals(DataType.Name.VARCHAR, fd.getDataType());
+	}		
 }
