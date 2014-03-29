@@ -46,6 +46,7 @@ import com.datastax.driver.mapping.EntityTypeMetadata;
 import com.datastax.driver.mapping.EntityTypeParser;
 import com.datastax.driver.mapping.MappingSession;
 import com.datastax.driver.mapping.entity.CompositeKey;
+import com.datastax.driver.mapping.entity.EntityMixedCase;
 import com.datastax.driver.mapping.entity.EntityWithCollections;
 import com.datastax.driver.mapping.entity.EntityWithCompositeKey;
 import com.datastax.driver.mapping.entity.EntityWithIndexes;
@@ -94,11 +95,13 @@ public class MappingSessionTest {
 		EntityTypeParser.getEntityMetadata(EntityWithKey.class).markUnSynced();
 		EntityTypeParser.getEntityMetadata(EntityWithCollections.class).markUnSynced();
 		EntityTypeParser.getEntityMetadata(EntityWithCompositeKey.class).markUnSynced();
+		EntityTypeParser.getEntityMetadata(EntityMixedCase.class).markUnSynced();
 		
 		EntityTypeParser.remove(EntityWithIndexes.class);
 		EntityTypeParser.remove(EntityWithKey.class);
 		EntityTypeParser.remove(EntityWithCollections.class);
 		EntityTypeParser.remove(EntityWithCompositeKey.class);
+		EntityTypeParser.remove(EntityMixedCase.class);
 	}
 	
 	@Test
@@ -274,6 +277,25 @@ public class MappingSessionTest {
 		assertNull(loaded);
 	}
 	
-	
+	@Test
+	public void saveAndGetAndDeleteMixedCaseTest() throws Exception {
+		int id = 12245;
+		EntityMixedCase obj = new EntityMixedCase();
+		obj.setId(id);
+		obj.setFirstName("firstName"); 
+		obj.setLastName("lastName");
+		obj.setAge(25);
+		
+		EntityMixedCase loaded = target.get(EntityMixedCase.class, id);
+		assertNull(loaded);
+		
+		target.save(obj);
+		loaded = target.get(EntityMixedCase.class, id);
+		assertEquals(obj, loaded);
+		
+		target.delete(loaded);
+		loaded = target.get(EntityMixedCase.class, id);
+		assertNull(loaded);
+	}	
 	
 }

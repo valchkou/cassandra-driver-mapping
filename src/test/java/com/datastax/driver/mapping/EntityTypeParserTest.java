@@ -51,7 +51,7 @@ public class EntityTypeParserTest {
 	@Test
 	public void testGetEntityMetadataForSimplePojo() {
 		EntityTypeMetadata meta = EntityTypeParser.getEntityMetadata(Simple.class);
-		assertEquals("simple", meta.getTableName());
+		assertEquals("Simple", meta.getTableName());
 		assertEquals(0, meta.getIndexes().size());
 		assertEquals(4, meta.getFields().size());
 		

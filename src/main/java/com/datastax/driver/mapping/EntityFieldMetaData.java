@@ -41,7 +41,7 @@ public class EntityFieldMetaData {
 		this.getter = getter;
 		this.setter = setter;
 		this.dataType = dataType;
-		this.columnName = columnName.toLowerCase();
+		this.columnName = columnName;
 	}
 	
 	public Class<?> getType() {

@@ -49,7 +49,7 @@ public class EntityTypeMetadata {
 			throw new IllegalArgumentException("entityClass and table Name are required for com.datastax.driver.mapping.EntityTypeMetadata");
 		}
 		this.entityClass = entityClass;
-		this.tableName = tableName.toLowerCase();
+		this.tableName = tableName;
 	}
 	
 	public void addField(EntityFieldMetaData fieldData) {
