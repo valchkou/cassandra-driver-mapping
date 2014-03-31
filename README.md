@@ -59,7 +59,7 @@ Install it in your application from Maven Central using the following dependency
     <dependency>
       <groupId>com.valchkou.datastax</groupId>
       <artifactId>cassandra-driver-mapping</artifactId>
-      <version>2.0.0</version>
+      <version>2.0.1</version>
     </dependency>
 ```
 Create MappingSession instance:
