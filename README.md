@@ -20,10 +20,10 @@ Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.c
 	* [Composite Partition Key](#mapping_partition)
 	* [Table Properties](#mapping_properties)
 	* [Override Column Data Type](#mapping_datatype)
-	* [Mixed Case for Names](#mapping_mixed)
+	* [Mixed Case for Column Names](#mapping_mixed)
 - [Mapping Custom Queries](#queries_mapping)  
 	* [How To Run](#queries_howto)
-	* [Any-to-Any or Magic Gnomes](#queries_gnomes)
+	* [Any-to-Any and Magic Gnomes](#queries_gnomes)
 - [Building Custom Queries](#queries_building)
 	* [CQL String](#queries_cql)
 	* [QueryBuilder (better)](#queries_builder)	
@@ -104,10 +104,8 @@ All is built-in and taken care of. Entity definition will be automatically [sync
 	```java
 	import javax.persistence.Id;
 	import javax.persistence.Table;
-	import javax.persistence.Entity;
 	import javax.persistence.Column
 	
-	@Entity
 	@Table (name="mytable")
 	public class Entity {
 		
@@ -136,12 +134,10 @@ All is built-in and taken care of. Entity definition will be automatically [sync
 	```java
 	import javax.persistence.Id;
 	import javax.persistence.Table;
-	import javax.persistence.Entity;
 	import javax.persistence.Column
 	import javax.persistence.Index
 	import java.util.UUID
 	
-	@Entity
 	@Table (name="mytable", 
 	indexes = {
 		@Index(name="entity_email_idx", columnList="email" ), 
@@ -323,7 +319,7 @@ For more info on collections please refer [Datastax Using Collection] (http://ww
 	```
 	CQL3 Statement
 	```
-   	CREATE TABLE IF NOT EXISTS ks.mytable (uid timeuuid, name text, PRIMARY KEY(uid))
+   	CREATE TABLE IF NOT EXISTS ks.mytable (uid timeuuid, name varchar, PRIMARY KEY(uid))
 	```     
 	
 <a name="mapping_mixed"/>
@@ -380,7 +376,7 @@ There are two ways to run and map the query:
 	```
 
 <a name="queries_gnomes"/>
-- Any-to-Any or Magic Gnomes  
+- Any-to-Any and Magic Gnomes  
 This is the coolest feature. Your Entity doesn't have to match the table.  
 You can populate any entity from any query (Any-to-Any).  
 Consider example: 
