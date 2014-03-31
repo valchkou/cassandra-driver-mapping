@@ -58,12 +58,8 @@ The features provided by the module include:
 <a name="start"/>
 ### Jump Start
 
-	* [Save](#jump_save)
-	* [Get](#jump_get)
-	* [Delete](#jump_delete)
-
 <a name="jump_maven"/>
-- Maven Dependency
+- Maven Dependency.  
 Install in your application from Maven Central using the following dependency:
 ```xml
     <dependency>
@@ -74,33 +70,70 @@ Install in your application from Maven Central using the following dependency:
 ```
 
 <a name="jump_init"/>
-- Init Mapping Session
+- Init Mapping Session.  
 MappingSession is not replacement for Datastax Session. It is cheap to instantiate.  
 You need to open the Datastax Session and create the Keyspace using the standard Datastax Driver API.   
 If you are not familiar with procedure please refer to [Datastax Dcumentation](http://www.datastax.com/documentation/developer/java-driver/2.0/java-driver/quick_start/qsQuickstart_c.html).  
 Or look at the [Spring Framework Example](#spring) below.
-```
+```java
+	import com.datastax.driver.core.Session;
 	import com.datastax.driver.mapping.MappingSession;
 	...
     	
-	MappingSession mappingSession = new MappingSession(keyspace, session);
+	Session session; // initialize datastax session.
+	MappingSession mappingSession = new MappingSession("your_keyspace", session);
 ```    
 
- 
-Manage your entity: 
-```java
-	Entity entity = new Entity();
-	mappingSession.save(entity);
-
-	entity = mappingSession.get(Entity.class, id);
-
-	mappingSession.delete(entity);	
-```
 No mapping files, no scripts, no configuration files.   
 You don't have to worry about creating the Table and Indexes for your Entity.  
 All is built-in and taken care of. Entity definition will be automatically [synchronized with C*](#sync).  
-  
-    
+
+<a name="jump_save"/>
+- Save.
+```java
+	Entity entity = new Entity();
+	mappingSession.save(entity);
+```
+```java
+	import com.datastax.driver.mapping.option.WriteOptions;
+	import com.datastax.driver.core.policies.DefaultRetryPolicy;
+	import com.datastax.driver.core.ConsistencyLevel;
+	...
+
+	WriteOptions options = new WriteOptions()
+		.setTtl(300)
+		.setTimestamp(42)
+		.setConsistencyLevel(ConsistencyLevel.ANY)
+		.setRetryPolicy(DefaultRetryPolicy.INSTANCE);
+		
+	Entity entity = new Entity();
+	mappingSession.save(entity, options);
+```
+
+<a name="jump_get"/>
+- Get.
+```java
+	Entity entity = mappingSession.get(Entity.class, id);
+```
+```java
+	import com.datastax.driver.mapping.option.ReadOptions;
+	import com.datastax.driver.core.policies.DefaultRetryPolicy;
+	import com.datastax.driver.core.ConsistencyLevel;
+	...
+
+	ReadOptions options = new ReadOptions()
+		.setConsistencyLevel(ConsistencyLevel.ANY)
+		.setRetryPolicy(DefaultRetryPolicy.INSTANCE);
+		
+	Entity entity = mappingSession.get(Entity.class, id, options);
+```
+
+<a name="jump_delete"/>
+- Delete.
+```java
+	mappingSession.delete(entity);	
+```
+
 <a name="mapping"/>
 ### Various Mappings
 
