@@ -300,10 +300,10 @@ For more info on collections please refer [Datastax Using Collection] (http://ww
 
 <a name="mapping_datatype"/>
 - Override Column Data Type.   
-	Datastax defines [data type mapping from Java to C*] (http://www.datastax.com/documentation/developer/java-driver/2.0/java-driver/reference/javaClass2Cql3Datatypes_r.html).
-	This addon defines opposite way mapping. [You can explore daults here](#metadata).
-	But in case you don't like defaults you are able to override the type on the column level. 
-	For example you want to leverage "time UUID" for timeseries data instead of "random UUID".
+	Datastax defines [data type mapping from Java to C*] (http://www.datastax.com/documentation/developer/java-driver/2.0/java-driver/reference/javaClass2Cql3Datatypes_r.html).  
+	This addon defines opposite way mapping. [You can explore daults here](#metadata).    
+	But in case you don't like defaults you are able to override the type on the column level.   
+	For example you want to leverage "time UUID" for timeseries data instead of "random UUID".  
 	```java
 	import javax.persistence.Id;
 	import javax.persistence.Table;
@@ -323,12 +323,12 @@ For more info on collections please refer [Datastax Using Collection] (http://ww
 	```
 	CQL3 Statement
 	```
-   	CREATE TABLE IF NOT EXISTS ks.mytable (uid timeuuid, name text, PRIMARY KEY(id))
+   	CREATE TABLE IF NOT EXISTS ks.mytable (uid timeuuid, name text, PRIMARY KEY(uid))
 	```     
 	
 <a name="mapping_mixed"/>
 - Mixed Case for Column Names  
-	[C* converts all names to lowercase](http://www.datastax.com/documentation/cql/3.1/cql/cql_reference/ucase-lcase_r.html). This is default and recommended approach.
+	[C* converts all names to lowercase](http://www.datastax.com/documentation/cql/3.1/cql/cql_reference/ucase-lcase_r.html). This is default and recommended approach.  
 	But in case you need enforce the case you will need to wrap you names in double quotes. 
 	```java
 	import javax.persistence.Id;
