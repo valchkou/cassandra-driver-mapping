@@ -18,6 +18,7 @@ Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.c
 	* [Collections](#mapping_collections)
 	* [Compound Primary Key](#mapping_composite)
 	* [Composite Partition Key](#mapping_partition)
+	* [Table Properties](#mapping_properties)
 - [Mapping Custom Queries](#queries_mapping)  
 	* [How To Run](#queries_howto)
 	* [Any-to-Any or Magic Gnomes](#queries_gnomes)
@@ -264,6 +265,37 @@ For more info on collections please refer [Datastax Using Collection] (http://ww
 	```
    	CREATE TABLE IF NOT EXISTS ks.entity (firstname text, lastname text, age int, email text,  PRIMARY KEY((firstname, lastname), age))
 	```     
+
+<a name="mapping_properties"/>
+- Table Properties  
+	This feature is not JPA standard! [ Read more about C* Table properties ] (http://www.datastax.com/documentation/cql/3.1/cql/cql_reference/cql_storage_options_c.html)
+	```java
+	import javax.persistence.Id;
+	import javax.persistence.Table;
+	import javax.persistence.Column
+
+	import com.datastax.driver.mapping.annotation.TableProperties;
+	import com.datastax.driver.mapping.annotation.TableProperty;
+	
+	@Table (name="mytable")
+	@TableProperties(values = {
+		@TableProperty(value="comment='Important records'"),
+		@TableProperty(value="read_repair_chance = 1.0"),
+		@TableProperty(value="compression ={ 'sstable_compression' : 'DeflateCompressor', 'chunk_length_kb' : 64 }")
+	})
+	public class Entity {
+		
+		@Id
+		private long Id;
+		private String name;
+		// public getters/setters ...
+	}
+	```
+	CQL3 Statement
+	```
+   	CREATE TABLE IF NOT EXISTS ks.mytable (id bigint, name text, PRIMARY KEY(id)) WITH comment='Important records' AND read_repair_chance = 1.0 AND compression ={ 'sstable_compression' : 'DeflateCompressor', 'chunk_length_kb' : 64 }
+	```     
+
 
 <a name="queries_mapping"/>
 ### Mapping Custom Queries
@@ -657,8 +689,7 @@ Let's imagine we have a property file /META-INF/cassandra.properties:
 <a name="comingfeatures"/>
 ### Upcoming Features
 
-   - Support TTL and Timestamp
    - Enable optimistic lock for Entities (TBD)
-   - Support options for Create Table 
+   - Support Nested Entities 
 	
 
