@@ -12,6 +12,11 @@ Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.c
 ### Table of Contents  
 - [Features](#features)  
 - [Jump Start](#start)  
+	* [Maven Dependency](#jump_maven)
+	* [Init Mapping Session](#jump_init)
+	* [Save](#jump_save)
+	* [Get](#jump_get)
+	* [Delete](#jump_delete)
 - [Various Mappings](#mapping)  
 	* [Basic](#mapping_basic)
 	* [Indexes](#mapping_index)
@@ -53,26 +58,34 @@ The features provided by the module include:
 <a name="start"/>
 ### Jump Start
 
+	* [Save](#jump_save)
+	* [Get](#jump_get)
+	* [Delete](#jump_delete)
 
-Install it in your application from Maven Central using the following dependency:
-```
+<a name="jump_maven"/>
+- Maven Dependency
+Install in your application from Maven Central using the following dependency:
+```xml
     <dependency>
       <groupId>com.valchkou.datastax</groupId>
       <artifactId>cassandra-driver-mapping</artifactId>
       <version>2.0.1</version>
     </dependency>
 ```
-Create MappingSession instance:
+
+<a name="jump_init"/>
+- Init Mapping Session
+MappingSession is not replacement for Datastax Session. It is cheap to instantiate.  
+You need to open the Datastax Session and create the Keyspace using the standard Datastax Driver API.   
+If you are not familiar with procedure please refer to [Datastax Dcumentation](http://www.datastax.com/documentation/developer/java-driver/2.0/java-driver/quick_start/qsQuickstart_c.html).  
+Or look at the [Spring Framework Example](#spring) below.
 ```
 	import com.datastax.driver.mapping.MappingSession;
 	...
     	
 	MappingSession mappingSession = new MappingSession(keyspace, session);
 ```    
-MappingSession is not replacement for Datastax Session. It is cheap to instantiate.  
-You need to open the session and create the keyspace using the standard Datastax Driver API.   
-If you are not familiar with procedure please refer to http://www.datastax.com/docs for Developers.  
-Or look at the [Spring Framework Example](#spring) below.
+
  
 Manage your entity: 
 ```java
