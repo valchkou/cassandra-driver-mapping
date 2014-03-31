@@ -19,6 +19,8 @@ Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.c
 	* [Compound Primary Key](#mapping_composite)
 	* [Composite Partition Key](#mapping_partition)
 	* [Table Properties](#mapping_properties)
+	* [Override Column Data Type](#mapping_datatype)
+	* [Mixed Case for Names](#mapping_mixed)
 - [Mapping Custom Queries](#queries_mapping)  
 	* [How To Run](#queries_howto)
 	* [Any-to-Any or Magic Gnomes](#queries_gnomes)
@@ -296,7 +298,64 @@ For more info on collections please refer [Datastax Using Collection] (http://ww
    	CREATE TABLE IF NOT EXISTS ks.mytable (id bigint, name text, PRIMARY KEY(id)) WITH comment='Important records' AND read_repair_chance = 1.0 AND compression ={ 'sstable_compression' : 'DeflateCompressor', 'chunk_length_kb' : 64 }
 	```     
 
+<a name="mapping_datatype"/>
+- Override Column Data Type.   
+	Datastax defines [data type mapping from Java to C*] (http://www.datastax.com/documentation/developer/java-driver/2.0/java-driver/reference/javaClass2Cql3Datatypes_r.html).
+	This addon defines opposite way mapping. [You can explore daults here](#metadata).
+	But in case you don't like defaults you are able to override the type on the column level. 
+	For example you want to leverage "time UUID" for timeseries data instead of "random UUID".
+	```java
+	import javax.persistence.Id;
+	import javax.persistence.Table;
+	import javax.persistence.Column
 
+	@Table (name="mytable")
+	public class Entity {
+		
+		@Id
+		@Column(name="uid", columnDefinition="timeuuid") // case insensitive
+		private UUID uid;		
+		
+		@Column(name="name", columnDefinition="VarChaR") // case insensitive
+		private String name;
+		// public getters/setters ...
+	}
+	```
+	CQL3 Statement
+	```
+   	CREATE TABLE IF NOT EXISTS ks.mytable (uid timeuuid, name text, PRIMARY KEY(id))
+	```     
+	
+<a name="mapping_mixed"/>
+- Mixed Case for Column Names  
+	[C* converts all names to lowercase](http://www.datastax.com/documentation/cql/3.1/cql/cql_reference/ucase-lcase_r.html). This is default and recommended approach.
+	But in case you need enforce the case you will need to wrap you names in double quotes. 
+	```java
+	import javax.persistence.Id;
+	import javax.persistence.Table;
+	import javax.persistence.Column
+
+	@Table (name="mytable")
+	public class Entity {
+		
+		@Id
+		@Column(name = "\"KEY\"")
+		private int id;
+		private String firstName;
+	
+		@Column(name = "\"last_NAME\"")
+		private String lastName;
+	
+		@Column(name = "AGE")
+		private int age;
+		// public getters/setters ...
+	}
+	```
+	CQL3 Statement
+	```
+   	CREATE TABLE IF NOT EXISTS ks.mytable ("KEY" int, firstName text, "last_NAME" text, AGE int, PRIMARY KEY("KEY"))
+	```     
+	
 <a name="queries_mapping"/>
 ### Mapping Custom Queries
 
