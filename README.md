@@ -376,7 +376,7 @@ There are two ways to run and map the query:
 
 <a name="queries_gnomes"/>
 - Any-to-Any and Magic Gnomes  
-This is the coolest feature. Your Entity doesn't have to match the table.  
+This is the coolest feature of the module. Your Entity doesn't have to match the table.  
 You can populate any entity from any query (Any-to-Any).  
 Consider example: 
 ```java
@@ -386,15 +386,14 @@ Consider example:
 		// public getters/setters ...
 	}
 ```
-You can populate this object from ResultSet with 'name' and 'age' columns.  
-If ResultSet has other columns they will be ignored and no errors will be thrown.
+You can populate this object from any ResultSet which contains 'name' and 'age' columns.  
 ```java
 	ResultSet rs = session.execute("SELECT name, age, birth_date, salary FROM person");	
 	List<AnyObject> result = mappingSession.getFromResultSet(AnyObject.class, rs);
 ```
-In this particular case 'name' and 'age' will be populated on 'AnyObject' and 'birth_date' and 'salary' will be ignored.  
-Huge advantage that we can reuse the same entity to query different results from even different tables.
-Entity doesn't have to match or relate to the table at all. 
+In this particular case 'name' and 'age' will be populated on 'AnyObject'. 'birth_date' and 'salary' will be ignored and no errors will be thrown.  
+The biggest advantage that we can reuse the same entity to query different results from even different tables.
+Entity doesn't have to map, match or relate to the table at all. 
 Many thank to magic gnomes under the hood making all these work.
 
 <a name="queries_building"/>
