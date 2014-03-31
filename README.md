@@ -91,8 +91,7 @@ All is built-in and taken care of. Entity definition will be automatically [sync
 <a name="mapping"/>
 ### Various Mappings
 
-	IMPORTANT!!!   
-	- All names are converted to lowercase.  
+	IMPORTANT!!!  
 	- If entity or field is not annotated it will provide its name as default.    
 	- Id field is required and must be annotated with @Id or @EmbeddedId.
 	- Index name must be unique within the keyspace.  
