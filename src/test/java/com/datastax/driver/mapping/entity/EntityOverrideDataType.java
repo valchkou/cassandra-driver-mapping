@@ -25,7 +25,7 @@ import javax.persistence.Table;
 public class EntityOverrideDataType {
 	
 	@Id
-	@Column(name="uid", columnDefinition="TIMEUUID")
+	@Column(name="uid", columnDefinition="timeuuid")
 	private UUID uid;
 	
 	@Column(name="name", columnDefinition="VARCHAR")

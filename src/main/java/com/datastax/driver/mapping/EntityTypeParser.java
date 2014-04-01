@@ -244,7 +244,7 @@ public class EntityTypeParser {
 		if (columnA instanceof Column) {
 			String typedef = ((Column) columnA).columnDefinition();
 			if (typedef != null && typedef.length()>0) {
-				DataType.Name dt = DataType.Name.valueOf(typedef);
+				DataType.Name dt = DataType.Name.valueOf(typedef.toUpperCase());
 				if (dt != null) {
 					dataType = dt;
 				}
