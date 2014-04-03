@@ -36,7 +36,6 @@ Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.c
 - [How Entity get synchronized](#sync)  
 - [Entity Metadata and Data Types](#metadata)  
 - [Spring Framework Example](#spring)  
-- [Coming Features](#comingfeatures)
 
 <a name="features"/>
 ### Features
@@ -71,22 +70,26 @@ Install in your application from Maven Central using the following dependency:
 
 <a name="jump_init"/>
 - Init Mapping Session.  
-MappingSession is not replacement for Datastax Session. It is cheap to instantiate.  
-You need to open the Datastax Session and create the Keyspace using the standard Datastax Driver API.   
-If you are not familiar with procedure please refer to [Datastax Dcumentation](http://www.datastax.com/documentation/developer/java-driver/2.0/java-driver/quick_start/qsQuickstart_c.html).  
-Or look at the [Spring Framework Example](#spring) below.
+MappingSession is cheap to instantiate and it is not replacement for the Datastax Session.   
+You can instantiate as many mapping sessions as you want. It's theradsafe.  
+Underlying Datastax Session does all the heavylifting and is expansive.   
+
+Prior using MappingSession you need to open the Datastax Session and create the Keyspace using the standard Datastax Driver API.   
 ```java
 	import com.datastax.driver.core.Session;
 	import com.datastax.driver.mapping.MappingSession;
 	...
     	
 	Session session; // initialize datastax session.
-	MappingSession mappingSession = new MappingSession("your_keyspace", session);
+	MappingSession mappingSession = new MappingSession("keyspace_name", session);
 ```    
 
 No mapping files, no scripts, no configuration files.   
 You don't have to worry about creating the Table and Indexes for your Entity.  
 All is built-in and taken care of. Entity definition will be automatically [synchronized with C*](#sync).  
+
+If you are not familiar with procedure please refer to [Datastax Dcumentation](http://www.datastax.com/documentation/developer/java-driver/2.0/java-driver/quick_start/qsQuickstart_c.html).  
+Or look at the [Spring Framework Example](#spring).
 
 <a name="jump_save"/>
 - Save.
@@ -784,11 +787,3 @@ Let's imagine we have a property file /META-INF/cassandra.properties:
 			}
 		}
 	```
-	
-<a name="comingfeatures"/>
-### Upcoming Features
-
-   - Enable optimistic lock for Entities (TBD)
-   - Support Nested Entities 
-	
-
