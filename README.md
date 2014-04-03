@@ -54,6 +54,10 @@ The features provided by the module include:
   	* Alter table and indexes if entity definition has changed.
   	* Drop table and indexes.
 
+No mapping files, no scripts, no configuration files.   
+You don't have to worry about creating the Table and Indexes for your Entity manually.  
+All is built-in and taken care of. Entity definition will be automatically [synchronized with C*](#sync).  
+
 <a name="start"/>
 ### Jump Start
 
@@ -72,9 +76,6 @@ Install in your application from Maven Central using the following dependency:
 - Init Mapping Session.  
 MappingSession is cheap to instantiate and it is not replacement for the Datastax Session.   
 You can instantiate as many mapping sessions as you want. It's theradsafe.  
-Underlying Datastax Session does all the heavylifting and is expansive.   
-
-Prior using MappingSession you need to open the Datastax Session and create the Keyspace using the standard Datastax Driver API.   
 ```java
 	import com.datastax.driver.core.Session;
 	import com.datastax.driver.mapping.MappingSession;
@@ -83,12 +84,8 @@ Prior using MappingSession you need to open the Datastax Session and create the 
 	Session session; // initialize datastax session.
 	MappingSession mappingSession = new MappingSession("keyspace_name", session);
 ```    
-
-No mapping files, no scripts, no configuration files.   
-You don't have to worry about creating the Table and Indexes for your Entity.  
-All is built-in and taken care of. Entity definition will be automatically [synchronized with C*](#sync).  
-
-If you are not familiar with procedure please refer to [Datastax Dcumentation](http://www.datastax.com/documentation/developer/java-driver/2.0/java-driver/quick_start/qsQuickstart_c.html).  
+Underlying Datastax Session does all the heavylifting and is expansive.   
+Prior using MappingSession you need to open the Datastax Session and create the Keyspace using the standard Datastax Driver API. If you are not familiar with procedure please refer to [Datastax Dcumentation](http://www.datastax.com/documentation/developer/java-driver/2.0/java-driver/quick_start/qsQuickstart_c.html).  
 Or look at the [Spring Framework Example](#spring).
 
 <a name="jump_save"/>
