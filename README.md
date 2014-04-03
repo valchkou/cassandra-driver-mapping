@@ -94,12 +94,13 @@ Or look at the [Spring Framework Example](#spring).
 	Entity entity = new Entity();
 	mappingSession.save(entity);
 ```
+OR
 ```java
 	import com.datastax.driver.mapping.option.WriteOptions;
 	import com.datastax.driver.core.policies.DefaultRetryPolicy;
 	import com.datastax.driver.core.ConsistencyLevel;
 	...
-
+	// using options
 	WriteOptions options = new WriteOptions()
 		.setTtl(300)
 		.setTimestamp(42)
@@ -115,12 +116,13 @@ Or look at the [Spring Framework Example](#spring).
 ```java
 	Entity entity = mappingSession.get(Entity.class, id);
 ```
+OR
 ```java
 	import com.datastax.driver.mapping.option.ReadOptions;
 	import com.datastax.driver.core.policies.DefaultRetryPolicy;
 	import com.datastax.driver.core.ConsistencyLevel;
 	...
-
+	// using options
 	ReadOptions options = new ReadOptions()
 		.setConsistencyLevel(ConsistencyLevel.ANY)
 		.setRetryPolicy(DefaultRetryPolicy.INSTANCE);
