@@ -78,7 +78,6 @@ public class MappingSessionTest {
 		} catch (Exception e) {
 			System.out.println(e);
 		}
-		
 	}	
 	
 	@Before
@@ -297,5 +296,4 @@ public class MappingSessionTest {
 		loaded = target.get(EntityMixedCase.class, id);
 		assertNull(loaded);
 	}	
-	
 }
