@@ -51,6 +51,7 @@ import com.datastax.driver.mapping.entity.EntityWithCollections;
 import com.datastax.driver.mapping.entity.EntityWithCompositeKey;
 import com.datastax.driver.mapping.entity.EntityWithIndexes;
 import com.datastax.driver.mapping.entity.EntityWithKey;
+import com.datastax.driver.mapping.entity.EntityWithVersion;
 import com.datastax.driver.mapping.entity.Simple;
 import com.datastax.driver.mapping.entity.SimpleKey;
 import com.datastax.driver.mapping.option.WriteOptions;
@@ -82,7 +83,7 @@ public class MappingSessionTest {
 	
 	@Before
 	public void setUp() {
-		session.execute("CREATE KEYSPACE IF NOT EXISTS "+ keyspace +" WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 3 }");
+		session.execute("CREATE KEYSPACE IF NOT EXISTS "+ keyspace +" WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 }");
 		session.execute("USE "+keyspace);
 		target = new MappingSession(keyspace, session);
 	}
@@ -95,12 +96,15 @@ public class MappingSessionTest {
 		EntityTypeParser.getEntityMetadata(EntityWithCollections.class).markUnSynced();
 		EntityTypeParser.getEntityMetadata(EntityWithCompositeKey.class).markUnSynced();
 		EntityTypeParser.getEntityMetadata(EntityMixedCase.class).markUnSynced();
+		EntityTypeParser.getEntityMetadata(EntityWithVersion.class).markUnSynced();
+		
 		
 		EntityTypeParser.remove(EntityWithIndexes.class);
 		EntityTypeParser.remove(EntityWithKey.class);
 		EntityTypeParser.remove(EntityWithCollections.class);
 		EntityTypeParser.remove(EntityWithCompositeKey.class);
 		EntityTypeParser.remove(EntityMixedCase.class);
+		EntityTypeParser.remove(EntityWithVersion.class);
 	}
 	
 	@Test
@@ -295,5 +299,33 @@ public class MappingSessionTest {
 		target.delete(loaded);
 		loaded = target.get(EntityMixedCase.class, id);
 		assertNull(loaded);
+	}
+	
+	@Test
+	public void entityWithVersionTest() throws Exception {
+		UUID id = UUID.randomUUID();
+		EntityWithVersion obj = new EntityWithVersion();
+		obj.setId(id);
+		obj.setName("ver1"); 
+		
+		EntityWithVersion loaded = target.get(EntityWithVersion.class, id);
+		assertNull(loaded);
+		
+		// save object ver1 
+		EntityWithVersion saved = target.save(obj);
+		
+		// get object ver1
+		EntityWithVersion obj1 = target.get(EntityWithVersion.class, id);
+		assertEquals(obj1, saved);
+		assertEquals(1, saved.getVersion());
+		
+		// save object ver2
+		saved = target.save(saved);
+		EntityWithVersion obj2 = target.get(EntityWithVersion.class, id);
+		assertEquals(obj2, saved);
+		assertEquals(2, saved.getVersion());		
+		
+		saved = target.save(obj1);
+		assertNull(saved);
 	}	
 }

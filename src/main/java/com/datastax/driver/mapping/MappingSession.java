@@ -17,15 +17,18 @@ package com.datastax.driver.mapping;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.ttl;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.timestamp;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.set;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
@@ -37,6 +40,7 @@ import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
+import com.datastax.driver.core.querybuilder.Update;
 import com.datastax.driver.mapping.option.ReadOptions;
 import com.datastax.driver.mapping.option.WriteOptions;
 import com.datastax.driver.mapping.schemasync.SchemaSync;
@@ -121,9 +125,35 @@ public class MappingSession {
 	 * @return saved instance
 	 */
 	public <E> E save(E entity, WriteOptions options) {
-		maybeSync(entity.getClass());
-		Statement insert = prepareInsert(entity, options);
-		session.execute(insert);
+		Class<?> clazz = entity.getClass();
+		maybeSync(clazz);
+		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
+		long version = Long.MIN_VALUE;
+		if (entityMetadata.hasVersion()) {
+			EntityFieldMetaData verField = entityMetadata.getVersionField();
+			version = ((Long)verField.getValue(entity)).longValue();
+		}
+		
+		Statement stmt = null;
+		if (version > 0) {
+			stmt = prepareUpdate(entity, options);
+		} else {
+			stmt = prepareInsert(entity, options);			
+		}
+		System.out.println(stmt);
+		ResultSet rs = session.execute(stmt);
+		
+		
+		if (entityMetadata.hasVersion()) {
+			System.out.println("save rs:" + rs);
+			Row row = rs.one();
+			ColumnDefinitions cd = rs.getColumnDefinitions();
+		
+			if (!(row != null && row.getBool("[applied]"))) {
+				return null;
+			}
+		}
+		
 		return entity;
 	}
 	
@@ -168,6 +198,18 @@ public class MappingSession {
 		String[] columns = new String[fields.size()];
 		Object[] values = new Object[fields.size()];
 		
+		EntityFieldMetaData verField = null;
+		Object newVersion = null;
+		Object oldVersion = null;
+		
+		// increment and set @Version field
+		if (entityMetadata.hasVersion()) {
+			verField = entityMetadata.getVersionField();
+			oldVersion = verField.getValue(entity);
+			newVersion = incVersion(oldVersion);
+			verField.setValue(entity, newVersion);
+		}
+		
 		for (int i=0; i<fields.size(); i++) {
 			String colName = fields.get(i).getColumnName();
 			Object colVal = null;
@@ -178,36 +220,119 @@ public class MappingSession {
 				colVal = fields.get(i).getValue(entity);
 			}
 			columns[i] = colName;
-			values[i] = colVal;
+			if (fields.get(i).equals(verField)) {
+				values[i] = newVersion; 
+			} else {
+				values[i] = colVal;
+			}
 		}
 		Insert insert = insertInto(keyspace, table).values(columns, values);
+		if (verField != null) {
+			insert.ifNotExists();
+		}
 		
 		// apply options to insert
 		if (options != null) {
-			Statement stmt = null;
 			if (options.getTtl() != -1) {
-				stmt = insert.using(ttl(options.getTtl()));
-				if (options.getTimestamp() != -1) {
-					stmt = ((Insert.Options)stmt).and(timestamp(options.getTimestamp()));
-				}
-			} else if(options.getTimestamp() != -1) {
-				stmt = insert.using(timestamp(options.getTimestamp()));
+				insert.using(ttl(options.getTtl()));
+			}
+			if(options.getTimestamp() != -1) {
+				insert.using(timestamp(options.getTimestamp()));
 			}
 			
-			if (stmt != null && options.getConsistencyLevel() != null) {
-				stmt = stmt.setConsistencyLevel(options.getConsistencyLevel());
-			} else if (options.getConsistencyLevel() != null) {
-				stmt = insert.setConsistencyLevel(options.getConsistencyLevel());
+			if (options.getConsistencyLevel() != null) {
+				insert.setConsistencyLevel(options.getConsistencyLevel());
 			}
 			
-			if (stmt != null && options.getRetryPolicy() != null) {
-				stmt = stmt.setRetryPolicy(options.getRetryPolicy());
-			} else if (options.getConsistencyLevel() != null) {
-				stmt = insert.setRetryPolicy(options.getRetryPolicy());
+			if (options.getConsistencyLevel() != null) {
+				insert.setRetryPolicy(options.getRetryPolicy());
 			}
 		}
 		return insert; 
 	}	
+
+	/**
+	 * Statement to persist an entity in Cassandra
+	 * @param entity to be inserted
+	 * @return com.datastax.driver.core.BoundStatement
+	 */
+	private <E> Statement prepareUpdate(E entity, WriteOptions options) {
+		Class<?> clazz = entity.getClass();
+		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
+		String table = entityMetadata.getTableName();
+		List<EntityFieldMetaData> fields = entityMetadata.getFields(); 
+
+		List<String> pkCols = entityMetadata.getPkColumns();
+		List<Object> pkVals = entityMetadata.getEntityPKValues(entity);
+		
+		String[] columns = new String[fields.size()];
+		Object[] values = new Object[fields.size()];
+		Update update = update(keyspace, table);
+		
+		EntityFieldMetaData verField = null;
+		Object newVersion = null;
+		Object oldVersion = null;
+		
+		// increment and set @Version field
+		if (entityMetadata.hasVersion()) {
+			verField = entityMetadata.getVersionField();
+			oldVersion = verField.getValue(entity);
+			newVersion = incVersion(oldVersion);
+			verField.setValue(entity, newVersion);
+			update.onlyIf(eq(verField.getColumnName(), oldVersion));
+		}
+		
+		for (int i=0; i<fields.size(); i++) {
+			EntityFieldMetaData field = fields.get(i);
+			String colName = field.getColumnName();
+			Object colVal = null;
+			if (pkCols.contains(colName)) {
+				int idx = pkCols.indexOf(colName);
+				colVal = pkVals.get(idx);
+				update.where(eq(colName, colVal));
+				continue;
+			} else {
+				colVal = field.getValue(entity);
+			}
+			columns[i] = colName;
+			if (field.equals(verField)) {
+				values[i] = newVersion; 
+			} else {
+				values[i] = colVal;
+			}
+			update.with(set(colName, colVal));
+		}
+				
+		// apply options to insert
+		if (options != null) {
+			if (options.getTtl() != -1) {
+				update.using(ttl(options.getTtl()));
+			}
+			if(options.getTimestamp() != -1) {
+				update.using(timestamp(options.getTimestamp()));
+			}
+			
+			if (options.getConsistencyLevel() != null) {
+				update.setConsistencyLevel(options.getConsistencyLevel());
+			}
+			
+			if (options.getConsistencyLevel() != null) {
+				update.setRetryPolicy(options.getRetryPolicy());
+			}
+		}
+		return update; 
+	}	
+	
+	private Object incVersion(Object version) {
+		long newVersion = 0;
+		try {
+			newVersion = ((Long)version).longValue();
+			newVersion += 1;
+		} catch (Exception e) {
+			return version;
+		}
+		return newVersion;
+	}
 	
 	/**
 	 * Prepare BoundStatement to select row by id
@@ -221,26 +346,21 @@ public class MappingSession {
 		PreparedStatement ps = selectCache.get(table);
 		if (ps == null) {
 			Select select = select().all().from(keyspace, table);
-			Select.Where where = null;
 			for (String col: pkCols) {
-				if (where == null) {
-					where = select.where(eq(col, QueryBuilder.bindMarker()));
-				} else {
-					where = where.and(eq(col, QueryBuilder.bindMarker()));
-				}
+				select.where(eq(col, QueryBuilder.bindMarker()));
 			}	
 			
 			if (options != null) {
 				if (options.getConsistencyLevel() != null){
-					where.setConsistencyLevel(options.getConsistencyLevel());
+					select.setConsistencyLevel(options.getConsistencyLevel());
 				} 
 				
 				if (options.getRetryPolicy() != null) {
-					where.setRetryPolicy(options.getRetryPolicy());
+					select.setRetryPolicy(options.getRetryPolicy());
 				}
 			}
 			
-	        ps = session.prepare(where.toString());
+	        ps = session.prepare(select);
 			selectCache.put(table, ps);
 		}
 		

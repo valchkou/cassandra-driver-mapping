@@ -31,6 +31,7 @@ import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.persistence.Version;
 
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.mapping.EntityFieldMetaData;
@@ -181,7 +182,6 @@ public class EntityTypeParser {
 						setter = m;
 					}
 					if (setter!=null && getter != null) {
-						// by default for id use the field with name id.
 						String columnName = getColumnName(f);
 					    DataType.Name dataType = getColumnDataType(f); 
 					    EntityFieldMetaData fd = new EntityFieldMetaData(f, dataType, getter, setter, columnName);
@@ -196,6 +196,10 @@ public class EntityTypeParser {
 					    
 					    if (f.getAnnotation(EmbeddedId.class) != null) {
 					    	break;
+					    }
+					    
+					    if (f.getAnnotation(Version.class) != null) {
+					    	result.setVersionField(fd);
 					    }
 					    
 				    	setCollections(f, fd);

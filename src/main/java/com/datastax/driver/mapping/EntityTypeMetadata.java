@@ -32,6 +32,7 @@ public class EntityTypeMetadata {
 	
 	private PrimaryKeyMetadata primaryKeyMetadata;
 	private List<EntityFieldMetaData> fields = new ArrayList<EntityFieldMetaData>();
+	private EntityFieldMetaData versionField;
 	
 	// indexes<column_name, index_name>
 	private Map<String, String> indexes = new HashMap<String, String>();
@@ -198,5 +199,23 @@ public class EntityTypeMetadata {
 		}
 		
 		return sb.toString();
+	}
+
+	/**
+	 * @return the versionField
+	 */
+	public EntityFieldMetaData getVersionField() {
+		return versionField;
+	}
+
+	/**
+	 * @param versionField the versionField to set
+	 */
+	public void setVersionField(EntityFieldMetaData versionField) {
+		this.versionField = versionField;
+	}
+	
+	public boolean hasVersion() {
+		return this.versionField != null;
 	}	
 }
