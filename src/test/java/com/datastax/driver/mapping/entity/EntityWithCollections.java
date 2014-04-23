@@ -19,7 +19,7 @@ public class EntityWithCollections {
 	@Id
 	private UUID id = UUID.randomUUID();
 	private Map<String, BigDecimal> rates = new HashMap<String, BigDecimal>();
-	private Set<Integer> refs = new HashSet<Integer>();
+	private Set<String> refs = new HashSet<String>();
 	private List<Integer> trades = new ArrayList<Integer>();
 	
 	@Override
@@ -69,7 +69,7 @@ public class EntityWithCollections {
 	public Map<String, BigDecimal> getRates() {
 		return rates;
 	}
-	public Set<Integer> getRefs() {
+	public Set<String> getRefs() {
 		return refs;
 	}
 	public List<Integer> getTrades() {
@@ -81,7 +81,7 @@ public class EntityWithCollections {
 	public void setRates(Map<String, BigDecimal> rates) {
 		this.rates = rates;
 	}
-	public void setRefs(Set<Integer> refs) {
+	public void setRefs(Set<String> refs) {
 		this.refs = refs;
 	}
 	public void setTrades(List<Integer> trades) {
