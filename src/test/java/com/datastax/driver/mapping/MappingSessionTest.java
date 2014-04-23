@@ -29,6 +29,7 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -364,17 +365,17 @@ public class MappingSessionTest {
 		EntityWithCollections loaded = target.get(EntityWithCollections.class, id);
 		assertEquals(3, loaded.getTrades().size());
 		
-		target.appendAt(id, EntityWithCollections.class, "trades", 3, 0);
+		target.replaceAt(id, EntityWithCollections.class, "trades", 3, 0);
 		loaded = target.get(EntityWithCollections.class, id);
 		assertEquals(new Integer(3), loaded.getTrades().get(0));
 		assertEquals(3, loaded.getTrades().size());
 		
-		target.appendAt(id, EntityWithCollections.class, "trades", 33, 2);
+		target.replaceAt(id, EntityWithCollections.class, "trades", 33, 2);
 		loaded = target.get(EntityWithCollections.class, id);
 		assertEquals(new Integer(33), loaded.getTrades().get(2));
 		assertEquals(3, loaded.getTrades().size());
 		
-		target.appendAt(id, EntityWithCollections.class, "trades", 22, 1);
+		target.replaceAt(id, EntityWithCollections.class, "trades", 22, 1);
 		loaded = target.get(EntityWithCollections.class, id);
 		assertEquals(new Integer(22), loaded.getTrades().get(1));	
 		assertEquals(3, loaded.getTrades().size());
@@ -498,4 +499,58 @@ public class MappingSessionTest {
 		assertEquals(new BigDecimal(0.000005555), loaded.getRates().get("bcd"));
 		assertEquals(3, loaded.getRates().size());
 	}	
+	
+	@Test
+	public void deleteTest() throws Exception {
+		UUID id = UUID.randomUUID();
+		EntityWithCollections obj = new EntityWithCollections();		
+		obj.setId(id);
+		Map<String, BigDecimal> rates = new HashMap<String, BigDecimal>();
+		rates.put("abc", new BigDecimal(100));
+		rates.put("cde", new BigDecimal(10000.554154));
+		obj.setRates(rates);
+		target.save(obj);
+		
+		EntityWithCollections loaded = target.get(EntityWithCollections.class, id);
+		assertEquals(2, loaded.getRates().size());
+	
+		target.deleteValue(id, EntityWithCollections.class, "rates");
+		loaded = target.get(EntityWithCollections.class, id);
+		assertEquals(0, loaded.getRates().size());
+	}
+	
+	
+	@Test
+	public void appendWithOptionsTest() throws Exception {
+		WriteOptions wo = new WriteOptions().setTtl(3);
+		
+		UUID id = UUID.randomUUID();
+		EntityWithCollections obj = new EntityWithCollections();		
+		obj.setId(id);
+		Set<String> refs = new HashSet<String>();
+		refs.add("100");
+		refs.add("abc");
+		obj.setRefs(refs);
+		target.save(obj);
+		
+		EntityWithCollections loaded = target.get(EntityWithCollections.class, id);
+		assertEquals(2, loaded.getRefs().size());
+		
+		target.append(id, EntityWithCollections.class, "refs", "56545sd4", wo);
+		loaded = target.get(EntityWithCollections.class, id);
+		assertTrue(loaded.getRefs().contains("56545sd4"));
+		assertEquals(3, loaded.getRefs().size());
+		sleep(3000);
+		
+		loaded = target.get(EntityWithCollections.class, id);
+		assertEquals(2, loaded.getRefs().size());
+		assertFalse(loaded.getRefs().contains("56545sd4"));
+	}
+	
+	private void sleep(long n) {
+		try {
+			Thread.sleep(n);
+		} catch (Exception e) {
+		}
+	}
 }

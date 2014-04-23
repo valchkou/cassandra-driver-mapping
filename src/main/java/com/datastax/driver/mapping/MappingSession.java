@@ -37,6 +37,7 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.querybuilder.BuiltStatement;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
@@ -192,9 +193,69 @@ public class MappingSession {
 	}
 
 	/**
-	 * append value to collection value can be a single value, a List or a Map.
+	 * remove an item or items from the Set or List.
+	 * @param id - entity PK
+	 * @param clazz - entity class
+	 * @param propertyName - property of entity to be modified
+	 * @param item - a single item, List or Set
+	 */
+	public void remove(Object id, Class<?> clazz, String propertyName, Object item) {
+		maybeSync(clazz);
+		EntityTypeMetadata emeta = EntityTypeParser.getEntityMetadata(clazz);
+		EntityFieldMetaData fmeta = emeta.getFieldMetadata(propertyName);
+		Update update = update(keyspace, emeta.getTableName());
+
+		if (item instanceof Set<?> && fmeta.getType() == Set.class) {
+			Set<?> set = (Set<?>)item;
+			if (set.size() == 0) return;
+			update.with(QueryBuilder.removeAll(fmeta.getColumnName(), set));
+		} else if (item instanceof List<?> && fmeta.getType() == List.class) {
+			List<?> list = (List<?>) item;
+			if (list.size() == 0) return;
+			update.with(QueryBuilder.discardAll(fmeta.getColumnName(), list));
+		} else if (fmeta.getType() == Set.class) {
+			update.with(QueryBuilder.remove(fmeta.getColumnName(), item));
+		} else if (fmeta.getType() == List.class) {
+			update.with(QueryBuilder.discard(fmeta.getColumnName(), item));
+		}
+
+		prepareAndExecuteUpdate(id, emeta, update);
+	}
+	
+	/**
+	 * delete value for the column
+	 * @param id - entity Primary Key
+	 * @param clazz - entity class
+	 * @param propertyName - property of entity to be modified
+	 */
+	public void deleteValue(Object id, Class<?> clazz, String propertyName) {
+		maybeSync(clazz);
+		EntityTypeMetadata emeta = EntityTypeParser.getEntityMetadata(clazz);
+		EntityFieldMetaData fmeta = emeta.getFieldMetadata(propertyName);
+		Delete delete = QueryBuilder.delete(fmeta.getColumnName()).from(keyspace, emeta.getTableName());
+		prepareAndExecuteDelete(id, emeta, delete);
+	}
+	
+	/**
+	 * append value to the Set, List or Map value can be .
+	 * @param id - entity Primary Key
+	 * @param clazz - entity class
+	 * @param propertyName - property of entity to be modified
+	 * @param item - a single value, a List, Set or a Map
 	 */
 	public void append(Object id, Class<?> clazz, String propertyName, Object item) {
+		append(id, clazz, propertyName, item, null);
+	}
+
+	/**
+	 * append value to the Set, List or Map value can be .
+	 * @param id - entity Primary Key
+	 * @param clazz - entity class
+	 * @param propertyName - property of entity to be modified
+	 * @param item - a single value, a List, Set or a Map
+	 * @param options - WriteOptions 
+	 */	
+	public void append(Object id, Class<?> clazz, String propertyName, Object item, WriteOptions options) {
 		maybeSync(clazz);
 		EntityTypeMetadata emeta = EntityTypeParser.getEntityMetadata(clazz);
 		EntityFieldMetaData fmeta = emeta.getFieldMetadata(propertyName);
@@ -217,11 +278,30 @@ public class MappingSession {
 		} else if (fmeta.getType() == List.class) {
 			update.with(QueryBuilder.append(fmeta.getColumnName(), item));
 		}
-
-		prepareAndExecute(id, emeta, update);
+		applyOptions(options, update);
+		prepareAndExecuteUpdate(id, emeta, update);
 	}
 
+	/**
+	 * add items at the beginning of the List
+	 * @param id - entity Primary Key
+	 * @param clazz - entity class
+	 * @param propertyName - property of entity to be modified
+	 * @param item - a single value or a List,
+	 */
 	public void prepend(Object id, Class<?> clazz, String propertyName, Object item) {
+		prepend(id, clazz, propertyName, item, null);
+	}
+
+	/**
+	 * add items at the beginning of the List
+	 * @param id - entity Primary Key
+	 * @param clazz - entity class
+	 * @param propertyName - property of entity to be modified
+	 * @param item - a single value or a List
+	 * @param options - WriteOptions 
+	 */	
+	public void prepend(Object id, Class<?> clazz, String propertyName, Object item, WriteOptions options) {
 		maybeSync(clazz);
 		EntityTypeMetadata emeta = EntityTypeParser.getEntityMetadata(clazz);
 		EntityFieldMetaData fmeta = emeta.getFieldMetadata(propertyName);
@@ -234,11 +314,32 @@ public class MappingSession {
 		} else if (fmeta.getType() == List.class) {
 			update.with(QueryBuilder.prepend(fmeta.getColumnName(), item));
 		}
-
-		prepareAndExecute(id, emeta, update);
+		applyOptions(options, update);
+		prepareAndExecuteUpdate(id, emeta, update);
 	}
 
-	public void appendAt(Object id, Class<?> clazz, String propertyName, Object item, int idx) {
+	/**
+	 * place item at the specified position in the List.
+	 * @param id - entity Primary Key
+	 * @param clazz - entity class
+	 * @param propertyName - property of entity to be modified
+	 * @param item - new value,
+	 * @param idx - index where new value will be placed at 
+	 */
+	public void replaceAt(Object id, Class<?> clazz, String propertyName, Object item, int idx) {
+		replaceAt(id, clazz, propertyName, item, idx, null);
+	}
+
+	/**
+	 * place item at the specified position in the List.
+	 * @param id - entity Primary Key
+	 * @param clazz - entity class
+	 * @param propertyName - property of entity to be modified
+	 * @param item - new value,
+	 * @param idx - index where new value will be placed at
+	 * @param options - WriteOptions  
+	 */	
+	public void replaceAt(Object id, Class<?> clazz, String propertyName, Object item, int idx, WriteOptions options) {
 		maybeSync(clazz);
 		EntityTypeMetadata emeta = EntityTypeParser.getEntityMetadata(clazz);
 		EntityFieldMetaData fmeta = emeta.getFieldMetadata(propertyName);
@@ -247,25 +348,31 @@ public class MappingSession {
 		if (fmeta.getType() == List.class) {
 			update.with(QueryBuilder.setIdx(fmeta.getColumnName(), idx, item));
 		}
-
-		prepareAndExecute(id, emeta, update);
+		applyOptions(options, update);
+		prepareAndExecuteUpdate(id, emeta, update);
 	}
 
-	/**
-	 * @param id
-	 * @param emeta
-	 * @param update
-	 */
-	private void prepareAndExecute(Object id, EntityTypeMetadata emeta, Update update) {
+	private void prepareAndExecuteUpdate(Object id, EntityTypeMetadata emeta, Update update) {
 		List<String> pkCols = emeta.getPkColumns();
 		for (String col : pkCols) {
 			update.where(eq(col, QueryBuilder.bindMarker()));
 		}
-		
+		prepareAndExecute(id, emeta, update, pkCols);
+	}
+
+	private void prepareAndExecuteDelete(Object id, EntityTypeMetadata emeta, Delete delete) {
+		List<String> pkCols = emeta.getPkColumns();
+		for (String col : pkCols) {
+			delete.where(eq(col, QueryBuilder.bindMarker()));
+		}
+		prepareAndExecute(id, emeta, delete, pkCols);
+	}
+
+	private void prepareAndExecute(Object id, EntityTypeMetadata emeta, BuiltStatement stmt, List<String> pkCols) {
 		// bind parameters
 		Object[] values = emeta.getIdValues(id).toArray(new Object[pkCols.size()]);
-		log.fine(update.getQueryString());
-		PreparedStatement ps = session.prepare(update);
+		log.fine(stmt.getQueryString());
+		PreparedStatement ps = session.prepare(stmt);
 		BoundStatement bs = ps.bind(values);
 		session.execute(bs);
 	}
@@ -321,6 +428,15 @@ public class MappingSession {
 			insert.ifNotExists();
 		}
 
+		applyOptions(options, insert);
+		return insert;
+	}
+
+	/**
+	 * @param options
+	 * @param insert
+	 */
+	private void applyOptions(WriteOptions options, Insert insert) {
 		// apply options to insert
 		if (options != null) {
 			if (options.getTtl() != -1) {
@@ -338,20 +454,17 @@ public class MappingSession {
 				insert.setRetryPolicy(options.getRetryPolicy());
 			}
 		}
-		return insert;
 	}
 
 	/**
 	 * Statement to persist an entity in Cassandra
 	 * 
-	 * @param entity
-	 *            to be inserted
+	 * @param entity to be inserted
 	 * @return com.datastax.driver.core.BoundStatement
 	 */
 	private <E> Statement prepareUpdate(E entity, WriteOptions options) {
 		Class<?> clazz = entity.getClass();
-		EntityTypeMetadata entityMetadata = EntityTypeParser
-				.getEntityMetadata(clazz);
+		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
 		String table = entityMetadata.getTableName();
 		List<EntityFieldMetaData> fields = entityMetadata.getFields();
 
@@ -396,7 +509,15 @@ public class MappingSession {
 			update.with(set(colName, colVal));
 		}
 
-		// apply options to insert
+		applyOptions(options, update);
+		return update;
+	}
+
+	/**
+	 * @param options
+	 * @param update
+	 */
+	private void applyOptions(WriteOptions options, Update update) {
 		if (options != null) {
 			if (options.getTtl() != -1) {
 				update.using(ttl(options.getTtl()));
@@ -413,7 +534,6 @@ public class MappingSession {
 				update.setRetryPolicy(options.getRetryPolicy());
 			}
 		}
-		return update;
 	}
 
 	private Object incVersion(Object version) {
@@ -499,8 +619,7 @@ public class MappingSession {
 	 */
 	public <T> List<T> getFromResultSet(Class<T> clazz, ResultSet rs) {
 		List<T> result = new ArrayList<T>();
-		EntityTypeMetadata entityMetadata = EntityTypeParser
-				.getEntityMetadata(clazz);
+		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
 		for (Row row : rs.all()) {
 			T entity = null;
 			Object primaryKey = null;
@@ -508,8 +627,7 @@ public class MappingSession {
 
 			try {
 				entity = clazz.newInstance();
-				PrimaryKeyMetadata pkmeta = entityMetadata
-						.getPrimaryKeyMetadata();
+				PrimaryKeyMetadata pkmeta = entityMetadata.getPrimaryKeyMetadata();
 				if (pkmeta.isCompound()) {
 					EntityFieldMetaData pkField = pkmeta.getOwnField();
 					primaryKey = pkField.getType().newInstance();
@@ -549,8 +667,7 @@ public class MappingSession {
 
 	/** run sync if not yet done */
 	private void maybeSync(Class<?> clazz) {
-		EntityTypeMetadata entityMetadata = EntityTypeParser
-				.getEntityMetadata(clazz);
+		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
 		if (!entityMetadata.isSynced()) {
 			SchemaSync.sync(keyspace, session, clazz);
 		}
@@ -595,8 +712,7 @@ public class MappingSession {
 				value = row.getFloat(field.getColumnName());
 				break;
 			case MAP:
-				value = row.getMap(field.getColumnName(), Object.class,
-						Object.class);
+				value = row.getMap(field.getColumnName(), Object.class, Object.class);
 				break;
 			case LIST:
 				value = row.getList(field.getColumnName(), Object.class);
@@ -608,7 +724,7 @@ public class MappingSession {
 				break;
 			}
 		} catch (Exception ex) {
-			ex.printStackTrace();
+			log.info(ex.toString());
 		}
 		return value;
 	}
