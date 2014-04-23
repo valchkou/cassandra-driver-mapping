@@ -20,7 +20,6 @@ Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.c
 - [Various Mappings](#mapping)  
 	* [Basic](#mapping_basic)
 	* [Indexes](#mapping_index)
-	* [Collections](#mapping_collections)
 	* [Compound Primary Key](#mapping_composite)
 	* [Composite Partition Key](#mapping_partition)
 	* [Table Properties](#mapping_properties)
@@ -407,7 +406,20 @@ For more info on collections please refer [Datastax Using Collection] (http://ww
 	```
    	CREATE TABLE IF NOT EXISTS ks.mytable ("KEY" int, firstName text, "last_NAME" text, AGE int, PRIMARY KEY("KEY"))
 	```     
-	
+
+<a name="collections"/>
+### Collections
+
+- [Collections](#collections)
+	* [Mapping](#mapping_collections)
+	* [List operations](#collections_list)
+	* [Set operations](#collections_set)
+	* [Map operations](#collections_map)
+- [Optimistic Lock](#lock)
+	* [Lightweight transactions](#lock_transactions)
+	* [@Version](#lock_version)
+- [Nested Entities](#nested)
+
 <a name="queries_mapping"/>
 ### Mapping Custom Queries
 
