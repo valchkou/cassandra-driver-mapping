@@ -108,7 +108,7 @@ public class MappingSessionTest {
 		EntityTypeParser.remove(EntityWithVersion.class);
 	}
 	
-//	@Test
+	@Test
 	public void saveAndGetAndDeleteTest() throws Exception {
 		UUID uuid = UUID.randomUUID();
 		EntityWithIndexes obj = new EntityWithIndexes();
@@ -130,7 +130,7 @@ public class MappingSessionTest {
 		assertNull(loaded);
 	}
 
-//	@Test
+	@Test
 	public void saveAndGetWithOptionsTest() throws Exception {
 		UUID uuid = UUID.randomUUID();
 		Simple obj = new Simple();
@@ -153,7 +153,7 @@ public class MappingSessionTest {
 		assertNull(loaded);
 	}
 	
-//	@Test
+	@Test
 	public void getByQueryTest() throws Exception {
 		for (int i = 0; i < 3; i++) {
 			EntityWithIndexes obj = new EntityWithIndexes();
@@ -172,7 +172,7 @@ public class MappingSessionTest {
 		assertEquals(3, items.size());
 	}
 
-//	@Test
+	@Test
 	public void getByQueryStringTest() throws Exception {
 		for (int i = 0; i < 3; i++) {
 			EntityWithIndexes obj = new EntityWithIndexes();
@@ -189,7 +189,7 @@ public class MappingSessionTest {
 		assertEquals(3, items.size());
 	}
 	
-//	@Test
+	@Test
 	public void testCollections() throws Exception {
 		EntityWithCollections obj = new EntityWithCollections();
 		
@@ -225,7 +225,7 @@ public class MappingSessionTest {
 		assertEquals(obj, loaded);		
 	}
 	
-//	@Test
+	@Test
 	public void saveAndGetAndDeleteWithCompoundCompositeKeyTest() throws Exception {
 		SimpleKey partition = new SimpleKey();
 		partition.setName("name");
@@ -255,7 +255,7 @@ public class MappingSessionTest {
 		assertNull(loaded);
 	}
 	
-//	@Test
+	@Test
 	public void saveAndGetAndDeleteWithSimpleCompositeKeyTest() throws Exception {
 		SimpleKey key = new SimpleKey();
 		key.setName("name");
@@ -280,7 +280,7 @@ public class MappingSessionTest {
 		assertNull(loaded);
 	}
 	
-//	@Test
+	@Test
 	public void saveAndGetAndDeleteMixedCaseTest() throws Exception {
 		int id = 12245;
 		EntityMixedCase obj = new EntityMixedCase();
@@ -301,7 +301,7 @@ public class MappingSessionTest {
 		assertNull(loaded);
 	}
 	
-//	@Test
+	@Test
 	public void entityWithVersionTest() throws Exception {
 		UUID id = UUID.randomUUID();
 		EntityWithVersion obj = new EntityWithVersion();

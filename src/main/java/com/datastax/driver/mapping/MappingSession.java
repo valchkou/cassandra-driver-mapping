@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.BoundStatement;
@@ -55,7 +56,7 @@ import com.datastax.driver.mapping.schemasync.SchemaSync;
  * <code> msession.delete(entity); </code>
  */
 public class MappingSession {
-
+	private static final Logger log = Logger.getLogger(EntityFieldMetaData.class.getName());
 	private Session session;
 	private String keyspace;
 	private static Map<String, PreparedStatement> deleteCache = new HashMap<String, PreparedStatement>();
@@ -107,8 +108,7 @@ public class MappingSession {
 	/**
 	 * Delete the given instance
 	 * 
-	 * @param entity
-	 *            - an instance of a persistent class
+	 * @param entity - an instance of a persistent class
 	 */
 	public <E> void delete(E entity) {
 		maybeSync(entity.getClass());
@@ -139,8 +139,7 @@ public class MappingSession {
 	public <E> E save(E entity, WriteOptions options) {
 		Class<?> clazz = entity.getClass();
 		maybeSync(clazz);
-		EntityTypeMetadata entityMetadata = EntityTypeParser
-				.getEntityMetadata(clazz);
+		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
 		long version = Long.MIN_VALUE;
 		if (entityMetadata.hasVersion()) {
 			EntityFieldMetaData verField = entityMetadata.getVersionField();
@@ -153,13 +152,11 @@ public class MappingSession {
 		} else {
 			stmt = prepareInsert(entity, options);
 		}
-		System.out.println(stmt);
+		log.fine(stmt.toString());
 		ResultSet rs = session.execute(stmt);
 
 		if (entityMetadata.hasVersion()) {
-			System.out.println("save rs:" + rs);
 			Row row = rs.one();
-
 			if (!(row != null && row.getBool("[applied]"))) {
 				return null;
 			}
@@ -201,7 +198,6 @@ public class MappingSession {
 		maybeSync(clazz);
 		EntityTypeMetadata emeta = EntityTypeParser.getEntityMetadata(clazz);
 		EntityFieldMetaData fmeta = emeta.getFieldMetadata(propertyName);
-		List<String> pkCols = emeta.getPkColumns();
 		Update update = update(keyspace, emeta.getTableName());
 
 		if (item instanceof Set<?> && fmeta.getType() == Set.class) {
@@ -222,22 +218,13 @@ public class MappingSession {
 			update.with(QueryBuilder.append(fmeta.getColumnName(), item));
 		}
 
-		for (String col : pkCols) {
-			update.where(eq(col, QueryBuilder.bindMarker()));
-		}
-		// bind parameters
-		Object[] values = emeta.getIdValues(id).toArray(new Object[pkCols.size()]);
-		System.out.println(update);
-		PreparedStatement ps = session.prepare(update);
-		BoundStatement bs = ps.bind(values);
-		session.execute(bs);
+		prepareAndExecute(id, emeta, update);
 	}
 
 	public void prepend(Object id, Class<?> clazz, String propertyName, Object item) {
 		maybeSync(clazz);
 		EntityTypeMetadata emeta = EntityTypeParser.getEntityMetadata(clazz);
 		EntityFieldMetaData fmeta = emeta.getFieldMetadata(propertyName);
-		List<String> pkCols = emeta.getPkColumns();
 		Update update = update(keyspace, emeta.getTableName());
 
 		if (item instanceof List<?> && fmeta.getType() == List.class) {
@@ -248,16 +235,7 @@ public class MappingSession {
 			update.with(QueryBuilder.prepend(fmeta.getColumnName(), item));
 		}
 
-		for (String col : pkCols) {
-			update.where(eq(col, QueryBuilder.bindMarker()));
-		}
-		
-		// bind parameters
-		Object[] values = emeta.getIdValues(id).toArray(new Object[pkCols.size()]);
-		System.out.println(update);
-		PreparedStatement ps = session.prepare(update);
-		BoundStatement bs = ps.bind(values);
-		session.execute(bs);
+		prepareAndExecute(id, emeta, update);
 	}
 
 	public void appendAt(Object id, Class<?> clazz, String propertyName, Object item, int idx) {
@@ -270,6 +248,15 @@ public class MappingSession {
 			update.with(QueryBuilder.setIdx(fmeta.getColumnName(), idx, item));
 		}
 
+		prepareAndExecute(id, emeta, update);
+	}
+
+	/**
+	 * @param id
+	 * @param emeta
+	 * @param update
+	 */
+	private void prepareAndExecute(Object id, EntityTypeMetadata emeta, Update update) {
 		List<String> pkCols = emeta.getPkColumns();
 		for (String col : pkCols) {
 			update.where(eq(col, QueryBuilder.bindMarker()));
@@ -277,7 +264,7 @@ public class MappingSession {
 		
 		// bind parameters
 		Object[] values = emeta.getIdValues(id).toArray(new Object[pkCols.size()]);
-		System.out.println(update);
+		log.fine(update.getQueryString());
 		PreparedStatement ps = session.prepare(update);
 		BoundStatement bs = ps.bind(values);
 		session.execute(bs);
@@ -291,8 +278,7 @@ public class MappingSession {
 	 */
 	private <E> Statement prepareInsert(E entity, WriteOptions options) {
 		Class<?> clazz = entity.getClass();
-		EntityTypeMetadata entityMetadata = EntityTypeParser
-				.getEntityMetadata(clazz);
+		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
 		String table = entityMetadata.getTableName();
 		List<EntityFieldMetaData> fields = entityMetadata.getFields();
 
@@ -444,10 +430,8 @@ public class MappingSession {
 	/**
 	 * Prepare BoundStatement to select row by id
 	 */
-	private <T> BoundStatement prepareSelect(Class<T> clazz, Object id,
-			ReadOptions options) {
-		EntityTypeMetadata entityMetadata = EntityTypeParser
-				.getEntityMetadata(clazz);
+	private <T> BoundStatement prepareSelect(Class<T> clazz, Object id, ReadOptions options) {
+		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
 		List<String> pkCols = entityMetadata.getPkColumns();
 		String table = entityMetadata.getTableName();
 
@@ -474,15 +458,13 @@ public class MappingSession {
 		}
 
 		// bind parameters
-		Object[] values = entityMetadata.getIdValues(id).toArray(
-				new Object[pkCols.size()]);
+		Object[] values = entityMetadata.getIdValues(id).toArray(new Object[pkCols.size()]);
 		BoundStatement bs = ps.bind(values);
 		return bs;
 	}
 
 	private <E> BoundStatement prepareDelete(E entity) {
-		EntityTypeMetadata entityMetadata = EntityTypeParser
-				.getEntityMetadata(entity.getClass());
+		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(entity.getClass());
 		List<String> pkCols = entityMetadata.getPkColumns();
 		String table = entityMetadata.getTableName();
 
@@ -503,8 +485,7 @@ public class MappingSession {
 		}
 
 		// bind parameters
-		Object[] values = entityMetadata.getEntityPKValues(entity).toArray(
-				new Object[pkCols.size()]);
+		Object[] values = entityMetadata.getEntityPKValues(entity).toArray(new Object[pkCols.size()]);
 		BoundStatement bs = ps.bind(values);
 		return bs;
 	}
@@ -559,8 +540,6 @@ public class MappingSession {
 					}
 				} catch (Exception ex) {
 					ex.printStackTrace();
-					// field is not properly mapped, log debug and skip the
-					// error
 				}
 			}
 			result.add(entity);
