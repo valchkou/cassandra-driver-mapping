@@ -27,6 +27,7 @@ Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.c
 	* [Mixed Case for Column Names](#mapping_mixed)
 - [Collections](#collections)
 	* [Mapping](#mapping_collections)
+	* [Optimized operations](#collections_opt)	
 	* [List operations](#collections_list)
 	* [Set operations](#collections_set)
 	* [Map operations](#collections_map)
@@ -408,6 +409,13 @@ OR
 	```     
 Collections must have generic type defined. Only java.util.List, Map and Set are allowed.  
 For more info on collections please refer [Datastax Using Collection] (http://www.datastax.com/documentation/cql/3.1/cql/cql_using/use_collections_c.html)
+
+<a name="collections_opt"/>
+- Optimized operations
+You can work with your collections as you would normally work with entity.
+In addition C* provides optimized operations on collections.
+Mappind add-on supports most of them. You don't have to load entity to perform operation.
+These operations drastically improve performance. 
 
 <a name="collections_list"/>
 - List operations
