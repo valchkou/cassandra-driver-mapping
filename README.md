@@ -499,22 +499,21 @@ mappingSession.deleteValue(id, Entity.class, "pets");
 
 <a name="lock"/>
 ### Optimistic Lock
-Cassandra does not allow to lock rows or columns individually.
-This section explains what Cassandra privides to support otpimistic locking.
-As well as Mapping add-on implementation for it
+C* does not support locking. But it provides ability for [Optimistic Concurrency Control] (http://en.wikipedia.org/wiki/Optimistic_concurrency_control).  
+While running, transactions use data resources without acquiring locks on those resources. Before committing, each transaction verifies that no other transaction has modified the data it has read. If the check reveals conflicting modifications, the committing transaction rolls back and can be restarted.  
+This section explains how you can achieve this with C* and Mapping Add-on
 
 
 <a name="lock_transactions"/>
 - Lightweight Transactions  
-I don't know why they call it Lightweight Transactions. Those transactions are more heavyweight than normal C* transactions. [Datastax Lightweight Transactions] (http://www.datastax.com/documentation/cassandra/2.0/cassandra/dml/dml_ltwt_transaction_c.html)
-C* allows to do conditional UPDATE/INSERT using IF/IF NOT EXISTS. If "IF" condition is not met write doesn't happen.
-The boolean flag "[applied]" is returned indicating if write has happened.
+I don't know why they call it Lightweight Transactions. Those transactions are much heavier than normal C* transactions. Read more about [Datastax Lightweight Transactions.] (http://www.datastax.com/documentation/cassandra/2.0/cassandra/dml/dml_ltwt_transaction_c.html)  
+C* supports conditional UPDATE/INSERT using IF/IF NOT EXISTS keywords. When "IF" condition is not met write doesn't happen. The boolean flag "[applied]" is returned.
 
 <a name="lock_version"/>
 - @Version
-This mapping add-on supports annotation @Version of "long" type to enable optimistic lock on entity.  
-Whenever you save entity the version get incremented and updated entity returned as result of operation.  
-If you try to save not the latest one then "null" will be returned instead and no error will be thrown.
+Mapping Add-on supports annotation @Version of "long" data type to enable optimistic lock on entity.  
+Whenever you save entity the version get incremented and as result of operation updated entity is retirned.  
+If you try to save not-the-latest one then "null" will be returned instead and no error will be thrown.
 ```java
 	
 	import javax.persistence.Id;
