@@ -473,6 +473,22 @@ mappingSession.deleteValue(id, Entity.class, "dogs");
 
 <a name="collections_map"/>
 - Map operations
+```java
+/** append item */
+Map<String, BigInteger> pets = new HashMap<String, BigInteger>();
+pets.put("Red Dogs", 25);
+pets.put("Black Cats", 50);
+mappingSession.append(id, Entity.class, "pets", pets);
+
+/** append items to be expired in 5 sec */
+Map<String, BigInteger> pets = new HashMap<String, BigInteger>();
+pets.put("Green Dogs", 25);
+pets.put("Brown Cats", 50);
+mappingSession.append(id, Entity.class, "pets", pets, new WriteOptions().setTtl(5));
+
+/** remove all items */
+mappingSession.deleteValue(id, Entity.class, "pets");
+```
 
 <a name="lock"/>
 ### Optimistic Lock
