@@ -215,37 +215,6 @@ OR
 		CREATE INDEX IF NOT EXISTS entity_email_idx ON ks.mytable(email);  
 		CREATE INDEX IF NOT EXISTS entity_name_idx ON ks.mytable(myname);
 	```   
-   
-<a name="mapping_collections"/>
-- Collections
-   	```java
-	import java.math.BigInteger;
-	import java.util.Date;
-	import java.util.List;
-	import java.util.Map;
-	import java.util.Set;
-	
-	import javax.persistence.Id;
-	import javax.persistence.Table;
-	
-	@Table(name="entity")
-	public class Entity {
-		@Id
-		private java.util.UUID id;
-		private List<String> cats;
-		private Set<Date> dogs;
-		private Map<String, BigInteger> pets;
-		
-		// public getters/setters ...
-	}
-	```
-	CQL3 Statement
-	```
-   	CREATE TABLE IF NOT EXISTS ks.entity (id uuid, cats list<text>, dogs set<timestamp>, pets map<text, varint>,  PRIMARY KEY(id))
-	```     
-Collections must have generic type defined. Only java.util.List, Map and Set are allowed.  
-For more info on collections please refer [Datastax Using Collection] (http://www.datastax.com/documentation/cql/3.1/cql/cql_using/use_collections_c.html)
-
 
 <a name="mapping_composite"/>
 - Compound Primary Key
@@ -409,16 +378,88 @@ For more info on collections please refer [Datastax Using Collection] (http://ww
 
 <a name="collections"/>
 ### Collections
+   
+<a name="mapping_collections"/>
+- Mapping
+   	```java
+	import java.math.BigInteger;
+	import java.util.Date;
+	import java.util.List;
+	import java.util.Map;
+	import java.util.Set;
+	
+	import javax.persistence.Id;
+	import javax.persistence.Table;
+	
+	@Table(name="entity")
+	public class Entity {
+		@Id
+		private java.util.UUID id;
+		private List<String> cats;
+		private Set<Date> dogs;
+		private Map<String, BigInteger> pets;
+		
+		// public getters/setters ...
+	}
+	```
+	CQL3 Statement
+	```
+   	CREATE TABLE IF NOT EXISTS ks.entity (id uuid, cats list<text>, dogs set<timestamp>, pets map<text, varint>,  PRIMARY KEY(id))
+	```     
+Collections must have generic type defined. Only java.util.List, Map and Set are allowed.  
+For more info on collections please refer [Datastax Using Collection] (http://www.datastax.com/documentation/cql/3.1/cql/cql_using/use_collections_c.html)
 
-- [Collections](#collections)
-	* [Mapping](#mapping_collections)
-	* [List operations](#collections_list)
-	* [Set operations](#collections_set)
-	* [Map operations](#collections_map)
-- [Optimistic Lock](#lock)
-	* [Lightweight transactions](#lock_transactions)
-	* [@Version](#lock_version)
-- [Nested Entities](#nested)
+<a name="collections_list"/>
+- List operations
+```java
+// append item to list
+mappingSession.append(id, Entity.class, "cats", "Black Cat");
+
+// append item to be expired in 5 sec
+mappingSession.append(id, Entity.class, "cats", "Expired Cat", new WriteOptions().setTtl(5));
+
+// prepend item
+mappingSession.prepend(id, Entity.class, "cats", "First Cat");
+
+// replace item at specified index
+mappingSession.replaceAt(id, Entity.class, "cats", "Grey Cat", 1);
+
+// append List of items
+List<String> addCats = new ArrayList<String>();
+addCats.add("Red Cat");
+addCats.add("Green Cat");
+mappingSession.append(id, Entity.class, "cats", addCats);
+
+// remove item
+mappingSession.remove(id, Entity.class, "cats", "Grey Cat");
+
+// remove List of items
+List<String> removeCats = new ArrayList<String>();
+removeCats.add("Red Cat");
+removeCats.add("Green Cat");
+mappingSession.remove(id, Entity.class, "cats", removeCats);
+
+// remove all items
+mappingSession.deleteValue(id, Entity.class, "cats");
+```
+
+<a name="collections_set"/>
+- Set operations
+
+<a name="collections_map"/>
+- Map operations
+
+<a name="lock"/>
+### Optimistic Lock
+
+<a name="lock_transactions"/>
+- Lightweight transactions
+
+<a name="lock_version"/>
+- @Version
+
+<a name="nested"/>
+### Nested Entities
 
 <a name="queries_mapping"/>
 ### Mapping Custom Queries
