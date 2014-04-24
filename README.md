@@ -445,6 +445,31 @@ mappingSession.deleteValue(id, Entity.class, "cats");
 
 <a name="collections_set"/>
 - Set operations
+```java
+// append item
+mappingSession.append(id, Entity.class, "dogs", "Black Dog");
+
+// append item to be expired in 5 sec
+mappingSession.append(id, Entity.class, "dogs", "Expired Dog", new WriteOptions().setTtl(5));
+
+// append Set of items
+Set<String> addDogs = new HashSet<String>();
+addDogs.add("Red Dog");
+addDogs.add("Green Dog");
+mappingSession.append(id, Entity.class, "dogs", addDogs);
+
+// remove item
+mappingSession.remove(id, Entity.class, "dogs", "Black Dog");
+
+// remove Set of items
+Set<String> removeDogs = new HashSet<String>();
+removeDogs.add("Red Dog");
+removeDogs.add("Green Dog");
+mappingSession.remove(id, Entity.class, "dogs", removeDogs);
+
+// remove all items
+mappingSession.deleteValue(id, Entity.class, "dogs");
+```
 
 <a name="collections_map"/>
 - Map operations
