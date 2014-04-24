@@ -411,11 +411,11 @@ Collections must have generic type defined. Only java.util.List, Map and Set are
 For more info on collections please refer [Datastax Using Collection] (http://www.datastax.com/documentation/cql/3.1/cql/cql_using/use_collections_c.html)
 
 <a name="collections_opt"/>
-- Optimized operations
-You can work with your collections as you would normally work with entity.
-In addition C* provides optimized operations on collections.
-Mappind add-on supports most of them. You don't have to load entity to perform operation.
-These operations drastically improve performance. 
+- Optimized operations  
+You can work with your collection properties as you would normally work with other entity properties.  
+In addition C* provides optimized operations on collections. Those operations do not require to load and save the whole entity.   
+Mappind add-on supports most of them.  
+
 
 <a name="collections_list"/>
 - List operations
