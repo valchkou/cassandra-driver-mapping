@@ -413,8 +413,7 @@ For more info on collections please refer [Datastax Using Collection] (http://ww
 <a name="collections_opt"/>
 - Optimized operations  
 You can work with your collection properties as you would normally work with other entity properties.  
-In addition C* provides optimized operations on collections. Those operations do not require to load and save the whole entity.   
-Mappind add-on supports most of them.  
+In addition C* provides optimized operations on collections. Those operations do not require to load and save the whole entity. C* allows us directly manipulate collections.   
 
 
 <a name="collections_list"/>
@@ -500,12 +499,67 @@ mappingSession.deleteValue(id, Entity.class, "pets");
 
 <a name="lock"/>
 ### Optimistic Lock
+Cassandra does not allow to lock rows or columns individually.
+This section explains what Cassandra privides to support otpimistic locking.
+As well as Mapping add-on implementation for it
+
 
 <a name="lock_transactions"/>
-- Lightweight transactions
+- Lightweight Transactions  
+I don't know why they call it Lightweight Transactions. Those transactions are more heavyweight than normal C* transactions. [Datastax Lightweight Transactions] (http://www.datastax.com/documentation/cassandra/2.0/cassandra/dml/dml_ltwt_transaction_c.html)
+C* allows to do conditional UPDATE/INSERT using IF/IF NOT EXISTS. If "IF" condition is not met write doesn't happen.
+The boolean flag "[applied]" is returned indicating if write has happened.
 
 <a name="lock_version"/>
 - @Version
+This mapping add-on supports annotation @Version of "long" type to enable optimistic lock on entity.  
+Whenever you save entity the version get incremented and updated entity returned as result of operation.  
+If you try to save not the latest one then "null" will be returned instead and no error will be thrown.
+```java
+	
+	import javax.persistence.Id;
+	import javax.persistence.Table;
+	import javax.persistence.Version;	
+	
+	@Table(name="entity")
+	public class EntityWithVersion {
+		@Id
+		private java.util.UUID id;
+	
+		@Version
+		private long version;	
+		// public getters/setters ...
+	}
+	
+	@Test
+	public void entityWithVersionTest() throws Exception {
+		UUID id = UUID.randomUUID();
+		EntityWithVersion obj = new EntityWithVersion();
+		obj.setId(id);
+		obj.setName("ver1"); 
+		
+		EntityWithVersion loaded = target.get(EntityWithVersion.class, id);
+		assertNull(loaded);
+		
+		// save object ver1 
+		EntityWithVersion saved = target.save(obj);
+		
+		// get object ver1
+		EntityWithVersion obj1 = target.get(EntityWithVersion.class, id);
+		assertEquals(obj1, saved);
+		assertEquals(1, saved.getVersion());
+		
+		// save object ver2
+		saved = target.save(saved);
+		EntityWithVersion obj2 = target.get(EntityWithVersion.class, id);
+		assertEquals(obj2, saved);
+		assertEquals(2, saved.getVersion());		
+		
+		saved = target.save(obj1);
+		assertNull(saved);
+	}		
+```
+
 
 <a name="nested"/>
 ### Nested Entities
