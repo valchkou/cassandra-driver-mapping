@@ -510,10 +510,9 @@ I don't know why they call it Lightweight Transactions. Those transactions are m
 C* supports conditional UPDATE/INSERT using IF/IF NOT EXISTS keywords. When "IF" condition is not met write doesn't happen. The boolean flag "[applied]" is returned.
 
 <a name="lock_version"/>
-- @Version
-Mapping Add-on supports annotation @Version of "long" data type to enable optimistic lock on entity.  
-Whenever you save entity the version get incremented and as result of operation updated entity is retirned.  
-If you try to save not-the-latest one then "null" will be returned instead and no error will be thrown.
+- @Version  
+Mapping Add-on enables optimistic locking using annotation @Version.  
+The property must be of "long" data type. Whenever you save entity the version get incremented and as result of operation updated entity is retirned. If you try to save not-the-latest one then "null" will be returned instead and no error will be thrown.
 ```java
 	
 	import javax.persistence.Id;
@@ -562,6 +561,49 @@ If you try to save not-the-latest one then "null" will be returned instead and n
 
 <a name="nested"/>
 ### Nested Entities
+This section shows how you can support nested entities with C* and Mapping Add-on.
+```java
+	
+	@Table(name="entity_a")
+	public class EntityA {
+		@Id
+		private UUID id;
+	
+		// public getters/setters ...
+	}
+	
+	@Table(name="entity_b")
+	public class EntityB {
+		@Id
+		private UUID id;
+		
+		// reference on EntityA 
+		private UUID refA;
+		// public getters/setters ...
+	}	
+	
+	public class TestNested() {
+		
+		@Test
+		public void saveNested() throws Exception {
+			EntityA a = new EntityA();
+			mappingSession.save(a);
+			
+			EntityB b = new EntityB();
+			b.setRefA(a.getId());
+			mappingSession.save(b);
+		}
+
+		@Test
+		public void loadNested() throws Exception {
+			UUID bId = some_id;
+			EntityB b = mappingSession.load(bId);
+			EntityA a = mappingSession.load(b.getRefA());
+		}
+		
+	}
+```
+
 
 <a name="queries_mapping"/>
 ### Mapping Custom Queries
