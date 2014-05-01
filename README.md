@@ -540,24 +540,24 @@ The property must be of "long" data type. Whenever you save entity the version g
 		obj.setId(id);
 		obj.setName("ver1"); 
 		
-		EntityWithVersion loaded = target.get(EntityWithVersion.class, id);
+		EntityWithVersion loaded = mappingSession.get(EntityWithVersion.class, id);
 		assertNull(loaded);
 		
 		// save object ver1 
-		EntityWithVersion saved = target.save(obj);
+		EntityWithVersion saved = mappingSession.save(obj);
 		
 		// get object ver1
-		EntityWithVersion obj1 = target.get(EntityWithVersion.class, id);
+		EntityWithVersion obj1 = mappingSession.get(EntityWithVersion.class, id);
 		assertEquals(obj1, saved);
 		assertEquals(1, saved.getVersion());
 		
 		// save object ver2
-		saved = target.save(saved);
-		EntityWithVersion obj2 = target.get(EntityWithVersion.class, id);
+		saved = mappingSession.save(saved);
+		EntityWithVersion obj2 = mappingSession.get(EntityWithVersion.class, id);
 		assertEquals(obj2, saved);
 		assertEquals(2, saved.getVersion());		
 		
-		saved = target.save(obj1);
+		saved = mappingSession.save(obj1);
 		assertNull(saved);
 	}		
 ```
@@ -566,7 +566,7 @@ The property must be of "long" data type. Whenever you save entity the version g
 ### Batch
 ```java
 		
-	target.withBatch()
+	mappingSession.withBatch()
 		.save(entityA)
 		.save(entityB)
 		.delete(entityC)
