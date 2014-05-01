@@ -9,6 +9,9 @@ Mapping Add-on relies on Driver version 2.0 and JPA 2.1.
 
 Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.com/documentation/gettingstarted/index.html).
 
+[More Usage Samples in Unit Test]
+(https://github.com/valchkou/cassandra-driver-mapping/blob/master/src/test/java/com/datastax/driver/mapping/MappingSessionTest.java)
+
 ### Table of Contents  
 - [Features](#features)  
 - [Jump Start](#start)  
@@ -34,6 +37,7 @@ Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.c
 - [Optimistic Lock](#lock)
 	* [Lightweight transactions](#lock_transactions)
 	* [@Version](#lock_version)
+- [Batch](#batch)
 - [Nested Entities](#nested)
 - [Mapping Custom Queries](#queries_mapping)  
 	* [How To Run](#queries_howto)
@@ -556,6 +560,18 @@ The property must be of "long" data type. Whenever you save entity the version g
 		saved = target.save(obj1);
 		assertNull(saved);
 	}		
+```
+
+<a name="batch"/>
+### Batch
+```java
+		
+	target.withBatch()
+		.save(entityA)
+		.save(entityB)
+		.delete(entityC)
+		.delete(entityD)
+		.execute();
 ```
 
 
