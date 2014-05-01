@@ -33,16 +33,19 @@ import java.util.logging.Logger;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.querybuilder.Batch;
 import com.datastax.driver.core.querybuilder.BuiltStatement;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Update;
+import com.datastax.driver.mapping.option.BatchOptions;
 import com.datastax.driver.mapping.option.ReadOptions;
 import com.datastax.driver.mapping.option.WriteOptions;
 import com.datastax.driver.mapping.schemasync.SchemaSync;
@@ -60,7 +63,6 @@ public class MappingSession {
 	private static final Logger log = Logger.getLogger(EntityFieldMetaData.class.getName());
 	private Session session;
 	private String keyspace;
-	private static Map<String, PreparedStatement> deleteCache = new HashMap<String, PreparedStatement>();
 	private static Map<String, PreparedStatement> selectCache = new HashMap<String, PreparedStatement>();
 
 	public MappingSession(String keyspace, Session session) {
@@ -113,7 +115,7 @@ public class MappingSession {
 	 */
 	public <E> void delete(E entity) {
 		maybeSync(entity.getClass());
-		BoundStatement bs = prepareDelete(entity);
+		BuiltStatement bs = buildDelete(entity);
 		session.execute(bs);
 	}
 
@@ -138,6 +140,23 @@ public class MappingSession {
 	 * @return saved instance
 	 */
 	public <E> E save(E entity, WriteOptions options) {
+		
+		Statement stmt = prepareSave(entity, options);
+		log.fine(stmt.toString());
+		ResultSet rs = session.execute(stmt);
+		
+		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(entity.getClass());
+		if (entityMetadata.hasVersion()) {
+			Row row = rs.one();
+			if (!(row != null && row.getBool("[applied]"))) {
+				return null;
+			}
+		}
+
+		return entity;
+	}
+	
+	private <E> BuiltStatement prepareSave(E entity, WriteOptions options) {
 		Class<?> clazz = entity.getClass();
 		maybeSync(clazz);
 		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
@@ -147,23 +166,13 @@ public class MappingSession {
 			version = ((Long) verField.getValue(entity)).longValue();
 		}
 
-		Statement stmt = null;
+		BuiltStatement stmt = null;
 		if (version > 0) {
-			stmt = prepareUpdate(entity, options);
+			stmt = buildUpdate(entity, options);
 		} else {
-			stmt = prepareInsert(entity, options);
+			stmt = buildInsert(entity, options);
 		}
-		log.fine(stmt.toString());
-		ResultSet rs = session.execute(stmt);
-
-		if (entityMetadata.hasVersion()) {
-			Row row = rs.one();
-			if (!(row != null && row.getBool("[applied]"))) {
-				return null;
-			}
-		}
-
-		return entity;
+		return stmt;
 	}
 
 	/**
@@ -383,7 +392,7 @@ public class MappingSession {
 	 * @param entity to be inserted
 	 * @return com.datastax.driver.core.BoundStatement
 	 */
-	private <E> Statement prepareInsert(E entity, WriteOptions options) {
+	private <E> BuiltStatement buildInsert(E entity, WriteOptions options) {
 		Class<?> clazz = entity.getClass();
 		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
 		String table = entityMetadata.getTableName();
@@ -462,7 +471,7 @@ public class MappingSession {
 	 * @param entity to be inserted
 	 * @return com.datastax.driver.core.BoundStatement
 	 */
-	private <E> Statement prepareUpdate(E entity, WriteOptions options) {
+	private <E> BuiltStatement buildUpdate(E entity, WriteOptions options) {
 		Class<?> clazz = entity.getClass();
 		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
 		String table = entityMetadata.getTableName();
@@ -583,33 +592,18 @@ public class MappingSession {
 		return bs;
 	}
 
-	private <E> BoundStatement prepareDelete(E entity) {
+	private <E> BuiltStatement buildDelete(E entity) {
 		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(entity.getClass());
 		List<String> pkCols = entityMetadata.getPkColumns();
 		String table = entityMetadata.getTableName();
-
-		PreparedStatement ps = deleteCache.get(table);
-		if (ps == null) {
-
-			Delete delete = QueryBuilder.delete().from(keyspace, table);
-			Delete.Where where = null;
-			for (String col : pkCols) {
-				if (where == null) {
-					where = delete.where(eq(col, QueryBuilder.bindMarker()));
-				} else {
-					where = where.and(eq(col, QueryBuilder.bindMarker()));
-				}
-			}
-			ps = session.prepare(where.toString());
-			deleteCache.put(table, ps);
-		}
-
-		// bind parameters
+		Delete delete = QueryBuilder.delete().from(keyspace, table);
 		Object[] values = entityMetadata.getEntityPKValues(entity).toArray(new Object[pkCols.size()]);
-		BoundStatement bs = ps.bind(values);
-		return bs;
+		for (int i=0; i< values.length; i++) {
+			delete.where(eq(pkCols.get(i), values[i]));
+		}
+		return delete;
 	}
-
+	
 	/**
 	 * Convert ResultSet into List<T>. Create an instance of <T> for each row.
 	 * To populate instance of <T> iterate through the entity fields and
@@ -727,6 +721,48 @@ public class MappingSession {
 			log.info(ex.toString());
 		}
 		return value;
+	}
+	
+	public BatchExecutor withBatch() {
+		return new BatchExecutor(this);
+	}
+	
+	public static class BatchExecutor {
+		List<RegularStatement> statements = new ArrayList<RegularStatement>();
+		MappingSession m;
+		Batch b;
+		
+		public BatchExecutor(MappingSession m) {
+			this.m = m;
+			b = QueryBuilder.batch(new RegularStatement[0]);
+		}
+		
+		public <E> BatchExecutor delete(E entity) {
+			b.add(m.buildDelete(entity)); 
+			return this;
+		}
+		
+		public <E> BatchExecutor save(E entity) {
+			b.add(m.prepareSave(entity, null)); 
+			return this;
+		}
+
+		public void withOptions(BatchOptions options) {
+			// apply options to insert
+			if (options != null) {
+				if (options.getConsistencyLevel() != null) {
+					b.setConsistencyLevel(options.getConsistencyLevel());
+				}
+
+				if (options.getConsistencyLevel() != null) {
+					b.setRetryPolicy(options.getRetryPolicy());
+				}
+			}
+		}
+		
+		public void execute() {
+			m.session.execute(b);
+		}
 	}
 
 }

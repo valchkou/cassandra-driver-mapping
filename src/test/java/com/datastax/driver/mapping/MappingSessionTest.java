@@ -27,6 +27,7 @@ import java.util.UUID;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
@@ -93,6 +94,7 @@ public class MappingSessionTest {
 	@After
 	public void cleanUp() {
 		session.execute("DROP KEYSPACE IF EXISTS "+ keyspace);
+		EntityTypeParser.getEntityMetadata(Simple.class).markUnSynced();
 		EntityTypeParser.getEntityMetadata(EntityWithIndexes.class).markUnSynced();
 		EntityTypeParser.getEntityMetadata(EntityWithKey.class).markUnSynced();
 		EntityTypeParser.getEntityMetadata(EntityWithCollections.class).markUnSynced();
@@ -100,7 +102,7 @@ public class MappingSessionTest {
 		EntityTypeParser.getEntityMetadata(EntityMixedCase.class).markUnSynced();
 		EntityTypeParser.getEntityMetadata(EntityWithVersion.class).markUnSynced();
 		
-		
+		EntityTypeParser.remove(Simple.class);
 		EntityTypeParser.remove(EntityWithIndexes.class);
 		EntityTypeParser.remove(EntityWithKey.class);
 		EntityTypeParser.remove(EntityWithCollections.class);
@@ -540,11 +542,37 @@ public class MappingSessionTest {
 		loaded = target.get(EntityWithCollections.class, id);
 		assertTrue(loaded.getRefs().contains("56545sd4"));
 		assertEquals(3, loaded.getRefs().size());
+		
 		sleep(3000);
 		
 		loaded = target.get(EntityWithCollections.class, id);
 		assertEquals(2, loaded.getRefs().size());
 		assertFalse(loaded.getRefs().contains("56545sd4"));
+	}
+
+	@Test
+	public void batchTest() throws Exception {
+		
+		UUID uuid1 = UUID.randomUUID();
+		Simple obj1 = new Simple();
+		obj1.setTimestamp(new Date());
+		obj1.setId(uuid1);
+
+		UUID uuid2 = UUID.randomUUID();
+		Simple obj2 = new Simple();
+		obj2.setTimestamp(new Date());
+		obj2.setId(uuid2);
+		target.save(obj2);
+		
+		target.withBatch()
+			.save(obj1)
+			.delete(obj2)
+			.execute();
+		
+		Simple loaded1 = target.get(Simple.class, uuid1);
+		Simple loaded2 = target.get(Simple.class, uuid2);
+		assertNull(loaded2);
+		assertNotNull(loaded1);
 	}
 	
 	private void sleep(long n) {
