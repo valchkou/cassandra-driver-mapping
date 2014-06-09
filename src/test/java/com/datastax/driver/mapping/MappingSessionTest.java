@@ -76,7 +76,6 @@ public class MappingSessionTest {
 
 	@AfterClass 
 	public static void clean() { 
-		
 		try {
 			session.execute("DROP KEYSPACE IF EXISTS "+ keyspace);
 		} catch (Exception e) {
