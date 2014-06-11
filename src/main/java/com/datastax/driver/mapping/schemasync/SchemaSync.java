@@ -205,7 +205,7 @@ public final class SchemaSync {
 			colmeta.getName();
 			boolean exists = false;
 			for (EntityFieldMetaData field: entityMetadata.getFields()) {
-				if (colmeta.getName().equals(field.getColumnName())) {
+				if (colmeta.getName().equalsIgnoreCase(field.getColumnName())) {
 					exists = true;
 					break;
 				}

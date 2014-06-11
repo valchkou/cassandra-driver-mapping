@@ -61,10 +61,10 @@ import com.datastax.driver.mapping.schemasync.SchemaSync;
  * <code> msession.delete(entity); </code>
  */
 public class MappingSession {
-	private static final Logger log = Logger.getLogger(EntityFieldMetaData.class.getName());
-	private Session session;
-	private String keyspace;
-	private static Map<String, PreparedStatement> selectCache = new HashMap<String, PreparedStatement>();
+	protected static final Logger log = Logger.getLogger(EntityFieldMetaData.class.getName());
+	protected Session session;
+	protected String keyspace;
+	protected static Map<String, PreparedStatement> selectCache = new HashMap<String, PreparedStatement>();
 
 	public MappingSession(String keyspace, Session session) {
 		this.session = session;
@@ -157,7 +157,7 @@ public class MappingSession {
 		return entity;
 	}
 	
-	private <E> BuiltStatement prepareSave(E entity, WriteOptions options) {
+	protected <E> BuiltStatement prepareSave(E entity, WriteOptions options) {
 		Class<?> clazz = entity.getClass();
 		maybeSync(clazz);
 		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
@@ -362,7 +362,7 @@ public class MappingSession {
 		prepareAndExecuteUpdate(id, emeta, update);
 	}
 
-	private void prepareAndExecuteUpdate(Object id, EntityTypeMetadata emeta, Update update) {
+	protected void prepareAndExecuteUpdate(Object id, EntityTypeMetadata emeta, Update update) {
 		List<String> pkCols = emeta.getPkColumns();
 		for (String col : pkCols) {
 			update.where(eq(col, QueryBuilder.bindMarker()));
@@ -370,7 +370,7 @@ public class MappingSession {
 		prepareAndExecute(id, emeta, update, pkCols);
 	}
 
-	private void prepareAndExecuteDelete(Object id, EntityTypeMetadata emeta, Delete delete) {
+	protected void prepareAndExecuteDelete(Object id, EntityTypeMetadata emeta, Delete delete) {
 		List<String> pkCols = emeta.getPkColumns();
 		for (String col : pkCols) {
 			delete.where(eq(col, QueryBuilder.bindMarker()));
@@ -378,7 +378,7 @@ public class MappingSession {
 		prepareAndExecute(id, emeta, delete, pkCols);
 	}
 
-	private void prepareAndExecute(Object id, EntityTypeMetadata emeta, BuiltStatement stmt, List<String> pkCols) {
+	protected void prepareAndExecute(Object id, EntityTypeMetadata emeta, BuiltStatement stmt, List<String> pkCols) {
 		// bind parameters
 		Object[] values = emeta.getIdValues(id).toArray(new Object[pkCols.size()]);
 		log.fine(stmt.getQueryString());
@@ -393,7 +393,7 @@ public class MappingSession {
 	 * @param entity to be inserted
 	 * @return com.datastax.driver.core.BoundStatement
 	 */
-	private <E> BuiltStatement buildInsert(E entity, WriteOptions options) {
+	protected <E> BuiltStatement buildInsert(E entity, WriteOptions options) {
 		Class<?> clazz = entity.getClass();
 		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
 		String table = entityMetadata.getTableName();
@@ -446,7 +446,7 @@ public class MappingSession {
 	 * @param options
 	 * @param insert
 	 */
-	private void applyOptions(WriteOptions options, Insert insert) {
+	protected void applyOptions(WriteOptions options, Insert insert) {
 		// apply options to insert
 		if (options != null) {
 			if (options.getTtl() != -1) {
@@ -472,7 +472,7 @@ public class MappingSession {
 	 * @param entity to be inserted
 	 * @return com.datastax.driver.core.BoundStatement
 	 */
-	private <E> BuiltStatement buildUpdate(E entity, WriteOptions options) {
+	protected <E> BuiltStatement buildUpdate(E entity, WriteOptions options) {
 		Class<?> clazz = entity.getClass();
 		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
 		String table = entityMetadata.getTableName();
@@ -527,7 +527,7 @@ public class MappingSession {
 	 * @param options
 	 * @param update
 	 */
-	private void applyOptions(WriteOptions options, Update update) {
+	protected void applyOptions(WriteOptions options, Update update) {
 		if (options != null) {
 			if (options.getTtl() != -1) {
 				update.using(ttl(options.getTtl()));
@@ -546,7 +546,7 @@ public class MappingSession {
 		}
 	}
 
-	private Object incVersion(Object version) {
+	protected Object incVersion(Object version) {
 		long newVersion = 0;
 		try {
 			newVersion = ((Long) version).longValue();
@@ -560,7 +560,7 @@ public class MappingSession {
 	/**
 	 * Prepare BoundStatement to select row by id
 	 */
-	private <T> BoundStatement prepareSelect(Class<T> clazz, Object id, ReadOptions options) {
+	protected <T> BoundStatement prepareSelect(Class<T> clazz, Object id, ReadOptions options) {
 		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
 		List<String> pkCols = entityMetadata.getPkColumns();
 		String table = entityMetadata.getTableName();
@@ -593,7 +593,7 @@ public class MappingSession {
 		return bs;
 	}
 
-	private <E> BuiltStatement buildDelete(E entity) {
+	protected <E> BuiltStatement buildDelete(E entity) {
 		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(entity.getClass());
 		List<String> pkCols = entityMetadata.getPkColumns();
 		String table = entityMetadata.getTableName();
@@ -661,7 +661,7 @@ public class MappingSession {
 	}
 
 	/** run sync if not yet done */
-	private void maybeSync(Class<?> clazz) {
+	protected void maybeSync(Class<?> clazz) {
 		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
 		if (!entityMetadata.isSynced()) {
 			SchemaSync.sync(keyspace, session, clazz);
@@ -669,7 +669,7 @@ public class MappingSession {
 	}
 
 	@SuppressWarnings("unchecked")
-	private Object getValueFromRow(Row row, EntityFieldMetaData field) {
+	protected Object getValueFromRow(Row row, EntityFieldMetaData field) {
 		Object value = null;
 		try {
 			if (field.hasCollectionType()) {
