@@ -407,6 +407,23 @@ OR
 		// public getters/setters ...
 	}
 	```
+	By default implementation of HashMap, HashSet and ArrayList are used.
+	If you are unhappy with that fact and would like your data to be baked with specific collection implementation you can apply an annotation as shown below.
+	```java
+		import com.datastax.driver.mapping.annotation.CollectionType;
+		...
+		@CollectionType(LinkedList.class)
+		private List<String> cats;
+		
+		@CollectionType(TreeSet.class)
+		private Set<Date> dogs;
+
+		@CollectionType(TreeMap.class)
+		private Map<String, BigInteger> pets;
+	}
+	```
+NOTE: this is strictly java side feature and does not effect how your data stored in C*.     
+
 	CQL3 Statement
 	```
    	CREATE TABLE IF NOT EXISTS ks.entity (id uuid, cats list<text>, dogs set<timestamp>, pets map<text, varint>,  PRIMARY KEY(id))
