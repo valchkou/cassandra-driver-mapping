@@ -407,8 +407,9 @@ OR
 		// public getters/setters ...
 	}
 	```
-	By default implementation of HashMap, HashSet and ArrayList are used.
-	If you are unhappy with that fact and would like your data to be baked with specific collection implementation you can apply an annotation as shown below.
+Collections must have generic type defined. Only java.util.List, Map and Set are allowed.  
+By default implementation of HashMap, HashSet and ArrayList are used.
+If you are unhappy with that fact and would like your data to be baked with specific collection implementation you can apply an annotation as shown below.
 	```java
 		import com.datastax.driver.mapping.annotation.CollectionType;
 		...
@@ -428,7 +429,6 @@ NOTE: this is strictly java side feature and does not effect how your data store
 	```
    	CREATE TABLE IF NOT EXISTS ks.entity (id uuid, cats list<text>, dogs set<timestamp>, pets map<text, varint>,  PRIMARY KEY(id))
 	```     
-Collections must have generic type defined. Only java.util.List, Map and Set are allowed.  
 For more info on collections please refer [Datastax Using Collection] (http://www.datastax.com/documentation/cql/3.1/cql/cql_using/use_collections_c.html)
 
 <a name="collections_opt"/>
