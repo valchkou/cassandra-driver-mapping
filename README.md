@@ -9,8 +9,8 @@ Mapping Add-on relies on Driver version 2.0 and JPA 2.1.
 
 Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.com/documentation/gettingstarted/index.html).
 
-[More Usage Samples in Unit Test]
-(https://github.com/valchkou/cassandra-driver-mapping/blob/master/src/test/java/com/datastax/driver/mapping/MappingSessionTest.java)
+[More Usage Samples in Unit Tests]
+(https://github.com/valchkou/cassandra-driver-mapping/blob/master/src/test/java/com/datastax/driver/mapping/)
 
 ### Table of Contents  
 - [Features](#features)  
