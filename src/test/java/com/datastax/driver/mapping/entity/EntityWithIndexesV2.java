@@ -16,6 +16,7 @@
 package com.datastax.driver.mapping.entity;
 
 import java.util.Date;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.persistence.Column;
@@ -36,6 +37,7 @@ public class EntityWithIndexesV2 {
 	private UUID uuid = UUID.randomUUID();
 	private String email;
 	private Date timestamp;
+	private Map<String, String> pets;
 	
 	@Column(name="counter") // override default name
 	private long count;
@@ -70,6 +72,12 @@ public class EntityWithIndexesV2 {
 	}
 	public void setRef(UUID ref) {
 		this.ref = ref;
+	}
+	public Map<String, String> getPets() {
+		return pets;
+	}
+	public void setPets(Map<String, String> pets) {
+		this.pets = pets;
 	}
 
 }

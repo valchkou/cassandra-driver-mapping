@@ -25,6 +25,7 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.set;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -667,9 +668,14 @@ public class MappingSession {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private Object getValueFromRow(Row row, EntityFieldMetaData field) {
 		Object value = null;
 		try {
+			if (field.hasCollectionType()) {
+				value = field.getCollectionType().newInstance();
+			}
+			
 			DataType.Name dataType = field.getDataType();
 			switch (dataType) {
 			case BLOB:
@@ -706,13 +712,31 @@ public class MappingSession {
 				value = row.getFloat(field.getColumnName());
 				break;
 			case MAP:
-				value = row.getMap(field.getColumnName(), Object.class, Object.class);
+				if (value == null) {
+					value = new HashMap<Object, Object>();
+				}
+				Map<Object, Object> data = row.getMap(field.getColumnName(), Object.class, Object.class);
+				if (!data.isEmpty()) {
+					((Map<Object, Object>)value).putAll(data);
+				}
 				break;
 			case LIST:
-				value = row.getList(field.getColumnName(), Object.class);
+				if (value == null) {
+					value = new ArrayList<Object>();
+				}
+				List<Object> lst = row.getList(field.getColumnName(), Object.class);
+				if (!lst.isEmpty()) {
+					((List<Object>)value).addAll(lst);
+				}
 				break;
 			case SET:
-				value = row.getSet(field.getColumnName(), Object.class);
+				if (value == null) {
+					value = new HashSet<Object>();
+				}
+				Set<Object> set = row.getSet(field.getColumnName(), Object.class);
+				if (!set.isEmpty()) {
+					((Set<Object>)value).addAll(set);
+				}
 				break;
 			default:
 				break;

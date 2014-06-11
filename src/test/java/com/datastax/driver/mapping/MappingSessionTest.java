@@ -20,9 +20,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.UUID;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
@@ -51,6 +54,7 @@ import com.datastax.driver.mapping.MappingSession;
 import com.datastax.driver.mapping.entity.CompositeKey;
 import com.datastax.driver.mapping.entity.EntityMixedCase;
 import com.datastax.driver.mapping.entity.EntityWithCollections;
+import com.datastax.driver.mapping.entity.EntityWithCollectionsOverride;
 import com.datastax.driver.mapping.entity.EntityWithCompositeKey;
 import com.datastax.driver.mapping.entity.EntityWithIndexes;
 import com.datastax.driver.mapping.entity.EntityWithKey;
@@ -93,13 +97,6 @@ public class MappingSessionTest {
 	@After
 	public void cleanUp() {
 		session.execute("DROP KEYSPACE IF EXISTS "+ keyspace);
-		EntityTypeParser.getEntityMetadata(Simple.class).markUnSynced();
-		EntityTypeParser.getEntityMetadata(EntityWithIndexes.class).markUnSynced();
-		EntityTypeParser.getEntityMetadata(EntityWithKey.class).markUnSynced();
-		EntityTypeParser.getEntityMetadata(EntityWithCollections.class).markUnSynced();
-		EntityTypeParser.getEntityMetadata(EntityWithCompositeKey.class).markUnSynced();
-		EntityTypeParser.getEntityMetadata(EntityMixedCase.class).markUnSynced();
-		EntityTypeParser.getEntityMetadata(EntityWithVersion.class).markUnSynced();
 		
 		EntityTypeParser.remove(Simple.class);
 		EntityTypeParser.remove(EntityWithIndexes.class);
@@ -108,6 +105,7 @@ public class MappingSessionTest {
 		EntityTypeParser.remove(EntityWithCompositeKey.class);
 		EntityTypeParser.remove(EntityMixedCase.class);
 		EntityTypeParser.remove(EntityWithVersion.class);
+		EntityTypeParser.remove(EntityWithCollectionsOverride.class);
 	}
 	
 	@Test
@@ -137,7 +135,7 @@ public class MappingSessionTest {
 		UUID uuid = UUID.randomUUID();
 		Simple obj = new Simple();
 		obj.setTimestamp(new Date());
-		obj.setId(uuid);
+		obj.setAge(55).setId(uuid);
 		
 		Simple loaded = target.get(Simple.class, uuid);
 		assertNull(loaded);
@@ -197,11 +195,9 @@ public class MappingSessionTest {
 		
 		UUID uuid = UUID.randomUUID();
 		obj.setId(uuid);
-		
 		target.save(obj);
-		EntityWithCollections loaded = target.get(EntityWithCollections.class, uuid);
 		
-		assertEquals(obj, loaded);
+		EntityWithCollections loaded = target.get(EntityWithCollections.class, uuid);
 		
 		Map<String, BigDecimal> map = new HashMap<String, BigDecimal>();
 		map.put("key1", new BigDecimal(100.55));
@@ -225,6 +221,43 @@ public class MappingSessionTest {
 		loaded = target.get(EntityWithCollections.class, uuid);
 		
 		assertEquals(obj, loaded);		
+	}
+	
+	@Test
+	public void testCollectionsOverride() throws Exception {
+		EntityWithCollectionsOverride obj = new EntityWithCollectionsOverride();
+		
+		UUID uuid = UUID.randomUUID();
+		obj.setId(uuid);
+		target.save(obj);
+		
+		EntityWithCollectionsOverride loaded = target.get(EntityWithCollectionsOverride.class, uuid);
+		
+		Map<String, BigDecimal> map = new HashMap<String, BigDecimal>();
+		map.put("key1", new BigDecimal(100.55));
+		map.put("key1", new BigDecimal(100.55555));
+		map.put("key1", new BigDecimal(101.5500000333));
+		obj.setRates(map);
+		
+		List<Integer> list = new ArrayList<Integer>();
+		list.add(100);
+		list.add(200);
+		list.add(300);
+		obj.setTrades(list);
+		
+		Set<String> set = new HashSet<String>();
+		set.add("100");
+		set.add("200");
+		set.add("300");
+		obj.setRefs(set);
+
+		target.save(obj);
+		loaded = target.get(EntityWithCollectionsOverride.class, uuid);
+		
+		assertTrue(loaded.getRates() instanceof TreeMap);	
+		assertTrue(loaded.getRefs() instanceof TreeSet);
+		assertTrue(loaded.getTrades() instanceof LinkedList);
+		
 	}
 	
 	@Test
@@ -572,6 +605,81 @@ public class MappingSessionTest {
 		Simple loaded2 = target.get(Simple.class, uuid2);
 		assertNull(loaded2);
 		assertNotNull(loaded1);
+	}
+	
+	@Test
+	public void addToSetTest() throws Exception {
+		UUID id = UUID.randomUUID();
+		EntityWithCollections obj = new EntityWithCollections();		
+		obj.setId(id);
+		target.save(obj);
+		
+		EntityWithCollections loaded = target.get(EntityWithCollections.class, id);
+		assertEquals(0, loaded.getRefs().size());
+		
+		loaded.addRef("200");
+		target.save(loaded);
+		
+		loaded = target.get(EntityWithCollections.class, id);
+		assertTrue(loaded.getRefs().contains("200"));
+		assertEquals(1, loaded.getRefs().size());
+		
+		loaded.addRef("300");
+		target.save(loaded);
+		
+		loaded = target.get(EntityWithCollections.class, id);
+		assertTrue(loaded.getRefs().contains("300"));
+		assertEquals(2, loaded.getRefs().size());		
+	}
+	
+	@Test
+	public void addToListTest() throws Exception {
+		UUID id = UUID.randomUUID();
+		EntityWithCollections obj = new EntityWithCollections();		
+		obj.setId(id);
+		target.save(obj);
+		
+		EntityWithCollections loaded = target.get(EntityWithCollections.class, id);
+		assertEquals(0, loaded.getTrades().size());
+		
+		loaded.addTrade(200);
+		target.save(loaded);
+		
+		loaded = target.get(EntityWithCollections.class, id);
+		assertTrue(loaded.getTrades().contains(200));
+		assertEquals(1, loaded.getTrades().size());
+		
+		loaded.addTrade(300);
+		target.save(loaded);
+		
+		loaded = target.get(EntityWithCollections.class, id);
+		assertTrue(loaded.getTrades().contains(300));
+		assertEquals(2, loaded.getTrades().size());
+	}
+	
+	@Test
+	public void addToMapTest() throws Exception {
+		UUID id = UUID.randomUUID();
+		EntityWithCollections obj = new EntityWithCollections();		
+		obj.setId(id);
+		target.save(obj);
+		
+		EntityWithCollections loaded = target.get(EntityWithCollections.class, id);
+		assertEquals(0, loaded.getRates().size());
+		
+		loaded.addRate("200", new BigDecimal("100"));
+		target.save(loaded);
+		
+		loaded = target.get(EntityWithCollections.class, id);
+		assertTrue(loaded.getRates().containsKey("200"));
+		assertEquals(1, loaded.getRates().size());
+		
+		loaded.addRate("300", new BigDecimal("300"));
+		target.save(loaded);
+		
+		loaded = target.get(EntityWithCollections.class, id);
+		assertTrue(loaded.getRates().containsKey("300"));
+		assertEquals(2, loaded.getRates().size());		
 	}
 	
 	private void sleep(long n) {

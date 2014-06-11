@@ -27,6 +27,7 @@ public class Simple {
 	private String name;
 	private Date timestamp;
 	private long version;
+	private int age;
 	
 	public UUID getId() {
 		return id;
@@ -52,10 +53,19 @@ public class Simple {
 	public void setVersion(long version) {
 		this.version = version;
 	}
+	public int getAge() {
+		return age;
+	}
+	public Simple setAge(int age) {
+		this.age = age;
+		return this;
+	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
+		result = prime * result + age;
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result
@@ -65,40 +75,32 @@ public class Simple {
 	}
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (this == obj)
 			return true;
-		}
-		if (obj == null) {
+		if (obj == null)
 			return false;
-		}
-		if (getClass() != obj.getClass()) {
+		if (getClass() != obj.getClass())
 			return false;
-		}
 		Simple other = (Simple) obj;
+		if (age != other.age)
+			return false;
 		if (id == null) {
-			if (other.id != null) {
+			if (other.id != null)
 				return false;
-			}
-		} else if (!id.equals(other.id)) {
+		} else if (!id.equals(other.id))
 			return false;
-		}
 		if (name == null) {
-			if (other.name != null) {
+			if (other.name != null)
 				return false;
-			}
-		} else if (!name.equals(other.name)) {
+		} else if (!name.equals(other.name))
 			return false;
-		}
 		if (timestamp == null) {
-			if (other.timestamp != null) {
+			if (other.timestamp != null)
 				return false;
-			}
-		} else if (!timestamp.equals(other.timestamp)) {
+		} else if (!timestamp.equals(other.timestamp))
 			return false;
-		}
-		if (version != other.version) {
+		if (version != other.version)
 			return false;
-		}
 		return true;
 	}
 

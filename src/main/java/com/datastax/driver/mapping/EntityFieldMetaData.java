@@ -31,6 +31,8 @@ public class EntityFieldMetaData {
 	private Method getter;
 	private Method setter;
 	private String genericDef;
+	private Class<?> collectionType;
+
 	private Name dataType;
 	private String columnName;
 	private boolean isPrimary;
@@ -132,5 +134,15 @@ public class EntityFieldMetaData {
 		this.isPartition = isPartition;
 	}
 
+	public Class<?> getCollectionType() {
+		return collectionType;
+	}
+
+	public void setCollectionType(Class<?> collectionType) {
+		this.collectionType = collectionType;
+	}
 	
+	public boolean hasCollectionType() {
+		return collectionType != null;
+	}	
 }

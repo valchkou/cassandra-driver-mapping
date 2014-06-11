@@ -19,22 +19,35 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.UUID;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import com.datastax.driver.mapping.annotation.CollectionType;
+
 @Entity
-@Table(name="test_collections")
-public class EntityWithCollections {
+@Table(name="test_collections_override") 
+public class EntityWithCollectionsOverride {
 	@Id
 	private UUID id = UUID.randomUUID();
+	
+	@Column(name="pips")	
+	@CollectionType(TreeMap.class)
 	private Map<String, BigDecimal> rates;
+	
+	@CollectionType(TreeSet.class)
 	private Set<String> refs;
+	
+	@CollectionType(LinkedList.class)
 	private List<Integer> trades;
 	
 	@Override
@@ -55,7 +68,7 @@ public class EntityWithCollections {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		EntityWithCollections other = (EntityWithCollections) obj;
+		EntityWithCollectionsOverride other = (EntityWithCollectionsOverride) obj;
 		if (id == null) {
 			if (other.id != null)
 				return false;
@@ -107,7 +120,6 @@ public class EntityWithCollections {
        if (refs == null) {
            refs = new HashSet<String>();
        }
-
        refs.add(ref);
    }
 	

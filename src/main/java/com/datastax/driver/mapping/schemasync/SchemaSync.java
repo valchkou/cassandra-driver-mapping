@@ -157,7 +157,11 @@ public final class SchemaSync {
     		
     		if (columnMetadata == null) {
     			// if column not exists in TableMetadata then add column
-    			AlterTable statement = new AlterTable.Builder().addColumn(keyspace, table, column, fieldType);
+    			String colType = fieldType;
+    			if (field.isGenericType()) {
+    				colType = field.getGenericDef();
+    			}
+    			AlterTable statement = new AlterTable.Builder().addColumn(keyspace, table, column, colType);
     			statements.add(statement);
     		} else if (colIndex!=null || fieldIndex!=null) {
     			if (colIndex == null) {

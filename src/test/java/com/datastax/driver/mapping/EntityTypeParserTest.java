@@ -21,7 +21,10 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.UUID;
 
 import org.junit.Before;
@@ -32,6 +35,7 @@ import com.datastax.driver.mapping.EntityTypeMetadata;
 import com.datastax.driver.mapping.EntityTypeParser;
 import com.datastax.driver.mapping.entity.CompositeKey;
 import com.datastax.driver.mapping.entity.EntityOverrideDataType;
+import com.datastax.driver.mapping.entity.EntityWithCollectionsOverride;
 import com.datastax.driver.mapping.entity.EntityWithCompositeKey;
 import com.datastax.driver.mapping.entity.EntityWithKey;
 import com.datastax.driver.mapping.entity.EntityWithProperties;
@@ -46,6 +50,7 @@ public class EntityTypeParserTest {
 		EntityTypeParser.remove(EntityWithKey.class);
 		EntityTypeParser.remove(EntityWithCompositeKey.class);
 		EntityTypeParser.remove(EntityOverrideDataType.class);
+		EntityTypeParser.remove(EntityWithCollectionsOverride.class);
 	}
 	
 	@Test
@@ -53,7 +58,7 @@ public class EntityTypeParserTest {
 		EntityTypeMetadata meta = EntityTypeParser.getEntityMetadata(Simple.class);
 		assertEquals("Simple", meta.getTableName());
 		assertEquals(0, meta.getIndexes().size());
-		assertEquals(4, meta.getFields().size());
+		assertEquals(5, meta.getFields().size());
 		
 		PrimaryKeyMetadata pkm = meta.getPrimaryKeyMetadata();
 		assertNotNull(pkm);
@@ -180,5 +185,21 @@ public class EntityTypeParserTest {
 		
 		fd = meta.getFieldMetadata("name");
 		assertEquals(DataType.Name.VARCHAR, fd.getDataType());
-	}		
+	}	
+	
+	@Test
+	public void testGetEntityMetadataOverrideCollectionType() {
+		EntityTypeMetadata meta = EntityTypeParser.getEntityMetadata(EntityWithCollectionsOverride.class);
+		assertEquals(4, meta.getFields().size());
+		
+		EntityFieldMetaData fd = meta.getFieldMetadata("rates");
+		assertEquals(TreeMap.class, fd.getCollectionType());
+
+		fd = meta.getFieldMetadata("refs");
+		assertEquals(TreeSet.class, fd.getCollectionType());
+		
+		fd = meta.getFieldMetadata("trades");
+		assertEquals(LinkedList.class, fd.getCollectionType());		
+
+	}
 }

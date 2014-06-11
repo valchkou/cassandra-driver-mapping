@@ -35,6 +35,7 @@ import javax.persistence.Version;
 
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.mapping.EntityFieldMetaData;
+import com.datastax.driver.mapping.annotation.CollectionType;
 import com.datastax.driver.mapping.annotation.TableProperties;
 import com.datastax.driver.mapping.annotation.TableProperty;
 
@@ -220,6 +221,11 @@ public class EntityTypeParser {
 		} else if(isMap(f.getType())) {
 			fd.setGenericDef(genericsOfMap(f));
 		}
+		
+		Annotation annotation = f.getAnnotation(CollectionType.class);
+		if(annotation instanceof CollectionType){
+			fd.setCollectionType(((CollectionType) annotation).value());
+		}
 	}
 
 	/**
@@ -319,7 +325,7 @@ public class EntityTypeParser {
 	private static boolean isSetterFor(Method method, String property) {
 		 if(!method.getName().toLowerCase().startsWith("set"+property.toLowerCase())) return false;
 		 if(method.getParameterTypes().length != 1)   return false;  
-		 if(!void.class.equals(method.getReturnType())) return false;
+//		 if(!void.class.equals(method.getReturnType())) return false;
 		 return true;
 	}
 	
