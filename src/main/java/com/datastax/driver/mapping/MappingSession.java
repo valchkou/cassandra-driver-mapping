@@ -64,7 +64,7 @@ public class MappingSession {
 	protected static final Logger log = Logger.getLogger(EntityFieldMetaData.class.getName());
 	protected Session session;
 	protected String keyspace;
-	protected static Map<String, PreparedStatement> selectCache = new HashMap<String, PreparedStatement>();
+	protected static Map<String, PreparedStatement> statementCache = new HashMap<String, PreparedStatement>();
 
 	public MappingSession(String keyspace, Session session) {
 		this.session = session;
@@ -381,8 +381,13 @@ public class MappingSession {
 	protected void prepareAndExecute(Object id, EntityTypeMetadata emeta, BuiltStatement stmt, List<String> pkCols) {
 		// bind parameters
 		Object[] values = emeta.getIdValues(id).toArray(new Object[pkCols.size()]);
-		log.fine(stmt.getQueryString());
-		PreparedStatement ps = session.prepare(stmt);
+		String q = stmt.getQueryString();
+		PreparedStatement ps = statementCache.get(q);
+		if (ps == null) {
+			ps = session.prepare(stmt);
+			statementCache.put(q, ps);
+		}
+		log.fine("about to bind and execute PreparedStatement:"+q);
 		BoundStatement bs = ps.bind(values);
 		session.execute(bs);
 	}
@@ -566,7 +571,7 @@ public class MappingSession {
 		String table = entityMetadata.getTableName();
 
 		// get prepared statement
-		PreparedStatement ps = selectCache.get(table);
+		PreparedStatement ps = statementCache.get(table);
 		if (ps == null) {
 			Select select = select().all().from(keyspace, table);
 			for (String col : pkCols) {
@@ -584,7 +589,7 @@ public class MappingSession {
 			}
 
 			ps = session.prepare(select);
-			selectCache.put(table, ps);
+			statementCache.put(table, ps);
 		}
 
 		// bind parameters
