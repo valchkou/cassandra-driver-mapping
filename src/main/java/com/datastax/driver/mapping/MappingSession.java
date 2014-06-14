@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 import com.datastax.driver.core.DataType;
@@ -64,8 +65,23 @@ public class MappingSession {
 	protected static final Logger log = Logger.getLogger(EntityFieldMetaData.class.getName());
 	protected Session session;
 	protected String keyspace;
-	protected static Map<String, PreparedStatement> statementCache = new HashMap<String, PreparedStatement>();
+	protected static ConcurrentHashMap<String, PreparedStatement> statementCache =  new ConcurrentHashMap<String, PreparedStatement>();
 
+	/**
+	 * Get statement from the cache or
+	 * Prepare statement and place it in the cache.
+	 * @return PreparedStatement.
+	 */
+	protected static PreparedStatement getOrPrepareStatement(Session session, BuiltStatement stmt, String key) {
+		PreparedStatement ps = statementCache.get(key);
+		if (ps == null) {
+			ps = session.prepare(stmt);
+			PreparedStatement old = statementCache.putIfAbsent(key, ps);
+			ps  = (old == null? ps: old);
+		}
+		return ps;
+	}
+	
 	public MappingSession(String keyspace, Session session) {
 		this.session = session;
 		this.keyspace = keyspace;
@@ -382,12 +398,7 @@ public class MappingSession {
 		// bind parameters
 		Object[] values = emeta.getIdValues(id).toArray(new Object[pkCols.size()]);
 		String q = stmt.getQueryString();
-		PreparedStatement ps = statementCache.get(q);
-		if (ps == null) {
-			ps = session.prepare(stmt);
-			statementCache.put(q, ps);
-		}
-		log.fine("about to bind and execute PreparedStatement:"+q);
+		PreparedStatement ps = getOrPrepareStatement(session, stmt, q); 
 		BoundStatement bs = ps.bind(values);
 		session.execute(bs);
 	}
@@ -587,9 +598,7 @@ public class MappingSession {
 					select.setRetryPolicy(options.getRetryPolicy());
 				}
 			}
-
-			ps = session.prepare(select);
-			statementCache.put(table, ps);
+			ps = getOrPrepareStatement(session, select, table);
 		}
 
 		// bind parameters
