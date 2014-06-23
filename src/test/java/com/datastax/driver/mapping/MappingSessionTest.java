@@ -45,6 +45,7 @@ import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.exceptions.InvalidQueryException;
 import com.datastax.driver.core.policies.DefaultRetryPolicy;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.mapping.EntityFieldMetaData;
@@ -130,6 +131,18 @@ public class MappingSessionTest {
 		assertNull(loaded);
 	}
 
+	@Test
+	public void doNotSyncTest() throws Exception {
+		MappingSession msession = new MappingSession(keyspace, session, true);
+		try {
+			msession.get(Simple.class, UUID.randomUUID());
+		} catch (InvalidQueryException e) {
+			 assertEquals("unconfigured columnfamily simple", e.getMessage());
+			 return;
+		}
+		assertTrue(false);
+	}
+	
 	@Test
 	public void saveAndGetWithOptionsTest() throws Exception {
 		UUID uuid = UUID.randomUUID();

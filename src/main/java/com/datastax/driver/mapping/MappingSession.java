@@ -65,6 +65,7 @@ public class MappingSession {
 	protected static final Logger log = Logger.getLogger(EntityFieldMetaData.class.getName());
 	protected Session session;
 	protected String keyspace;
+	protected boolean doNotSync;
 	protected static ConcurrentHashMap<String, PreparedStatement> statementCache =  new ConcurrentHashMap<String, PreparedStatement>();
 
 	/**
@@ -83,10 +84,14 @@ public class MappingSession {
 	}
 	
 	public MappingSession(String keyspace, Session session) {
-		this.session = session;
-		this.keyspace = keyspace;
+		this(keyspace, session, false);
 	}
 
+	public MappingSession(String keyspace, Session session, boolean doNotSync) {
+		this.session = session;
+		this.keyspace = keyspace;
+		this.doNotSync = doNotSync;
+	}	
 	/**
 	 * Return the persistent instance of the given entity class with the given
 	 * identifier, or null if there is no such persistent instance
@@ -676,6 +681,8 @@ public class MappingSession {
 
 	/** run sync if not yet done */
 	protected void maybeSync(Class<?> clazz) {
+		if (doNotSync) return; // forced to skip sync
+		
 		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
 		if (!entityMetadata.isSynced()) {
 			SchemaSync.sync(keyspace, session, clazz);
@@ -801,6 +808,14 @@ public class MappingSession {
 		public void execute() {
 			m.session.execute(b);
 		}
+	}
+
+	public boolean isDoNotSync() {
+		return doNotSync;
+	}
+
+	public void setDoNotSync(boolean doNotSynch) {
+		this.doNotSync = doNotSynch;
 	}
 
 }
