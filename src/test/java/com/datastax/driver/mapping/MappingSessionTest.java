@@ -57,9 +57,11 @@ import com.datastax.driver.mapping.entity.EntityMixedCase;
 import com.datastax.driver.mapping.entity.EntityWithCollections;
 import com.datastax.driver.mapping.entity.EntityWithCollectionsOverride;
 import com.datastax.driver.mapping.entity.EntityWithCompositeKey;
+import com.datastax.driver.mapping.entity.EntityWithEnum;
 import com.datastax.driver.mapping.entity.EntityWithIndexes;
 import com.datastax.driver.mapping.entity.EntityWithKey;
 import com.datastax.driver.mapping.entity.EntityWithVersion;
+import com.datastax.driver.mapping.entity.Month;
 import com.datastax.driver.mapping.entity.Simple;
 import com.datastax.driver.mapping.entity.SimpleKey;
 import com.datastax.driver.mapping.option.WriteOptions;
@@ -107,6 +109,7 @@ public class MappingSessionTest {
 		EntityTypeParser.remove(EntityMixedCase.class);
 		EntityTypeParser.remove(EntityWithVersion.class);
 		EntityTypeParser.remove(EntityWithCollectionsOverride.class);
+		EntityTypeParser.remove(EntityWithEnum.class);
 	}
 	
 	@Test
@@ -700,5 +703,29 @@ public class MappingSessionTest {
 			Thread.sleep(n);
 		} catch (Exception e) {
 		}
+	}
+	
+	@Test
+	public void saveEntityWithEnumTest() throws Exception {
+		UUID uuid = UUID.randomUUID();
+		EntityWithEnum obj = new EntityWithEnum();
+		obj.setId(uuid);
+		obj.setMonth(Month.JUNE);
+		
+		EntityWithEnum loaded = target.get(EntityWithEnum.class, uuid);
+		assertNull(loaded);
+		
+		target.save(obj);
+		loaded = target.get(EntityWithEnum.class, uuid);
+		assertEquals(obj, loaded);
+		
+		obj.setMonth(Month.APRIL);
+		target.save(obj);
+		loaded = target.get(EntityWithEnum.class, uuid);
+		assertEquals(obj, loaded);
+		
+		target.delete(loaded);
+		loaded = target.get(EntityWithEnum.class, uuid);
+		assertNull(loaded);
 	}
 }

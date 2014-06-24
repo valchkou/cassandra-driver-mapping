@@ -67,6 +67,7 @@ public class EntityTypeParser {
 	    javaTypeToDataType.put(long.class, 								DataType.Name.BIGINT);
 	    javaTypeToDataType.put(double.class, 							DataType.Name.DOUBLE);
 	    javaTypeToDataType.put(float.class, 							DataType.Name.FLOAT);
+	    javaTypeToDataType.put(Enum.class,	 							DataType.Name.VARCHAR);
 	}
 	
 	/**
@@ -171,7 +172,7 @@ public class EntityTypeParser {
 				parsePropertyLevelMetadata(f.getType(), result,  pkm, true);
 			}
 		
-			if ((f.getAnnotation(Transient.class) == null && javaTypeToDataType.get(f.getType()) != null) || isOwnField){
+			if ((f.getAnnotation(Transient.class) == null && javaTypeToDataType.get(f.getType()) != null) || isOwnField || f.getType().isEnum()){
 				Method getter = null;
 				Method setter = null;
 				for (Method m: methods) {
@@ -249,7 +250,13 @@ public class EntityTypeParser {
 	 * @Column columnDefinition may override datatype.
 	 */
 	private static DataType.Name getColumnDataType(Field f) {
-		DataType.Name dataType = javaTypeToDataType.get(f.getType()); 
+		Class<?> t = f.getType();
+		DataType.Name dataType = javaTypeToDataType.get(t);
+		
+		if (t.isEnum()) { // enum is a special type.
+			dataType = javaTypeToDataType.get(Enum.class);
+		}
+		 
 		Annotation columnA = f.getAnnotation(Column.class);
 		if (columnA instanceof Column) {
 			String typedef = ((Column) columnA).columnDefinition();

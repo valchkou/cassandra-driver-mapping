@@ -115,7 +115,7 @@ public class MappingSession {
 	 * @param id
 	 *            - an identifier
 	 * @param options
-	 *            - read options supported by cassandra. such as read
+	 *            - read options supported by Cassandra. such as read
 	 *            consistency
 	 * @return a persistent instance or null
 	 */
@@ -439,16 +439,17 @@ public class MappingSession {
 		}
 
 		for (int i = 0; i < fields.size(); i++) {
-			String colName = fields.get(i).getColumnName();
+			EntityFieldMetaData f = fields.get(i);
+			String colName = f.getColumnName();
 			Object colVal = null;
 			if (pkCols.contains(colName)) {
 				int idx = pkCols.indexOf(colName);
 				colVal = pkVals.get(idx);
 			} else {
-				colVal = fields.get(i).getValue(entity);
+				colVal = f.getValue(entity);
 			}
 			columns[i] = colName;
-			if (fields.get(i).equals(verField)) {
+			if (f.equals(verField)) {
 				values[i] = newVersion;
 			} else {
 				values[i] = colVal;
@@ -618,7 +619,7 @@ public class MappingSession {
 		String table = entityMetadata.getTableName();
 		Delete delete = QueryBuilder.delete().from(keyspace, table);
 		Object[] values = entityMetadata.getEntityPKValues(entity).toArray(new Object[pkCols.size()]);
-		for (int i=0; i< values.length; i++) {
+		for (int i=0; i<values.length; i++) {
 			delete.where(eq(pkCols.get(i), values[i]));
 		}
 		return delete;
@@ -638,7 +639,8 @@ public class MappingSession {
 			T entity = null;
 			Object primaryKey = null;
 			Object partitionKey = null;
-
+			
+			// create PK
 			try {
 				entity = clazz.newInstance();
 				PrimaryKeyMetadata pkmeta = entityMetadata.getPrimaryKeyMetadata();
@@ -657,6 +659,7 @@ public class MappingSession {
 				return null;
 			}
 
+			// set properties' values 
 			for (EntityFieldMetaData field : entityMetadata.getFields()) {
 				Object value = getValueFromRow(row, field);
 				try {
@@ -731,6 +734,9 @@ public class MappingSession {
 				break;
 			case FLOAT:
 				value = row.getFloat(field.getColumnName());
+				break;
+			case VARCHAR:
+				value = row.getString(field.getColumnName());
 				break;
 			case MAP:
 				if (value == null) {

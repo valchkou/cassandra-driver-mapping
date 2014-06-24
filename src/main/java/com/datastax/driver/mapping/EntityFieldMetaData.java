@@ -64,7 +64,11 @@ public class EntityFieldMetaData {
 	 */	
 	public <E> Object getValue(E entity) {
 		try {
-			return getter.invoke(entity, new Object[]{});
+			Object ret = getter.invoke(entity, new Object[]{});
+			if (field.getType().isEnum()) {
+				return ((Enum<?>)ret).name();
+			}
+			return ret;			
 		} catch (Exception e) {
 			log.info("Can't get value for obj:"+entity+", method:"+getter.getName());
 		}
@@ -78,6 +82,10 @@ public class EntityFieldMetaData {
 	 */
 	public <E> void setValue(E entity, Object value) {
 		try {
+			if (field.getType().isEnum()) {
+				Object eval = Enum.valueOf((Class<Enum>)field.getType(), (String)value);
+				setter.invoke(entity, new Object[]{eval});
+			}
 			setter.invoke(entity, new Object[]{value});
 		} catch (Exception e) {
 			log.info("Can't set value for obj:"+entity+", method:"+setter.getName());

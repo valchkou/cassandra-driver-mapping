@@ -37,6 +37,7 @@ import com.datastax.driver.mapping.entity.CompositeKey;
 import com.datastax.driver.mapping.entity.EntityOverrideDataType;
 import com.datastax.driver.mapping.entity.EntityWithCollectionsOverride;
 import com.datastax.driver.mapping.entity.EntityWithCompositeKey;
+import com.datastax.driver.mapping.entity.EntityWithEnum;
 import com.datastax.driver.mapping.entity.EntityWithKey;
 import com.datastax.driver.mapping.entity.EntityWithProperties;
 import com.datastax.driver.mapping.entity.Simple;
@@ -48,6 +49,7 @@ public class EntityTypeParserTest {
 	public void setUp() {
 		EntityTypeParser.remove(Simple.class);
 		EntityTypeParser.remove(EntityWithKey.class);
+		EntityTypeParser.remove(EntityWithEnum.class);
 		EntityTypeParser.remove(EntityWithCompositeKey.class);
 		EntityTypeParser.remove(EntityOverrideDataType.class);
 		EntityTypeParser.remove(EntityWithCollectionsOverride.class);
@@ -202,4 +204,11 @@ public class EntityTypeParserTest {
 		assertEquals(LinkedList.class, fd.getCollectionType());		
 
 	}
+	
+	@Test
+	public void testGetEntityMetadataWithEnum() {
+		EntityTypeMetadata meta = EntityTypeParser.getEntityMetadata(EntityWithEnum.class);
+		assertEquals("entity_with_enum", meta.getTableName());
+		assertEquals(2, meta.getFields().size());
+	}	
 }
