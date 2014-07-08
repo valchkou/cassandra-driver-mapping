@@ -29,7 +29,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import com.datastax.driver.core.DataType;
@@ -51,6 +53,8 @@ import com.datastax.driver.mapping.option.BatchOptions;
 import com.datastax.driver.mapping.option.ReadOptions;
 import com.datastax.driver.mapping.option.WriteOptions;
 import com.datastax.driver.mapping.schemasync.SchemaSync;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 
 /**
  * API to work with entities to be persisted in Cassandra. This is lightweight
@@ -66,20 +70,33 @@ public class MappingSession {
 	protected Session session;
 	protected String keyspace;
 	protected boolean doNotSync;
-	protected static ConcurrentHashMap<String, PreparedStatement> statementCache =  new ConcurrentHashMap<String, PreparedStatement>();
+	protected static Cache<String, PreparedStatement> statementCache = CacheBuilder
+			.newBuilder()
+			.expireAfterAccess(5, TimeUnit.MINUTES)
+            .maximumSize(1000)
+            .concurrencyLevel(4)
+            .build();
 
 	/**
 	 * Get statement from the cache or
 	 * Prepare statement and place it in the cache.
 	 * @return PreparedStatement.
 	 */
-	protected static PreparedStatement getOrPrepareStatement(Session session, BuiltStatement stmt, String key) {
-		PreparedStatement ps = statementCache.get(key);
-		if (ps == null) {
-			ps = session.prepare(stmt);
-			PreparedStatement old = statementCache.putIfAbsent(key, ps);
-			ps  = (old == null? ps: old);
+	protected static PreparedStatement getOrPrepareStatement(final Session session, final BuiltStatement stmt, String key) {
+		PreparedStatement ps = null;
+		try {
+			ps = statementCache.get(key, new Callable<PreparedStatement>() {
+				@Override
+				public PreparedStatement call() throws Exception {
+					return session.prepare(stmt);
+				}
+			 });
+		} catch (ExecutionException e) {
+			// if the error caused by prepare the client will get it as is,
+			// otherwise process will not blow and statement will not be cached.
+			return session.prepare(stmt); 
 		}
+				
 		return ps;
 	}
 	
@@ -582,35 +599,50 @@ public class MappingSession {
 	/**
 	 * Prepare BoundStatement to select row by id
 	 */
-	protected <T> BoundStatement prepareSelect(Class<T> clazz, Object id, ReadOptions options) {
+	protected <T> BoundStatement prepareSelect(Class<T> clazz, Object id, final ReadOptions options) {
 		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
-		List<String> pkCols = entityMetadata.getPkColumns();
-		String table = entityMetadata.getTableName();
+		final List<String> pkCols = entityMetadata.getPkColumns();
+		final String table = entityMetadata.getTableName();
 
 		// get prepared statement
-		PreparedStatement ps = statementCache.get(table);
-		if (ps == null) {
-			Select select = select().all().from(keyspace, table);
-			for (String col : pkCols) {
-				select.where(eq(col, QueryBuilder.bindMarker()));
-			}
-
-			if (options != null) {
-				if (options.getConsistencyLevel() != null) {
-					select.setConsistencyLevel(options.getConsistencyLevel());
+		PreparedStatement ps = null;
+		try {
+			ps = statementCache.get(table, new Callable<PreparedStatement>() {
+				@Override
+				public PreparedStatement call() throws Exception {
+					Select stmt = buildSelectAll(table, pkCols, options);
+					return session.prepare(stmt);
 				}
-
-				if (options.getRetryPolicy() != null) {
-					select.setRetryPolicy(options.getRetryPolicy());
-				}
-			}
-			ps = getOrPrepareStatement(session, select, table);
+			 });
+		} catch (ExecutionException e) {
+			// if the error caused by prepare the client will get it as is,
+			// otherwise process will not blow and statement will not be cached.
+			Select stmt = buildSelectAll(table, pkCols, options);
+			ps = session.prepare(stmt); 
 		}
 
 		// bind parameters
 		Object[] values = entityMetadata.getIdValues(id).toArray(new Object[pkCols.size()]);
 		BoundStatement bs = ps.bind(values);
 		return bs;
+	}
+	
+	protected Select buildSelectAll(String table, List<String> pkCols, ReadOptions options) {
+		Select select = select().all().from(keyspace, table);
+		for (String col : pkCols) {
+			select.where(eq(col, QueryBuilder.bindMarker()));
+		}
+
+		if (options != null) {
+			if (options.getConsistencyLevel() != null) {
+				select.setConsistencyLevel(options.getConsistencyLevel());
+			}
+
+			if (options.getRetryPolicy() != null) {
+				select.setRetryPolicy(options.getRetryPolicy());
+			}
+		}
+		return select;
 	}
 
 	protected <E> BuiltStatement buildDelete(E entity) {
@@ -822,6 +854,15 @@ public class MappingSession {
 
 	public void setDoNotSync(boolean doNotSynch) {
 		this.doNotSync = doNotSynch;
+	}
+
+	public static Cache<String, PreparedStatement> getStatementCache() {
+		return statementCache;
+	}
+
+	public static void setStatementCache(
+			Cache<String, PreparedStatement> statementCache) {
+		MappingSession.statementCache = statementCache;
 	}
 
 }
