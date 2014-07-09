@@ -46,8 +46,10 @@ Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.c
 	* [CQL String](#queries_cql)
 	* [QueryBuilder (better)](#queries_builder)	
 	* [QueryBuilder with EntityMetadata (even better)](#queries_meta)
-- [How Entity get synchronized](#sync)  
-- [Entity Metadata and Data Types](#metadata)  
+- [Under The Hood](#under)
+	* [Prepared Statement Cache](#pscache)  
+	* [How Entity get synchronized](#sync)  
+	* [Entity Metadata and Data Types](#metadata)  
 - [Spring Framework Example](#spring)  
 
 <a name="features"/>
@@ -752,11 +754,14 @@ To avoid changing queries each time you rename something you can employ entity m
 	List<Entity> result = mappingSession.getByQuery(Entity.class, query);
 ```
 
+<a name="under"/>
+### Under The Hood
 
-
+	- [Prepared Statement Cache](#pscache)  
+ 
 	   
 <a name="sync"/>	   
-### How Entity get synchronized
+## How Entity get synchronized
 The table structure is automatically synchronized with the entity definition on the first use of the entity.  
 Any SessionMapping call internally will check if the entity has already been synchronized and if not   
 it will run SchemaSync.sync. You can use sync API directly as:  
@@ -794,7 +799,7 @@ Alterable
    - change datatype to compatible one. Compatibility is enforced by C*.	
    		
 <a name="metadata"/>
-### Entity Metadata and Data Types
+## Entity Metadata and Data Types
    
 You may want to access Entity metadata if you are building custom Statements.    
 Entity Metadata contains corresponding table and column names.  
