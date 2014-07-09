@@ -57,14 +57,14 @@ Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.c
 
 The features provided by the module include:
 
-	#### Manipulate Entity
+- Manipulate Entity
   	* Get entity from Cassandra.
   	* Save entity to Cassandra.
 	* Delete entity from Cassandra.
 	* Run and map custom Queries.
 	* Convert ResultSet into List of Entities
 
-  	### Generate Schema
+- Generate Schema
   	* Create table and indexes from Entity. 
   	* Alter table and indexes if entity definition has changed.
   	* Drop table and indexes.
