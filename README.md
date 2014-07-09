@@ -761,7 +761,7 @@ To avoid changing queries each time you rename something you can employ entity m
  
 	   
 <a name="sync"/>	   
-## How Entity get synchronized
+#### How Entity get synchronized
 The table structure is automatically synchronized with the entity definition on the first use of the entity.  
 Any SessionMapping call internally will check if the entity has already been synchronized and if not   
 it will run SchemaSync.sync. You can use sync API directly as:  
