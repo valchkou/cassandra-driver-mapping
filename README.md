@@ -757,8 +757,30 @@ To avoid changing queries each time you rename something you can employ entity m
 <a name="under"/>
 ### Under The Hood
 
-	- [Prepared Statement Cache](#pscache)  
- 
+<a name="pscache"/>	   
+#### Prepared Statement Cache
+For the performance gain most update/select/delete statements are built as Prepared Statements.
+Prepared Statements are reusable and placed in the static cache.
+Cache is Guava Cache implementation initialized as:
+```java
+.expireAfterAccess(5, TimeUnit.MINUTES)
+.maximumSize(1000)
+.concurrencyLevel(4)
+```
+
+If you want to tune the cache for better performance you can do it as:
+```java
+Cache<String, PreparedStatement> cache = CacheBuilder
+	.newBuilder()
+	.expireAfterAccess(60, TimeUnit.MINUTES)
+        .maximumSize(10000)
+        .concurrencyLevel(8)
+        .build();
+
+MappingSession.setStatementCache(cache);
+```
+[More about Guava Cache](https://code.google.com/p/guava-libraries/wiki/CachesExplained)  
+
 	   
 <a name="sync"/>	   
 #### How Entity get synchronized
@@ -799,7 +821,7 @@ Alterable
    - change datatype to compatible one. Compatibility is enforced by C*.	
    		
 <a name="metadata"/>
-## Entity Metadata and Data Types
+#### Entity Metadata and Data Types
    
 You may want to access Entity metadata if you are building custom Statements.    
 Entity Metadata contains corresponding table and column names.  
