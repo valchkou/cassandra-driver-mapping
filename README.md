@@ -170,6 +170,7 @@ OR
 
 <a name="mapping_basic"/>	  	  
 #### Basic Mapping
+
 	```java
 	import javax.persistence.Id;
 	import javax.persistence.Table;
@@ -200,6 +201,7 @@ OR
 	
 <a name="mapping_index"/>	
 #### Mapping Indexes
+
 	```java
 	import javax.persistence.Id;
 	import javax.persistence.Table;
