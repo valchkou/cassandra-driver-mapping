@@ -200,223 +200,220 @@ CQL3 Statement
 
 <a name="mapping_index"/>	
 #### Mapping Indexes
+```java
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Column
+import javax.persistence.Index
+import java.util.UUID
 
-	```java
-	import javax.persistence.Id;
-	import javax.persistence.Table;
-	import javax.persistence.Column
-	import javax.persistence.Index
-	import java.util.UUID
+@Table (name="mytable", 
+indexes = {
+	@Index(name="entity_email_idx", columnList="email" ), 
+	@Index(name="entity_name_idx", columnList="myname" ) 
+})
+public class Entity {
 	
-	@Table (name="mytable", 
-	indexes = {
-		@Index(name="entity_email_idx", columnList="email" ), 
-		@Index(name="entity_name_idx", columnList="myname" ) 
-	})
-	public class Entity {
-		
-		@Id
-		private java.util.UUID code;
-		
-		@Column(name = "myname")
-		private String name;
-		private String email;
-		// public getters/setters ...
-	}
-	```
-	CQL3 Statement
-	```
-   		CREATE TABLE IF NOT EXISTS ks.mytable (code uuid, myname text, email text,  PRIMARY KEY(code)); 
-		CREATE INDEX IF NOT EXISTS entity_email_idx ON ks.mytable(email);  
-		CREATE INDEX IF NOT EXISTS entity_name_idx ON ks.mytable(myname);
-	```   
+	@Id
+	private java.util.UUID code;
+	
+	@Column(name = "myname")
+	private String name;
+	private String email;
+	// public getters/setters ...
+}
+```
+CQL3 Statement
+```
+   	CREATE TABLE IF NOT EXISTS ks.mytable (code uuid, myname text, email text,  PRIMARY KEY(code)); 
+	CREATE INDEX IF NOT EXISTS entity_email_idx ON ks.mytable(email);  
+	CREATE INDEX IF NOT EXISTS entity_name_idx ON ks.mytable(myname);
+```   
 
 <a name="mapping_composite"/>
 #### Compound Primary Key
+```java
+import java.math.BigInteger;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-   	```java
-	import javax.persistence.Embeddable;	
+import javax.persistence.Id;
+import javax.persistence.Table;
 
-	@Embeddable
-	public class CompositeKey {
-		private String name;
-		private int rank;
-		// public getters/setters ...
-	}
-	```
-   	```java
-
-	import javax.persistence.Table;
-	import javax.persistence.EmbeddedId;	
+@Table(name="entity")
+public class Entity {
+	@Id
+	private java.util.UUID id;
+	private List<String> cats;
+	private Set<Date> dogs;
+	private Map<String, BigInteger> pets;
 	
-	@Table(name="entity")
-	public class Entity {
-		@EmbeddedId
-		private CompositeKey key;
-		private String email;
-		// public getters/setters ...
-	}
-	```
-	CQL3 Statement
-	```
-   	CREATE TABLE IF NOT EXISTS ks.entity (name text,  rank int, email text,  PRIMARY KEY(name, rank))
-	```     
+	// public getters/setters ...
+}
+``````java
+import javax.persistence.Embeddable;	
+
+@Embeddable
+public class CompositeKey {
+	private String name;
+	private int rank;
+	// public getters/setters ...
+}
+```
+```java
+
+import javax.persistence.Table;
+import javax.persistence.EmbeddedId;	
+
+@Table(name="entity")
+public class Entity {
+	@EmbeddedId
+	private CompositeKey key;
+	private String email;
+	// public getters/setters ...
+}
+```
+CQL3 Statement
+```
+   CREATE TABLE IF NOT EXISTS ks.entity (name text,  rank int, email text,  PRIMARY KEY(name, rank))
+```     
 
 <a name="mapping_partition"/>
 #### Composite Partition Key
+```java
+import javax.persistence.Embeddable;	
 
-   	```java
-	import javax.persistence.Embeddable;	
+@Embeddable
+public class PartitionKey {
+	private String firstName;
+	private String lastName;
+	// public getters/setters ...
+}
+```
+```java
+import javax.persistence.Embeddable;	
 
-	@Embeddable
-	public class PartitionKey {
-		private String firstName;
-		private String lastName;
-		// public getters/setters ...
-	}
-	```
-   	```java
-	import javax.persistence.Embeddable;	
+@Embeddable
+public class CompositeKey {
+	@EmbeddedId
+	private PartitionKey key;
+	private int age;
+	// public getters/setters ...
+}
+```
+```java
+import javax.persistence.Table;
+import javax.persistence.EmbeddedId;	
 
-	@Embeddable
-	public class CompositeKey {
-		@EmbeddedId
-		private PartitionKey key;
-		private int age;
-		// public getters/setters ...
-	}
-	```
-   	```java
-	import javax.persistence.Table;
-	import javax.persistence.EmbeddedId;	
-	
-	@Table(name="entity")
-	public class Entity {
-		@EmbeddedId
-		private CompositeKey key;
-		private String email;
-		// public getters/setters ...
-	}
-	```
-	CQL3 Statement
-	```
-   	CREATE TABLE IF NOT EXISTS ks.entity (firstname text, lastname text, age int, email text,  PRIMARY KEY((firstname, lastname), age))
-	```     
+@Table(name="entity")
+public class Entity {
+	@EmbeddedId
+	private CompositeKey key;
+	private String email;
+	// public getters/setters ...
+}
+```
+CQL3 Statement
+```
+   CREATE TABLE IF NOT EXISTS ks.entity (firstname text, lastname text, age int, email text,  PRIMARY KEY((firstname, lastname), age))
+```     
 
 <a name="mapping_properties"/>
 #### Table Properties  
-	This feature is not JPA standard! [ Read more about C* Table properties ] (http://www.datastax.com/documentation/cql/3.1/cql/cql_reference/cql_storage_options_c.html)
-	```java
-	import javax.persistence.Id;
-	import javax.persistence.Table;
-	import javax.persistence.Column
+This feature is not JPA standard! [ Read more about C* Table properties ] (http://www.datastax.com/documentation/cql/3.1/cql/cql_reference/cql_storage_options_c.html)
+```java
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Column
 
-	import com.datastax.driver.mapping.annotation.TableProperties;
-	import com.datastax.driver.mapping.annotation.TableProperty;
+import com.datastax.driver.mapping.annotation.TableProperties;
+import com.datastax.driver.mapping.annotation.TableProperty;
+
+@Table (name="mytable")
+@TableProperties(values = {
+	@TableProperty(value="comment='Important records'"),
+	@TableProperty(value="read_repair_chance = 1.0"),
+	@TableProperty(value="compression ={ 'sstable_compression' : 'DeflateCompressor', 'chunk_length_kb' : 64 }")
+})
+public class Entity {
 	
-	@Table (name="mytable")
-	@TableProperties(values = {
-		@TableProperty(value="comment='Important records'"),
-		@TableProperty(value="read_repair_chance = 1.0"),
-		@TableProperty(value="compression ={ 'sstable_compression' : 'DeflateCompressor', 'chunk_length_kb' : 64 }")
-	})
-	public class Entity {
-		
-		@Id
-		private long Id;
-		private String name;
-		// public getters/setters ...
-	}
-	```
-	CQL3 Statement
-	```
-   	CREATE TABLE IF NOT EXISTS ks.mytable (id bigint, name text, PRIMARY KEY(id)) WITH comment='Important records' AND read_repair_chance = 1.0 AND compression ={ 'sstable_compression' : 'DeflateCompressor', 'chunk_length_kb' : 64 }
-	```     
+	@Id
+	private long Id;
+	private String name;
+	// public getters/setters ...
+}
+```
+CQL3 Statement
+```
+   CREATE TABLE IF NOT EXISTS ks.mytable (id bigint, name text, PRIMARY KEY(id)) WITH comment='Important records' AND read_repair_chance = 1.0 AND compression ={ 'sstable_compression' : 'DeflateCompressor', 'chunk_length_kb' : 64 }
+```     
 
 <a name="mapping_datatype"/>
 #### Override Column Data Type.   
-	Datastax defines [data type mapping from Java to C*] (http://www.datastax.com/documentation/developer/java-driver/2.0/java-driver/reference/javaClass2Cql3Datatypes_r.html).  
-	This addon defines opposite way mapping. [You can explore daults here](#metadata).    
-	But in case you don't like defaults you are able to override the type on the column level.   
-	For example you want to leverage "time UUID" for timeseries data instead of "random UUID".  
-	```java
-	import javax.persistence.Id;
-	import javax.persistence.Table;
-	import javax.persistence.Column
+Datastax defines [data type mapping from Java to C*] (http://www.datastax.com/documentation/developer/java-driver/2.0/java-driver/reference/javaClass2Cql3Datatypes_r.html).  
+This addon defines opposite way mapping. [You can explore daults here](#metadata).    
+But in case you don't like defaults you are able to override the type on the column level.   
+For example you want to leverage "time UUID" for timeseries data instead of "random UUID".  
+```java
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Column
 
-	@Table (name="mytable")
-	public class Entity {
-		
-		@Id
-		@Column(name="uid", columnDefinition="timeuuid") // case insensitive
-		private UUID uid;		
-		
-		@Column(name="name", columnDefinition="VarChaR") // case insensitive
-		private String name;
-		// public getters/setters ...
-	}
-	```
-	CQL3 Statement
-	```
-   	CREATE TABLE IF NOT EXISTS ks.mytable (uid timeuuid, name varchar, PRIMARY KEY(uid))
-	```     
+@Table (name="mytable")
+public class Entity {
+	
+	@Id
+	@Column(name="uid", columnDefinition="timeuuid") // case insensitive
+	private UUID uid;		
+	
+	@Column(name="name", columnDefinition="VarChaR") // case insensitive
+	private String name;
+	// public getters/setters ...
+}
+```
+CQL3 Statement
+```
+   CREATE TABLE IF NOT EXISTS ks.mytable (uid timeuuid, name varchar, PRIMARY KEY(uid))
+```     
 	
 <a name="mapping_mixed"/>
 #### Mixed Case for Column Names  
-	[C* converts all names to lowercase](http://www.datastax.com/documentation/cql/3.1/cql/cql_reference/ucase-lcase_r.html). This is default and recommended approach.  
-	But in case you need enforce the case you will need to wrap you names in double quotes. 
-	```java
-	import javax.persistence.Id;
-	import javax.persistence.Table;
-	import javax.persistence.Column
+[C* converts all names to lowercase](http://www.datastax.com/documentation/cql/3.1/cql/cql_reference/ucase-lcase_r.html). This is default and recommended approach.  
+But in case you need enforce the case you will need to wrap you names in double quotes. 
+```java
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Column
 
-	@Table (name="mytable")
-	public class Entity {
-		
-		@Id
-		@Column(name = "\"KEY\"")
-		private int id;
-		private String firstName;
+@Table (name="mytable")
+public class Entity {
 	
-		@Column(name = "\"last_NAME\"")
-		private String lastName;
-	
-		@Column(name = "AGE")
-		private int age;
-		// public getters/setters ...
-	}
-	```
-	CQL3 Statement
-	```
-   	CREATE TABLE IF NOT EXISTS ks.mytable ("KEY" int, firstName text, "last_NAME" text, AGE int, PRIMARY KEY("KEY"))
-	```     
+	@Id
+	@Column(name = "\"KEY\"")
+	private int id;
+	private String firstName;
+
+	@Column(name = "\"last_NAME\"")
+	private String lastName;
+
+	@Column(name = "AGE")
+	private int age;
+	// public getters/setters ...
+}
+```
+CQL3 Statement
+```
+   CREATE TABLE IF NOT EXISTS ks.mytable ("KEY" int, firstName text, "last_NAME" text, AGE int, PRIMARY KEY("KEY"))
+```     
 
 <a name="collections"/>
 ### Collections
    
 <a name="mapping_collections"/>
 #### Mapping
-   	```java
-	import java.math.BigInteger;
-	import java.util.Date;
-	import java.util.List;
-	import java.util.Map;
-	import java.util.Set;
-	
-	import javax.persistence.Id;
-	import javax.persistence.Table;
-	
-	@Table(name="entity")
-	public class Entity {
-		@Id
-		private java.util.UUID id;
-		private List<String> cats;
-		private Set<Date> dogs;
-		private Map<String, BigInteger> pets;
-		
-		// public getters/setters ...
-	}
-	```
+
 Collections must have generic type defined. Only java.util.List, Map and Set are allowed.  
 By default implementation of HashMap, HashSet and ArrayList are used.
 If you are unhappy with that fact and would like your data to be baked with specific collection implementation you can apply an annotation as shown below.
