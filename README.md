@@ -170,35 +170,34 @@ OR
 
 <a name="mapping_basic"/>	  	  
 #### Basic Mapping
+```java
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Column
 
-	```java
-	import javax.persistence.Id;
-	import javax.persistence.Table;
-	import javax.persistence.Column
+@Table (name="mytable")
+public class Entity {
 	
-	@Table (name="mytable")
-	public class Entity {
-		
-		@Id
-		private long Id;
-		
-		@Column(name = "myname")
-		private String name;
-		
-		// @Column is not required
-		private int age;
-		
-		@Transient
-		private BigDecimal calculable;
-		
-		// public getters/setters ...
-	}
-	```
-	CQL3 Statement
-	```
-   	CREATE TABLE IF NOT EXISTS ks.mytable (id bigint, myname text, age int, PRIMARY KEY(id))
-	```     
+	@Id
+	private long Id;
 	
+	@Column(name = "myname")
+	private String name;
+	
+	// @Column is not required
+	private int age;
+	
+	@Transient
+	private BigDecimal calculable;
+	
+	// public getters/setters ...
+}
+```
+CQL3 Statement
+```
+   CREATE TABLE IF NOT EXISTS ks.mytable (id bigint, myname text, age int, PRIMARY KEY(id))
+```     
+
 <a name="mapping_index"/>	
 #### Mapping Indexes
 
