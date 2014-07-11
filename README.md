@@ -31,9 +31,9 @@ Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.c
 - [Collections](#collections)
 	* [Mapping](#mapping_collections)
 	* [Optimized operations](#collections_opt)	
-	* [List operations](#collections_list)
-	* [Set operations](#collections_set)
-	* [Map operations](#collections_map)
+		- [List](#collections_list)
+		- [Set](#collections_set)
+		- [Map](#collections_map)
 - [Optimistic Lock](#lock)
 	* [Lightweight transactions](#lock_transactions)
 	* [@Version](#lock_version)
@@ -169,7 +169,7 @@ OR
 
 
 <a name="mapping_basic"/>	  	  
-- Basic Mapping
+#### Basic Mapping
 	```java
 	import javax.persistence.Id;
 	import javax.persistence.Table;
@@ -199,7 +199,7 @@ OR
 	```     
 	
 <a name="mapping_index"/>	
-- Mapping Indexes
+#### Mapping Indexes
 	```java
 	import javax.persistence.Id;
 	import javax.persistence.Table;
@@ -231,7 +231,7 @@ OR
 	```   
 
 <a name="mapping_composite"/>
-- Compound Primary Key
+#### Compound Primary Key
 
    	```java
 	import javax.persistence.Embeddable;	
@@ -262,7 +262,7 @@ OR
 	```     
 
 <a name="mapping_partition"/>
-- Composite Partition Key
+#### Composite Partition Key
 
    	```java
 	import javax.persistence.Embeddable;	
@@ -303,7 +303,7 @@ OR
 	```     
 
 <a name="mapping_properties"/>
-- Table Properties  
+#### Table Properties  
 	This feature is not JPA standard! [ Read more about C* Table properties ] (http://www.datastax.com/documentation/cql/3.1/cql/cql_reference/cql_storage_options_c.html)
 	```java
 	import javax.persistence.Id;
@@ -333,7 +333,7 @@ OR
 	```     
 
 <a name="mapping_datatype"/>
-- Override Column Data Type.   
+#### Override Column Data Type.   
 	Datastax defines [data type mapping from Java to C*] (http://www.datastax.com/documentation/developer/java-driver/2.0/java-driver/reference/javaClass2Cql3Datatypes_r.html).  
 	This addon defines opposite way mapping. [You can explore daults here](#metadata).    
 	But in case you don't like defaults you are able to override the type on the column level.   
@@ -361,7 +361,7 @@ OR
 	```     
 	
 <a name="mapping_mixed"/>
-- Mixed Case for Column Names  
+#### Mixed Case for Column Names  
 	[C* converts all names to lowercase](http://www.datastax.com/documentation/cql/3.1/cql/cql_reference/ucase-lcase_r.html). This is default and recommended approach.  
 	But in case you need enforce the case you will need to wrap you names in double quotes. 
 	```java
@@ -394,7 +394,7 @@ OR
 ### Collections
    
 <a name="mapping_collections"/>
-- Mapping
+#### Mapping
    	```java
 	import java.math.BigInteger;
 	import java.util.Date;
@@ -441,7 +441,7 @@ NOTE: this is strictly java side feature and does not effect how your data store
 For more info on collections please refer [Datastax Using Collection] (http://www.datastax.com/documentation/cql/3.1/cql/cql_using/use_collections_c.html)
 
 <a name="collections_opt"/>
-- Optimized operations  
+#### Optimized operations  
 You can work with your collection properties as you would normally work with other entity properties.  
 In addition C* provides optimized operations on collections. Those operations do not require to load and save the whole entity. C* allows us directly manipulate collections.   
 
