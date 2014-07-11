@@ -252,7 +252,8 @@ public class Entity {
 	
 	// public getters/setters ...
 }
-``````java
+```
+```java
 import javax.persistence.Embeddable;	
 
 @Embeddable
@@ -417,25 +418,25 @@ CQL3 Statement
 Collections must have generic type defined. Only java.util.List, Map and Set are allowed.  
 By default implementation of HashMap, HashSet and ArrayList are used.
 If you are unhappy with that fact and would like your data to be baked with specific collection implementation you can apply an annotation as shown below.
-	```java
-		import com.datastax.driver.mapping.annotation.CollectionType;
-		...
-		@CollectionType(LinkedList.class)
-		private List<String> cats;
-		
-		@CollectionType(TreeSet.class)
-		private Set<Date> dogs;
+```java
+	import com.datastax.driver.mapping.annotation.CollectionType;
+	...
+	@CollectionType(LinkedList.class)
+	private List<String> cats;
+	
+	@CollectionType(TreeSet.class)
+	private Set<Date> dogs;
 
-		@CollectionType(TreeMap.class)
-		private Map<String, BigInteger> pets;
-	}
-	```
+	@CollectionType(TreeMap.class)
+	private Map<String, BigInteger> pets;
+}
+```
 NOTE: this is strictly java side feature and does not effect how your data stored in C*.     
 
-	CQL3 Statement
-	```
-   	CREATE TABLE IF NOT EXISTS ks.entity (id uuid, cats list<text>, dogs set<timestamp>, pets map<text, varint>,  PRIMARY KEY(id))
-	```     
+CQL3 Statement
+```
+   CREATE TABLE IF NOT EXISTS ks.entity (id uuid, cats list<text>, dogs set<timestamp>, pets map<text, varint>,  PRIMARY KEY(id))
+```     
 For more info on collections please refer [Datastax Using Collection] (http://www.datastax.com/documentation/cql/3.1/cql/cql_using/use_collections_c.html)
 
 <a name="collections_opt"/>
@@ -771,9 +772,9 @@ If you want to tune the cache for better performance you can do it as:
 Cache<String, PreparedStatement> cache = CacheBuilder
 	.newBuilder()
 	.expireAfterAccess(60, TimeUnit.MINUTES)
-        .maximumSize(10000)
-        .concurrencyLevel(8)
-        .build();
+	.maximumSize(10000)
+	.concurrencyLevel(8)
+	.build();
 
 MappingSession.setStatementCache(cache);
 ```
