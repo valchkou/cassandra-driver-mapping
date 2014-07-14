@@ -159,6 +159,18 @@ public class MappingSession {
 	}
 
 	/**
+	 * Delete the given instance by ID(Primary key)
+	 * 
+	 * @param clazz - type of the object
+	 * @param id - primary key of the object
+	 */
+	public <T> void delete(Class<T> clazz, Object id) {
+		maybeSync(clazz);
+		BuiltStatement bs = buildDelete(clazz, id);
+		session.execute(bs);
+	}
+	
+	/**
 	 * Persist the given instance Entity must have a property id or a property
 	 * annotated with @Id
 	 * 
@@ -648,9 +660,22 @@ public class MappingSession {
 	protected <E> BuiltStatement buildDelete(E entity) {
 		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(entity.getClass());
 		List<String> pkCols = entityMetadata.getPkColumns();
+		Object[] values = entityMetadata.getEntityPKValues(entity).toArray(new Object[pkCols.size()]);
+		Delete delete = buildDelete(entityMetadata, pkCols, values);
+		return delete;
+	}
+
+	protected <T> BuiltStatement buildDelete(Class<T> clazz, Object id) {
+		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
+		List<String> pkCols = entityMetadata.getPkColumns();
+		Object[] values = entityMetadata.getIdValues(id).toArray(new Object[pkCols.size()]);
+		Delete delete = buildDelete(entityMetadata, pkCols, values);
+		return delete;
+	}
+
+	protected <T> Delete buildDelete(EntityTypeMetadata entityMetadata, List<String> pkCols, Object[] values) {
 		String table = entityMetadata.getTableName();
 		Delete delete = QueryBuilder.delete().from(keyspace, table);
-		Object[] values = entityMetadata.getEntityPKValues(entity).toArray(new Object[pkCols.size()]);
 		for (int i=0; i<values.length; i++) {
 			delete.where(eq(pkCols.get(i), values[i]));
 		}
