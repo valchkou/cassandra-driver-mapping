@@ -49,7 +49,6 @@ public class SchemaSyncTest {
 		String node = "127.0.0.1";
 		cluster = Cluster.builder().addContactPoint(node).build();
 		session = cluster.connect();
-		
 	}	
 	
 	@AfterClass 

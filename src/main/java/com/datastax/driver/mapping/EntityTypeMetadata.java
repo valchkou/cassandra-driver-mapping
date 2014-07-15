@@ -91,7 +91,7 @@ public class EntityTypeMetadata {
 	}
 
 	public String getIndex(String column) {
-		return indexes.get(column);
+		return indexes.get(column.toLowerCase());
 	}
 
 	public void addindex(String name, String column) {
