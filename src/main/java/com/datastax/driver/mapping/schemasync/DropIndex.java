@@ -36,13 +36,6 @@ public class DropIndex extends RegularStatement {
 		return String.format(DROP_INDEX_TEMPLATE_CQL, indexName);
 	}
 
-
-	@Override
-	public ByteBuffer[] getValues() {
-		return null;
-	}
-
-
 	@Override
 	public ByteBuffer getRoutingKey() {
 		return null;
@@ -52,5 +45,17 @@ public class DropIndex extends RegularStatement {
 	@Override
 	public String getKeyspace() {
 		return keyspace;
+	}
+
+	@Override
+	public ByteBuffer[] getValues(int protocolVersion) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean hasValues() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 }

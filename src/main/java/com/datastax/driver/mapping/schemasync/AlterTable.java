@@ -63,10 +63,6 @@ public class AlterTable extends RegularStatement {
 		return builder.toString();
 	}
 
-	@Override
-	public ByteBuffer[] getValues() {
-		return null;
-	}
 
 	@Override
 	public ByteBuffer getRoutingKey() {
@@ -100,6 +96,18 @@ public class AlterTable extends RegularStatement {
         public AlterTable renameColumn(String keyspace, String table, String oldColumn, String newColumn) {
             return new AlterTable(Instructions.RENAME_COLUMN, keyspace, table, oldColumn, newColumn);
         }        
-    }	
+    }
+
+	@Override
+	public ByteBuffer[] getValues(int arg0) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean hasValues() {
+		// TODO Auto-generated method stub
+		return false;
+	}	
 
 }
