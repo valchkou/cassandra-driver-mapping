@@ -119,7 +119,7 @@ public class MappingSessionTest {
 		obj.setCount(100);
 		obj.setEmail("email@at");
 		obj.setName("test");
-		obj.setTimestamp(new Date());
+		obj.setTimeStamp(new Date());
 		obj.setUuid(uuid);
 		
 		EntityWithIndexes loaded = target.get(EntityWithIndexes.class, uuid);
@@ -176,7 +176,7 @@ public class MappingSessionTest {
 			obj.setCount(100);
 			obj.setEmail("email@test");
 			obj.setName("test"+i);
-			obj.setTimestamp(new Date());
+			obj.setTimeStamp(new Date());
 			obj.setUuid(UUID.randomUUID());
 			target.save(obj);
 		}
@@ -195,7 +195,7 @@ public class MappingSessionTest {
 			obj.setCount(100);
 			obj.setEmail("email@test");
 			obj.setName("test"+i);
-			obj.setTimestamp(new Date());
+			obj.setTimeStamp(new Date());
 			obj.setUuid(UUID.randomUUID());
 			target.save(obj);
 		}

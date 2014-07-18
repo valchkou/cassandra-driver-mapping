@@ -759,6 +759,12 @@ public class MappingSession {
 			
 			DataType.Name dataType = field.getDataType();
 			switch (dataType) {
+			case INET:
+				value = row.getInet(field.getColumnName());
+				break;			
+			case ASCII:
+				value = row.getString(field.getColumnName());
+				break;
 			case BLOB:
 				value = row.getBytes(field.getColumnName());
 				break;
@@ -774,9 +780,15 @@ public class MappingSession {
 			case UUID:
 				value = row.getUUID(field.getColumnName());
 				break;
+			case TIMEUUID:
+				value = row.getUUID(field.getColumnName());
+				break;				
 			case INT:
 				value = row.getInt(field.getColumnName());
 				break;
+			case COUNTER:
+				value = row.getInt(field.getColumnName());
+				break;				
 			case DOUBLE:
 				value = row.getDouble(field.getColumnName());
 				break;

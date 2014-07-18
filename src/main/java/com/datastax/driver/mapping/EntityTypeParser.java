@@ -48,6 +48,7 @@ public class EntityTypeParser {
 	
 	static {
 		// Mapping java types to DATASTAX driver types
+		javaTypeToDataType.put(DataType.Name.INET.asJavaClass(), 		DataType.Name.INET);
 		javaTypeToDataType.put(DataType.Name.BLOB.asJavaClass(), 		DataType.Name.BLOB);
 		javaTypeToDataType.put(DataType.Name.BOOLEAN.asJavaClass(),    	DataType.Name.BOOLEAN);
 	    javaTypeToDataType.put(DataType.Name.TEXT.asJavaClass(),     	DataType.Name.TEXT);

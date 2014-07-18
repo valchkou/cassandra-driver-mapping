@@ -29,14 +29,14 @@ import javax.persistence.Transient;
 @Table(name="test_entity_index", 
 	   indexes = {
 		@Index(name="test_entity_email_idx", columnList="email" ), 
-		@Index(name="test_entity_timestamp_idx", columnList="timestamp" ) 
+		@Index(name="test_entity_timestamp_idx", columnList="timeStamp" ) 
 })
 public class EntityWithIndexes {
 	
 	@Id
 	private UUID uuid = UUID.randomUUID();
 	private String email;
-	private Date timestamp;
+	private Date timeStamp;
 	
 	@Column(name="counter") // override default name
 	private long count;
@@ -58,8 +58,8 @@ public class EntityWithIndexes {
 	public String getEmail() {
 		return email;
 	}
-	public Date getTimestamp() {
-		return timestamp;
+	public Date getTimeStamp() {
+		return timeStamp;
 	}
 	public long getCount() {
 		return count;
@@ -70,8 +70,8 @@ public class EntityWithIndexes {
 	public void setEmail(String email) {
 		this.email = email;
 	}
-	public void setTimestamp(Date timestamp) {
-		this.timestamp = timestamp;
+	public void setTimeStamp(Date timestamp) {
+		this.timeStamp = timestamp;
 	}
 	public void setCount(long count) {
 		this.count = count;
@@ -90,7 +90,7 @@ public class EntityWithIndexes {
 		result = prime * result + ((email == null) ? 0 : email.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result
-				+ ((timestamp == null) ? 0 : timestamp.hashCode());
+				+ ((timeStamp == null) ? 0 : timeStamp.hashCode());
 		result = prime * result + ((uuid == null) ? 0 : uuid.hashCode());
 		return result;
 	}
@@ -115,10 +115,10 @@ public class EntityWithIndexes {
 				return false;
 		} else if (!name.equals(other.name))
 			return false;
-		if (timestamp == null) {
-			if (other.timestamp != null)
+		if (timeStamp == null) {
+			if (other.timeStamp != null)
 				return false;
-		} else if (!timestamp.equals(other.timestamp))
+		} else if (!timeStamp.equals(other.timeStamp))
 			return false;
 		if (uuid == null) {
 			if (other.uuid != null)
