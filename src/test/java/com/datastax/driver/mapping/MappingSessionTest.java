@@ -700,8 +700,7 @@ public class MappingSessionTest {
 	private void sleep(long n) {
 		try {
 			Thread.sleep(n);
-		} catch (Exception e) {
-		}
+		} catch (Exception e) {}
 	}
 	
 	@Test
