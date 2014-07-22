@@ -58,17 +58,17 @@ Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.c
 
 The features provided by the module include:
 
-- Manipulate Entity
+- OM Layer
   	* Get entity from Cassandra.
   	* Save entity to Cassandra.
 	* Delete entity from Cassandra.
-	* Run and map custom Queries.
-	* Convert ResultSet into List of Entities
+	* Run and map custom Queries and ResultSets.
+	* 
 
-- Generate Schema
-  	* Create table and indexes from Entity. 
-  	* Alter table and indexes if entity definition has changed.
-  	* Drop table and indexes.
+- Schema Sync
+  	* Automatically create table and indexes from Entity. 
+  	* Automatically Alter table and indexes if entity definition has changed.
+  	* Drop table.
 
 No mapping files, no scripts, no configuration files.   
 You don't have to worry about creating the Table and Indexes for your Entity manually.  
