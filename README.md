@@ -63,7 +63,6 @@ The features provided by the module include:
   	* Save entity to Cassandra.
 	* Delete entity from Cassandra.
 	* Run and map custom Queries and ResultSets.
-	* 
 
 - Schema Sync
   	* Automatically create table and indexes from Entity. 
