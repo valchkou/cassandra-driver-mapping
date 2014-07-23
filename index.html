@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Cassandra-driver-mapping : JPA addon for DataStax Java Driver for Cassandra" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Cassandra-driver-mapping</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/valchkou/cassandra-driver-mapping">View on GitHub</a>
+
+          <h1 id="project_title">Cassandra-driver-mapping</h1>
+          <h2 id="project_tagline">JPA addon for DataStax Java Driver for Cassandra</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/valchkou/cassandra-driver-mapping/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/valchkou/cassandra-driver-mapping/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a name="cassandra-driver-mapping" class="anchor" href="#cassandra-driver-mapping"><span class="octicon octicon-link"></span></a>cassandra-driver-mapping</h1>
+
+<p>Entity mapping Add-on for the DataStax Java Driver (Driver) for Cassandra (C*).<br>
+This Add-on allows you to generate schema automatically and persist JPA annotated entities in C*.</p>
+
+<p>Add-on is not replacement for the Driver but lightweight utility for it.<br>
+You still can utilize full power of the Driver API and Datastax documentation.<br>
+Mapping Add-on relies on Driver version 2.XXX and JPA 2.1.    </p>
+
+<p>Read more about <a href="http://www.datastax.com/documentation/gettingstarted/index.html">Datastax Java Driver, Cassandra and CQL3</a>.</p>
+
+<p><a href="https://github.com/valchkou/cassandra-driver-mapping/blob/master/src/test/java/com/datastax/driver/mapping/">More Usage Samples in Unit Tests</a></p>
+
+<h3>
+<a name="table-of-contents" class="anchor" href="#table-of-contents"><span class="octicon octicon-link"></span></a>Table of Contents</h3>
+
+<ul>
+<li>
+<a href="#features">Features</a><br>
+</li>
+<li>
+<a href="#start">Jump Start</a><br><ul>
+<li><a href="#jump_maven">Maven Dependency</a></li>
+<li><a href="#jump_init">Init Mapping Session</a></li>
+<li><a href="#jump_save">Save</a></li>
+<li><a href="#jump_get">Get</a></li>
+<li><a href="#jump_delete">Delete</a></li>
+</ul>
+</li>
+<li>
+<a href="#mapping">Various Mappings</a><br><ul>
+<li><a href="#mapping_basic">Basic</a></li>
+<li><a href="#mapping_index">Indexes</a></li>
+<li><a href="#mapping_composite">Compound Primary Key</a></li>
+<li><a href="#mapping_partition">Composite Partition Key</a></li>
+<li><a href="#mapping_properties">Table Properties</a></li>
+<li><a href="#mapping_datatype">Override Column Data Type</a></li>
+<li><a href="#mapping_mixed">Mixed Case for Column Names</a></li>
+</ul>
+</li>
+<li>
+<a href="#collections">Collections</a>
+
+<ul>
+<li><a href="#mapping_collections">Mapping</a></li>
+<li>
+<a href="#collections_opt">Optimized operations</a><br><ul>
+<li><a href="#collections_list">List</a></li>
+<li><a href="#collections_set">Set</a></li>
+<li><a href="#collections_map">Map</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<a href="#lock">Optimistic Lock</a>
+
+<ul>
+<li><a href="#lock_transactions">Lightweight transactions</a></li>
+<li><a href="#lock_version">@Version</a></li>
+</ul>
+</li>
+<li><a href="#batch">Batch</a></li>
+<li><a href="#nested">Nested Entities</a></li>
+<li>
+<a href="#queries_mapping">Mapping Custom Queries</a><br><ul>
+<li><a href="#queries_howto">How To Run</a></li>
+<li><a href="#queries_gnomes">Any-to-Any and Magic Gnomes</a></li>
+</ul>
+</li>
+<li>
+<a href="#queries_building">Building Custom Queries</a>
+
+<ul>
+<li><a href="#queries_cql">CQL String</a></li>
+<li>
+<a href="#queries_builder">QueryBuilder (better)</a> </li>
+<li><a href="#queries_meta">QueryBuilder with EntityMetadata (even better)</a></li>
+</ul>
+</li>
+<li>
+<a href="#under">Under The Hood</a>
+
+<ul>
+<li>
+<a href="#pscache">Prepared Statement Cache</a><br>
+</li>
+<li>
+<a href="#sync">How Entity get synchronized</a><br>
+</li>
+<li>
+<a href="#metadata">Entity Metadata and Data Types</a><br>
+</li>
+</ul>
+</li>
+<li>
+<a href="#spring">Spring Framework Example</a><br>
+</li>
+</ul><p><a name="features"></a></p>
+
+<h3>
+<a name="features" class="anchor" href="#features"><span class="octicon octicon-link"></span></a>Features</h3>
+
+<p>The features provided by the module include:</p>
+
+<ul>
+<li>
+<p>OM Layer</p>
+
+<ul>
+<li>Get entity from Cassandra.</li>
+<li>Save entity to Cassandra.</li>
+<li>Delete entity from Cassandra.</li>
+<li>Run and map custom Queries and ResultSets.</li>
+</ul>
+</li>
+<li>
+<p>Schema Sync</p>
+
+<ul>
+<li>Automatically create table and indexes from Entity. </li>
+<li>Automatically Alter table and indexes if entity definition has changed.</li>
+<li>Drop table.</li>
+</ul>
+</li>
+</ul><p>No mapping files, no scripts, no configuration files.<br>
+You don't have to worry about creating the Table and Indexes for your Entity manually.<br>
+All is built-in and taken care of. Entity definition will be automatically <a href="#sync">synchronized with C*</a>.  </p>
+
+<p><a name="start"></a></p>
+
+<h3>
+<a name="jump-start" class="anchor" href="#jump-start"><span class="octicon octicon-link"></span></a>Jump Start</h3>
+
+<p><a name="jump_maven"></a></p>
+
+<ul>
+<li>Maven Dependency.<br>
+Install in your application from Maven Central using the following dependency:</li>
+</ul><div class="highlight highlight-xml"><pre>    <span class="nt">&lt;dependency&gt;</span>
+      <span class="nt">&lt;groupId&gt;</span>com.valchkou.datastax<span class="nt">&lt;/groupId&gt;</span>
+      <span class="nt">&lt;artifactId&gt;</span>cassandra-driver-mapping<span class="nt">&lt;/artifactId&gt;</span>
+      <span class="nt">&lt;version&gt;</span>2.1.0-rc1<span class="nt">&lt;/version&gt;</span>
+    <span class="nt">&lt;/dependency&gt;</span>
+</pre></div>
+
+<p>All new changes and bugfixes are released within the latest version as soon as coded.
+Module versioning policy matches underlying datastax driver core versioning.</p>
+
+<p><a name="jump_init"></a></p>
+
+<ul>
+<li>Init Mapping Session.<br>
+MappingSession is cheap to instantiate and it is not replacement for the Datastax Session.<br>
+You can instantiate as many mapping sessions as you want. It's threadsafe.<br>
+</li>
+</ul><div class="highlight highlight-java"><pre>    <span class="kn">import</span> <span class="nn">com.datastax.driver.core.Session</span><span class="o">;</span>
+    <span class="kn">import</span> <span class="nn">com.datastax.driver.mapping.MappingSession</span><span class="o">;</span>
+    <span class="o">...</span>
+
+    <span class="n">Session</span> <span class="n">session</span><span class="o">;</span> <span class="c1">// initialize datastax session.</span>
+    <span class="n">MappingSession</span> <span class="n">mappingSession</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">MappingSession</span><span class="o">(</span><span class="s">"keyspace_name"</span><span class="o">,</span> <span class="n">session</span><span class="o">);</span>
+</pre></div>
+
+<p>If you wish your mapping session do not synchronize your entities with C* you may turn synch off:</p>
+
+<div class="highlight highlight-java"><pre>    <span class="n">MappingSession</span> <span class="n">mappingSession</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">MappingSession</span><span class="o">(</span><span class="s">"keyspace_name"</span><span class="o">,</span> <span class="n">session</span><span class="o">,</span> <span class="kc">true</span><span class="o">);</span>
+    <span class="c1">// OR</span>
+    <span class="n">MappingSession</span> <span class="n">mappingSession</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">MappingSession</span><span class="o">(</span><span class="s">"keyspace_name"</span><span class="o">,</span> <span class="n">session</span><span class="o">);</span>
+    <span class="n">mappingSession</span><span class="o">.</span><span class="na">setDoNotSync</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
+</pre></div>
+
+<p>Underlying Datastax Session does all the heavylifting and is expansive.<br>
+Prior using MappingSession you need to open the Datastax Session and create the Keyspace using the standard Datastax Driver API. If you are not familiar with procedure please refer to <a href="http://www.datastax.com/documentation/developer/java-driver/2.0/java-driver/quick_start/qsQuickstart_c.html">Datastax Dcumentation</a>.<br>
+Or look at the <a href="#spring">Spring Framework Example</a>.</p>
+
+<p><a name="jump_save"></a></p>
+
+<ul>
+<li>Save.</li>
+</ul><div class="highlight highlight-java"><pre>    <span class="n">Entity</span> <span class="n">entity</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Entity</span><span class="o">();</span>
+    <span class="n">mappingSession</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">entity</span><span class="o">);</span>
+</pre></div>
+
+<p>OR</p>
+
+<div class="highlight highlight-java"><pre>    <span class="kn">import</span> <span class="nn">com.datastax.driver.mapping.option.WriteOptions</span><span class="o">;</span>
+    <span class="kn">import</span> <span class="nn">com.datastax.driver.core.policies.DefaultRetryPolicy</span><span class="o">;</span>
+    <span class="kn">import</span> <span class="nn">com.datastax.driver.core.ConsistencyLevel</span><span class="o">;</span>
+    <span class="o">...</span>
+    <span class="c1">// using options</span>
+    <span class="n">WriteOptions</span> <span class="n">options</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">WriteOptions</span><span class="o">()</span>
+        <span class="o">.</span><span class="na">setTtl</span><span class="o">(</span><span class="mi">300</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">setTimestamp</span><span class="o">(</span><span class="mi">42</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">setConsistencyLevel</span><span class="o">(</span><span class="n">ConsistencyLevel</span><span class="o">.</span><span class="na">ANY</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">setRetryPolicy</span><span class="o">(</span><span class="n">DefaultRetryPolicy</span><span class="o">.</span><span class="na">INSTANCE</span><span class="o">);</span>
+
+    <span class="n">Entity</span> <span class="n">entity</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Entity</span><span class="o">();</span>
+    <span class="n">mappingSession</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">entity</span><span class="o">,</span> <span class="n">options</span><span class="o">);</span>
+</pre></div>
+
+<p><a name="jump_get"></a></p>
+
+<ul>
+<li>Get.</li>
+</ul><div class="highlight highlight-java"><pre>    <span class="n">Entity</span> <span class="n">entity</span> <span class="o">=</span> <span class="n">mappingSession</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">Entity</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">id</span><span class="o">);</span>
+</pre></div>
+
+<p>OR</p>
+
+<div class="highlight highlight-java"><pre>    <span class="kn">import</span> <span class="nn">com.datastax.driver.mapping.option.ReadOptions</span><span class="o">;</span>
+    <span class="kn">import</span> <span class="nn">com.datastax.driver.core.policies.DefaultRetryPolicy</span><span class="o">;</span>
+    <span class="kn">import</span> <span class="nn">com.datastax.driver.core.ConsistencyLevel</span><span class="o">;</span>
+    <span class="o">...</span>
+    <span class="c1">// using options</span>
+    <span class="n">ReadOptions</span> <span class="n">options</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">ReadOptions</span><span class="o">()</span>
+        <span class="o">.</span><span class="na">setConsistencyLevel</span><span class="o">(</span><span class="n">ConsistencyLevel</span><span class="o">.</span><span class="na">ANY</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">setRetryPolicy</span><span class="o">(</span><span class="n">DefaultRetryPolicy</span><span class="o">.</span><span class="na">INSTANCE</span><span class="o">);</span>
+
+    <span class="n">Entity</span> <span class="n">entity</span> <span class="o">=</span> <span class="n">mappingSession</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">Entity</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">id</span><span class="o">,</span> <span class="n">options</span><span class="o">);</span>
+</pre></div>
+
+<p><a name="jump_delete"></a></p>
+
+<ul>
+<li>Delete.</li>
+</ul><div class="highlight highlight-java"><pre>    <span class="n">mappingSession</span><span class="o">.</span><span class="na">delete</span><span class="o">(</span><span class="n">entity</span><span class="o">);</span>  
+</pre></div>
+
+<p><a name="mapping"></a></p>
+
+<h3>
+<a name="various-mappings" class="anchor" href="#various-mappings"><span class="octicon octicon-link"></span></a>Various Mappings</h3>
+
+<pre><code>IMPORTANT!!!  
+- If entity or field is not annotated it will provide its name as default.    
+- Id field is required and must be annotated with @Id or @EmbeddedId.
+- Index name must be unique within the keyspace.  
+- C* supports only single-column-index.
+</code></pre>
+
+<p><a name="mapping_basic"></a>         </p>
+
+<h4>
+<a name="basic-mapping" class="anchor" href="#basic-mapping"><span class="octicon octicon-link"></span></a>Basic Mapping</h4>
+
+<div class="highlight highlight-java"><pre><span class="kn">import</span> <span class="nn">javax.persistence.Id</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.persistence.Table</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.persistence.Column</span>
+
+<span class="nd">@Table</span> <span class="o">(</span><span class="n">name</span><span class="o">=</span><span class="s">"mytable"</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Entity</span> <span class="o">{</span>
+
+    <span class="nd">@Id</span>
+    <span class="kd">private</span> <span class="kt">long</span> <span class="n">Id</span><span class="o">;</span>
+
+    <span class="nd">@Column</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"myname"</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="n">String</span> <span class="n">name</span><span class="o">;</span>
+
+    <span class="c1">// @Column is not required</span>
+    <span class="kd">private</span> <span class="kt">int</span> <span class="n">age</span><span class="o">;</span>
+
+    <span class="nd">@Transient</span>
+    <span class="kd">private</span> <span class="n">BigDecimal</span> <span class="n">calculable</span><span class="o">;</span>
+
+    <span class="c1">// public getters/setters ...</span>
+<span class="o">}</span>
+</pre></div>
+
+<p>CQL3 Statement</p>
+
+<pre><code>   CREATE TABLE IF NOT EXISTS ks.mytable (id bigint, myname text, age int, PRIMARY KEY(id))
+</code></pre>
+
+<p><a name="mapping_index"></a>   </p>
+
+<h4>
+<a name="mapping-indexes" class="anchor" href="#mapping-indexes"><span class="octicon octicon-link"></span></a>Mapping Indexes</h4>
+
+<div class="highlight highlight-java"><pre><span class="kn">import</span> <span class="nn">javax.persistence.Id</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.persistence.Table</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.persistence.Column</span>
+<span class="kn">import</span> <span class="nn">javax.persistence.Index</span>
+<span class="kn">import</span> <span class="nn">java.util.UUID</span>
+
+<span class="nd">@Table</span> <span class="o">(</span><span class="n">name</span><span class="o">=</span><span class="s">"mytable"</span><span class="o">,</span> 
+<span class="n">indexes</span> <span class="o">=</span> <span class="o">{</span>
+    <span class="nd">@Index</span><span class="o">(</span><span class="n">name</span><span class="o">=</span><span class="s">"entity_email_idx"</span><span class="o">,</span> <span class="n">columnList</span><span class="o">=</span><span class="s">"email"</span> <span class="o">),</span> 
+    <span class="nd">@Index</span><span class="o">(</span><span class="n">name</span><span class="o">=</span><span class="s">"entity_name_idx"</span><span class="o">,</span> <span class="n">columnList</span><span class="o">=</span><span class="s">"myname"</span> <span class="o">)</span> 
+<span class="o">})</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Entity</span> <span class="o">{</span>
+
+    <span class="nd">@Id</span>
+    <span class="kd">private</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">UUID</span> <span class="n">code</span><span class="o">;</span>
+
+    <span class="nd">@Column</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"myname"</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="n">String</span> <span class="n">name</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="n">String</span> <span class="n">email</span><span class="o">;</span>
+    <span class="c1">// public getters/setters ...</span>
+<span class="o">}</span>
+</pre></div>
+
+<p>CQL3 Statement</p>
+
+<pre><code>    CREATE TABLE IF NOT EXISTS ks.mytable (code uuid, myname text, email text,  PRIMARY KEY(code)); 
+    CREATE INDEX IF NOT EXISTS entity_email_idx ON ks.mytable(email);  
+    CREATE INDEX IF NOT EXISTS entity_name_idx ON ks.mytable(myname);
+</code></pre>
+
+<p><a name="mapping_composite"></a></p>
+
+<h4>
+<a name="compound-primary-key" class="anchor" href="#compound-primary-key"><span class="octicon octicon-link"></span></a>Compound Primary Key</h4>
+
+<div class="highlight highlight-java"><pre><span class="kn">import</span> <span class="nn">java.math.BigInteger</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.util.Date</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.util.List</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.util.Map</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.util.Set</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">javax.persistence.Id</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.persistence.Table</span><span class="o">;</span>
+
+<span class="nd">@Table</span><span class="o">(</span><span class="n">name</span><span class="o">=</span><span class="s">"entity"</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Entity</span> <span class="o">{</span>
+    <span class="nd">@Id</span>
+    <span class="kd">private</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">UUID</span> <span class="n">id</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">cats</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="n">Set</span><span class="o">&lt;</span><span class="n">Date</span><span class="o">&gt;</span> <span class="n">dogs</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">BigInteger</span><span class="o">&gt;</span> <span class="n">pets</span><span class="o">;</span>
+
+    <span class="c1">// public getters/setters ...</span>
+<span class="o">}</span>
+</pre></div>
+
+<div class="highlight highlight-java"><pre><span class="kn">import</span> <span class="nn">javax.persistence.Embeddable</span><span class="o">;</span>    
+
+<span class="nd">@Embeddable</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">CompositeKey</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="n">String</span> <span class="n">name</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kt">int</span> <span class="n">rank</span><span class="o">;</span>
+    <span class="c1">// public getters/setters ...</span>
+<span class="o">}</span>
+</pre></div>
+
+<div class="highlight highlight-java"><pre>
+<span class="kn">import</span> <span class="nn">javax.persistence.Table</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.persistence.EmbeddedId</span><span class="o">;</span>    
+
+<span class="nd">@Table</span><span class="o">(</span><span class="n">name</span><span class="o">=</span><span class="s">"entity"</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Entity</span> <span class="o">{</span>
+    <span class="nd">@EmbeddedId</span>
+    <span class="kd">private</span> <span class="n">CompositeKey</span> <span class="n">key</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="n">String</span> <span class="n">email</span><span class="o">;</span>
+    <span class="c1">// public getters/setters ...</span>
+<span class="o">}</span>
+</pre></div>
+
+<p>CQL3 Statement</p>
+
+<pre><code>   CREATE TABLE IF NOT EXISTS ks.entity (name text,  rank int, email text,  PRIMARY KEY(name, rank))
+</code></pre>
+
+<p><a name="mapping_partition"></a></p>
+
+<h4>
+<a name="composite-partition-key" class="anchor" href="#composite-partition-key"><span class="octicon octicon-link"></span></a>Composite Partition Key</h4>
+
+<div class="highlight highlight-java"><pre><span class="kn">import</span> <span class="nn">javax.persistence.Embeddable</span><span class="o">;</span>    
+
+<span class="nd">@Embeddable</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">PartitionKey</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="n">String</span> <span class="n">firstName</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="n">String</span> <span class="n">lastName</span><span class="o">;</span>
+    <span class="c1">// public getters/setters ...</span>
+<span class="o">}</span>
+</pre></div>
+
+<div class="highlight highlight-java"><pre><span class="kn">import</span> <span class="nn">javax.persistence.Embeddable</span><span class="o">;</span>    
+
+<span class="nd">@Embeddable</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">CompositeKey</span> <span class="o">{</span>
+    <span class="nd">@EmbeddedId</span>
+    <span class="kd">private</span> <span class="n">PartitionKey</span> <span class="n">key</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kt">int</span> <span class="n">age</span><span class="o">;</span>
+    <span class="c1">// public getters/setters ...</span>
+<span class="o">}</span>
+</pre></div>
+
+<div class="highlight highlight-java"><pre><span class="kn">import</span> <span class="nn">javax.persistence.Table</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.persistence.EmbeddedId</span><span class="o">;</span>    
+
+<span class="nd">@Table</span><span class="o">(</span><span class="n">name</span><span class="o">=</span><span class="s">"entity"</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Entity</span> <span class="o">{</span>
+    <span class="nd">@EmbeddedId</span>
+    <span class="kd">private</span> <span class="n">CompositeKey</span> <span class="n">key</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="n">String</span> <span class="n">email</span><span class="o">;</span>
+    <span class="c1">// public getters/setters ...</span>
+<span class="o">}</span>
+</pre></div>
+
+<p>CQL3 Statement</p>
+
+<pre><code>   CREATE TABLE IF NOT EXISTS ks.entity (firstname text, lastname text, age int, email text,  PRIMARY KEY((firstname, lastname), age))
+</code></pre>
+
+<p><a name="mapping_properties"></a></p>
+
+<h4>
+<a name="table-properties" class="anchor" href="#table-properties"><span class="octicon octicon-link"></span></a>Table Properties</h4>
+
+<p>This feature is not JPA standard! <a href="http://www.datastax.com/documentation/cql/3.1/cql/cql_reference/cql_storage_options_c.html"> Read more about C* Table properties </a></p>
+
+<div class="highlight highlight-java"><pre><span class="kn">import</span> <span class="nn">javax.persistence.Id</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.persistence.Table</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.persistence.Column</span>
+
+<span class="kn">import</span> <span class="nn">com.datastax.driver.mapping.annotation.TableProperties</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">com.datastax.driver.mapping.annotation.TableProperty</span><span class="o">;</span>
+
+<span class="nd">@Table</span> <span class="o">(</span><span class="n">name</span><span class="o">=</span><span class="s">"mytable"</span><span class="o">)</span>
+<span class="nd">@TableProperties</span><span class="o">(</span><span class="n">values</span> <span class="o">=</span> <span class="o">{</span>
+    <span class="nd">@TableProperty</span><span class="o">(</span><span class="n">value</span><span class="o">=</span><span class="s">"comment='Important records'"</span><span class="o">),</span>
+    <span class="nd">@TableProperty</span><span class="o">(</span><span class="n">value</span><span class="o">=</span><span class="s">"read_repair_chance = 1.0"</span><span class="o">),</span>
+    <span class="nd">@TableProperty</span><span class="o">(</span><span class="n">value</span><span class="o">=</span><span class="s">"compression ={ 'sstable_compression' : 'DeflateCompressor', 'chunk_length_kb' : 64 }"</span><span class="o">)</span>
+<span class="o">})</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Entity</span> <span class="o">{</span>
+
+    <span class="nd">@Id</span>
+    <span class="kd">private</span> <span class="kt">long</span> <span class="n">Id</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="n">String</span> <span class="n">name</span><span class="o">;</span>
+    <span class="c1">// public getters/setters ...</span>
+<span class="o">}</span>
+</pre></div>
+
+<p>CQL3 Statement</p>
+
+<pre><code>   CREATE TABLE IF NOT EXISTS ks.mytable (id bigint, name text, PRIMARY KEY(id)) WITH comment='Important records' AND read_repair_chance = 1.0 AND compression ={ 'sstable_compression' : 'DeflateCompressor', 'chunk_length_kb' : 64 }
+</code></pre>
+
+<p><a name="mapping_datatype"></a></p>
+
+<h4>
+<a name="override-column-data-type" class="anchor" href="#override-column-data-type"><span class="octicon octicon-link"></span></a>Override Column Data Type.</h4>
+
+<p>Datastax defines <a href="http://www.datastax.com/documentation/developer/java-driver/2.0/java-driver/reference/javaClass2Cql3Datatypes_r.html">data type mapping from Java to C*</a>.<br>
+This addon defines opposite way mapping. <a href="#metadata">You can explore daults here</a>.<br>
+But in case you don't like defaults you are able to override the type on the column level.<br>
+For example you want to leverage "time UUID" for timeseries data instead of "random UUID".  </p>
+
+<div class="highlight highlight-java"><pre><span class="kn">import</span> <span class="nn">javax.persistence.Id</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.persistence.Table</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.persistence.Column</span>
+
+<span class="nd">@Table</span> <span class="o">(</span><span class="n">name</span><span class="o">=</span><span class="s">"mytable"</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Entity</span> <span class="o">{</span>
+
+    <span class="nd">@Id</span>
+    <span class="nd">@Column</span><span class="o">(</span><span class="n">name</span><span class="o">=</span><span class="s">"uid"</span><span class="o">,</span> <span class="n">columnDefinition</span><span class="o">=</span><span class="s">"timeuuid"</span><span class="o">)</span> <span class="c1">// case insensitive</span>
+    <span class="kd">private</span> <span class="n">UUID</span> <span class="n">uid</span><span class="o">;</span>       
+
+    <span class="nd">@Column</span><span class="o">(</span><span class="n">name</span><span class="o">=</span><span class="s">"name"</span><span class="o">,</span> <span class="n">columnDefinition</span><span class="o">=</span><span class="s">"VarChaR"</span><span class="o">)</span> <span class="c1">// case insensitive</span>
+    <span class="kd">private</span> <span class="n">String</span> <span class="n">name</span><span class="o">;</span>
+    <span class="c1">// public getters/setters ...</span>
+<span class="o">}</span>
+</pre></div>
+
+<p>CQL3 Statement</p>
+
+<pre><code>   CREATE TABLE IF NOT EXISTS ks.mytable (uid timeuuid, name varchar, PRIMARY KEY(uid))
+</code></pre>
+
+<p><a name="mapping_mixed"></a></p>
+
+<h4>
+<a name="mixed-case-for-column-names" class="anchor" href="#mixed-case-for-column-names"><span class="octicon octicon-link"></span></a>Mixed Case for Column Names</h4>
+
+<p><a href="http://www.datastax.com/documentation/cql/3.1/cql/cql_reference/ucase-lcase_r.html">C* converts all names to lowercase</a>. This is default and recommended approach.<br>
+But in case you need enforce the case you will need to wrap you names in double quotes. </p>
+
+<div class="highlight highlight-java"><pre><span class="kn">import</span> <span class="nn">javax.persistence.Id</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.persistence.Table</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.persistence.Column</span>
+
+<span class="nd">@Table</span> <span class="o">(</span><span class="n">name</span><span class="o">=</span><span class="s">"mytable"</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Entity</span> <span class="o">{</span>
+
+    <span class="nd">@Id</span>
+    <span class="nd">@Column</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"\"KEY\""</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="kt">int</span> <span class="n">id</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="n">String</span> <span class="n">firstName</span><span class="o">;</span>
+
+    <span class="nd">@Column</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"\"last_NAME\""</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="n">String</span> <span class="n">lastName</span><span class="o">;</span>
+
+    <span class="nd">@Column</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"AGE"</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="kt">int</span> <span class="n">age</span><span class="o">;</span>
+    <span class="c1">// public getters/setters ...</span>
+<span class="o">}</span>
+</pre></div>
+
+<p>CQL3 Statement</p>
+
+<pre><code>   CREATE TABLE IF NOT EXISTS ks.mytable ("KEY" int, firstName text, "last_NAME" text, AGE int, PRIMARY KEY("KEY"))
+</code></pre>
+
+<p><a name="collections"></a></p>
+
+<h3>
+<a name="collections" class="anchor" href="#collections"><span class="octicon octicon-link"></span></a>Collections</h3>
+
+<p><a name="mapping_collections"></a></p>
+
+<h4>
+<a name="mapping" class="anchor" href="#mapping"><span class="octicon octicon-link"></span></a>Mapping</h4>
+
+<p>Collections must have generic type defined. Only java.util.List, Map and Set are allowed.<br>
+By default implementation of HashMap, HashSet and ArrayList are used.
+If you are unhappy with that fact and would like your data to be baked with specific collection implementation you can apply an annotation as shown below.</p>
+
+<div class="highlight highlight-java"><pre>    <span class="kn">import</span> <span class="nn">com.datastax.driver.mapping.annotation.CollectionType</span><span class="o">;</span>
+    <span class="o">...</span>
+    <span class="nd">@CollectionType</span><span class="o">(</span><span class="n">LinkedList</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">cats</span><span class="o">;</span>
+
+    <span class="nd">@CollectionType</span><span class="o">(</span><span class="n">TreeSet</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="n">Set</span><span class="o">&lt;</span><span class="n">Date</span><span class="o">&gt;</span> <span class="n">dogs</span><span class="o">;</span>
+
+    <span class="nd">@CollectionType</span><span class="o">(</span><span class="n">TreeMap</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">BigInteger</span><span class="o">&gt;</span> <span class="n">pets</span><span class="o">;</span>
+<span class="o">}</span>
+</pre></div>
+
+<p>NOTE: this is strictly java side feature and does not effect how your data stored in C*.     </p>
+
+<p>CQL3 Statement</p>
+
+<pre><code>   CREATE TABLE IF NOT EXISTS ks.entity (id uuid, cats list&lt;text&gt;, dogs set&lt;timestamp&gt;, pets map&lt;text, varint&gt;,  PRIMARY KEY(id))
+</code></pre>
+
+<p>For more info on collections please refer <a href="http://www.datastax.com/documentation/cql/3.1/cql/cql_using/use_collections_c.html">Datastax Using Collection</a></p>
+
+<p><a name="collections_opt"></a></p>
+
+<h4>
+<a name="optimized-operations" class="anchor" href="#optimized-operations"><span class="octicon octicon-link"></span></a>Optimized operations</h4>
+
+<p>You can work with your collection properties as you would normally work with other entity properties.<br>
+In addition C* provides optimized operations on collections. Those operations do not require to load and save the whole entity. C* allows us directly manipulate collections.   </p>
+
+<p><a name="collections_list"></a></p>
+
+<ul>
+<li>List operations</li>
+</ul><div class="highlight highlight-java"><pre><span class="c1">// append item to list</span>
+<span class="n">mappingSession</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="n">id</span><span class="o">,</span> <span class="n">Entity</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="s">"cats"</span><span class="o">,</span> <span class="s">"Black Cat"</span><span class="o">);</span>
+
+<span class="c1">// append item to be expired in 5 sec</span>
+<span class="n">mappingSession</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="n">id</span><span class="o">,</span> <span class="n">Entity</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="s">"cats"</span><span class="o">,</span> <span class="s">"Expired Cat"</span><span class="o">,</span> <span class="k">new</span> <span class="nf">WriteOptions</span><span class="o">().</span><span class="na">setTtl</span><span class="o">(</span><span class="mi">5</span><span class="o">));</span>
+
+<span class="c1">// prepend item</span>
+<span class="n">mappingSession</span><span class="o">.</span><span class="na">prepend</span><span class="o">(</span><span class="n">id</span><span class="o">,</span> <span class="n">Entity</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="s">"cats"</span><span class="o">,</span> <span class="s">"First Cat"</span><span class="o">);</span>
+
+<span class="c1">// replace item at specified index</span>
+<span class="n">mappingSession</span><span class="o">.</span><span class="na">replaceAt</span><span class="o">(</span><span class="n">id</span><span class="o">,</span> <span class="n">Entity</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="s">"cats"</span><span class="o">,</span> <span class="s">"Grey Cat"</span><span class="o">,</span> <span class="mi">1</span><span class="o">);</span>
+
+<span class="c1">// append List of items</span>
+<span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">addCats</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;();</span>
+<span class="n">addCats</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="s">"Red Cat"</span><span class="o">);</span>
+<span class="n">addCats</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="s">"Green Cat"</span><span class="o">);</span>
+<span class="n">mappingSession</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="n">id</span><span class="o">,</span> <span class="n">Entity</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="s">"cats"</span><span class="o">,</span> <span class="n">addCats</span><span class="o">);</span>
+
+<span class="c1">// remove item</span>
+<span class="n">mappingSession</span><span class="o">.</span><span class="na">remove</span><span class="o">(</span><span class="n">id</span><span class="o">,</span> <span class="n">Entity</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="s">"cats"</span><span class="o">,</span> <span class="s">"Grey Cat"</span><span class="o">);</span>
+
+<span class="c1">// remove List of items</span>
+<span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">removeCats</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;();</span>
+<span class="n">removeCats</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="s">"Red Cat"</span><span class="o">);</span>
+<span class="n">removeCats</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="s">"Green Cat"</span><span class="o">);</span>
+<span class="n">mappingSession</span><span class="o">.</span><span class="na">remove</span><span class="o">(</span><span class="n">id</span><span class="o">,</span> <span class="n">Entity</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="s">"cats"</span><span class="o">,</span> <span class="n">removeCats</span><span class="o">);</span>
+
+<span class="c1">// remove all items</span>
+<span class="n">mappingSession</span><span class="o">.</span><span class="na">deleteValue</span><span class="o">(</span><span class="n">id</span><span class="o">,</span> <span class="n">Entity</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="s">"cats"</span><span class="o">);</span>
+</pre></div>
+
+<p><a name="collections_set"></a></p>
+
+<ul>
+<li>Set operations</li>
+</ul><div class="highlight highlight-java"><pre><span class="c1">// append item</span>
+<span class="n">mappingSession</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="n">id</span><span class="o">,</span> <span class="n">Entity</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="s">"dogs"</span><span class="o">,</span> <span class="s">"Black Dog"</span><span class="o">);</span>
+
+<span class="c1">// append item to be expired in 5 sec</span>
+<span class="n">mappingSession</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="n">id</span><span class="o">,</span> <span class="n">Entity</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="s">"dogs"</span><span class="o">,</span> <span class="s">"Expired Dog"</span><span class="o">,</span> <span class="k">new</span> <span class="nf">WriteOptions</span><span class="o">().</span><span class="na">setTtl</span><span class="o">(</span><span class="mi">5</span><span class="o">));</span>
+
+<span class="c1">// append Set of items</span>
+<span class="n">Set</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">addDogs</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashSet</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;();</span>
+<span class="n">addDogs</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="s">"Red Dog"</span><span class="o">);</span>
+<span class="n">addDogs</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="s">"Green Dog"</span><span class="o">);</span>
+<span class="n">mappingSession</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="n">id</span><span class="o">,</span> <span class="n">Entity</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="s">"dogs"</span><span class="o">,</span> <span class="n">addDogs</span><span class="o">);</span>
+
+<span class="c1">// remove item</span>
+<span class="n">mappingSession</span><span class="o">.</span><span class="na">remove</span><span class="o">(</span><span class="n">id</span><span class="o">,</span> <span class="n">Entity</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="s">"dogs"</span><span class="o">,</span> <span class="s">"Black Dog"</span><span class="o">);</span>
+
+<span class="c1">// remove Set of items</span>
+<span class="n">Set</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">removeDogs</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashSet</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;();</span>
+<span class="n">removeDogs</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="s">"Red Dog"</span><span class="o">);</span>
+<span class="n">removeDogs</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="s">"Green Dog"</span><span class="o">);</span>
+<span class="n">mappingSession</span><span class="o">.</span><span class="na">remove</span><span class="o">(</span><span class="n">id</span><span class="o">,</span> <span class="n">Entity</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="s">"dogs"</span><span class="o">,</span> <span class="n">removeDogs</span><span class="o">);</span>
+
+<span class="c1">// remove all items</span>
+<span class="n">mappingSession</span><span class="o">.</span><span class="na">deleteValue</span><span class="o">(</span><span class="n">id</span><span class="o">,</span> <span class="n">Entity</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="s">"dogs"</span><span class="o">);</span>
+</pre></div>
+
+<p><a name="collections_map"></a></p>
+
+<ul>
+<li>Map operations</li>
+</ul><div class="highlight highlight-java"><pre><span class="cm">/** append item */</span>
+<span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">BigInteger</span><span class="o">&gt;</span> <span class="n">pets</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashMap</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">BigInteger</span><span class="o">&gt;();</span>
+<span class="n">pets</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">"Red Dogs"</span><span class="o">,</span> <span class="mi">25</span><span class="o">);</span>
+<span class="n">pets</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">"Black Cats"</span><span class="o">,</span> <span class="mi">50</span><span class="o">);</span>
+<span class="n">mappingSession</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="n">id</span><span class="o">,</span> <span class="n">Entity</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="s">"pets"</span><span class="o">,</span> <span class="n">pets</span><span class="o">);</span>
+
+<span class="cm">/** append items to be expired in 5 sec */</span>
+<span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">BigInteger</span><span class="o">&gt;</span> <span class="n">pets</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashMap</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">BigInteger</span><span class="o">&gt;();</span>
+<span class="n">pets</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">"Green Dogs"</span><span class="o">,</span> <span class="mi">25</span><span class="o">);</span>
+<span class="n">pets</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">"Brown Cats"</span><span class="o">,</span> <span class="mi">50</span><span class="o">);</span>
+<span class="n">mappingSession</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="n">id</span><span class="o">,</span> <span class="n">Entity</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="s">"pets"</span><span class="o">,</span> <span class="n">pets</span><span class="o">,</span> <span class="k">new</span> <span class="nf">WriteOptions</span><span class="o">().</span><span class="na">setTtl</span><span class="o">(</span><span class="mi">5</span><span class="o">));</span>
+
+<span class="cm">/** remove all items */</span>
+<span class="n">mappingSession</span><span class="o">.</span><span class="na">deleteValue</span><span class="o">(</span><span class="n">id</span><span class="o">,</span> <span class="n">Entity</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="s">"pets"</span><span class="o">);</span>
+</pre></div>
+
+<p><a name="lock"></a></p>
+
+<h3>
+<a name="optimistic-lock" class="anchor" href="#optimistic-lock"><span class="octicon octicon-link"></span></a>Optimistic Lock</h3>
+
+<p>C* does not support locking. But it provides ability for <a href="http://en.wikipedia.org/wiki/Optimistic_concurrency_control">Optimistic Concurrency Control</a>.<br>
+While running, transactions use data resources without acquiring locks on those resources. Before committing, each transaction verifies that no other transaction has modified the data it has read. If the check reveals conflicting modifications, the committing transaction rolls back and can be restarted.<br>
+This section explains how you can achieve this with C* and Mapping Add-on</p>
+
+<p><a name="lock_transactions"></a></p>
+
+<ul>
+<li>Lightweight Transactions<br>
+I don't know why they call it Lightweight Transactions. Those transactions are much heavier than normal C* transactions. Read more about <a href="http://www.datastax.com/documentation/cassandra/2.0/cassandra/dml/dml_ltwt_transaction_c.html">Datastax Lightweight Transactions.</a><br>
+C* supports conditional UPDATE/INSERT using IF/IF NOT EXISTS keywords. When "IF" condition is not met write doesn't happen. The boolean flag "[applied]" is returned.</li>
+</ul><p><a name="lock_version"></a></p>
+
+<ul>
+<li>
+<a href="https://github.com/Version" class="user-mention">@Version</a><br>
+Mapping Add-on enables optimistic locking using annotation <a href="https://github.com/Version" class="user-mention">@Version</a>.<br>
+The property must be of "long" data type. Whenever you save entity the version get incremented and as result of operation updated entity is retirned. If you try to save not-the-latest one then "null" will be returned instead and no error will be thrown.</li>
+</ul><div class="highlight highlight-java"><pre>
+    <span class="kn">import</span> <span class="nn">javax.persistence.Id</span><span class="o">;</span>
+    <span class="kn">import</span> <span class="nn">javax.persistence.Table</span><span class="o">;</span>
+    <span class="kn">import</span> <span class="nn">javax.persistence.Version</span><span class="o">;</span>   
+
+    <span class="nd">@Table</span><span class="o">(</span><span class="n">name</span><span class="o">=</span><span class="s">"entity"</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="kd">class</span> <span class="nc">EntityWithVersion</span> <span class="o">{</span>
+        <span class="nd">@Id</span>
+        <span class="kd">private</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">UUID</span> <span class="n">id</span><span class="o">;</span>
+
+        <span class="nd">@Version</span>
+        <span class="kd">private</span> <span class="kt">long</span> <span class="n">version</span><span class="o">;</span>   
+        <span class="c1">// public getters/setters ...</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Test</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">entityWithVersionTest</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+        <span class="n">UUID</span> <span class="n">id</span> <span class="o">=</span> <span class="n">UUID</span><span class="o">.</span><span class="na">randomUUID</span><span class="o">();</span>
+        <span class="n">EntityWithVersion</span> <span class="n">obj</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">EntityWithVersion</span><span class="o">();</span>
+        <span class="n">obj</span><span class="o">.</span><span class="na">setId</span><span class="o">(</span><span class="n">id</span><span class="o">);</span>
+        <span class="n">obj</span><span class="o">.</span><span class="na">setName</span><span class="o">(</span><span class="s">"ver1"</span><span class="o">);</span> 
+
+        <span class="n">EntityWithVersion</span> <span class="n">loaded</span> <span class="o">=</span> <span class="n">mappingSession</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">EntityWithVersion</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">id</span><span class="o">);</span>
+        <span class="n">assertNull</span><span class="o">(</span><span class="n">loaded</span><span class="o">);</span>
+
+        <span class="c1">// save object ver1 </span>
+        <span class="n">EntityWithVersion</span> <span class="n">saved</span> <span class="o">=</span> <span class="n">mappingSession</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">obj</span><span class="o">);</span>
+
+        <span class="c1">// get object ver1</span>
+        <span class="n">EntityWithVersion</span> <span class="n">obj1</span> <span class="o">=</span> <span class="n">mappingSession</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">EntityWithVersion</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">id</span><span class="o">);</span>
+        <span class="n">assertEquals</span><span class="o">(</span><span class="n">obj1</span><span class="o">,</span> <span class="n">saved</span><span class="o">);</span>
+        <span class="n">assertEquals</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="n">saved</span><span class="o">.</span><span class="na">getVersion</span><span class="o">());</span>
+
+        <span class="c1">// save object ver2</span>
+        <span class="n">saved</span> <span class="o">=</span> <span class="n">mappingSession</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">saved</span><span class="o">);</span>
+        <span class="n">EntityWithVersion</span> <span class="n">obj2</span> <span class="o">=</span> <span class="n">mappingSession</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">EntityWithVersion</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">id</span><span class="o">);</span>
+        <span class="n">assertEquals</span><span class="o">(</span><span class="n">obj2</span><span class="o">,</span> <span class="n">saved</span><span class="o">);</span>
+        <span class="n">assertEquals</span><span class="o">(</span><span class="mi">2</span><span class="o">,</span> <span class="n">saved</span><span class="o">.</span><span class="na">getVersion</span><span class="o">());</span>        
+
+        <span class="n">saved</span> <span class="o">=</span> <span class="n">mappingSession</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">obj1</span><span class="o">);</span>
+        <span class="n">assertNull</span><span class="o">(</span><span class="n">saved</span><span class="o">);</span>
+    <span class="o">}</span>       
+</pre></div>
+
+<p><a name="batch"></a></p>
+
+<h3>
+<a name="batch" class="anchor" href="#batch"><span class="octicon octicon-link"></span></a>Batch</h3>
+
+<div class="highlight highlight-java"><pre>
+    <span class="n">mappingSession</span><span class="o">.</span><span class="na">withBatch</span><span class="o">()</span>
+        <span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">entityA</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">entityB</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">delete</span><span class="o">(</span><span class="n">entityC</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">delete</span><span class="o">(</span><span class="n">entityD</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">execute</span><span class="o">();</span>
+</pre></div>
+
+<p><a name="nested"></a></p>
+
+<h3>
+<a name="nested-entities" class="anchor" href="#nested-entities"><span class="octicon octicon-link"></span></a>Nested Entities</h3>
+
+<p>This section shows how you can support nested entities with C* and Mapping Add-on.</p>
+
+<div class="highlight highlight-java"><pre>
+    <span class="nd">@Table</span><span class="o">(</span><span class="n">name</span><span class="o">=</span><span class="s">"entity_a"</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="kd">class</span> <span class="nc">EntityA</span> <span class="o">{</span>
+        <span class="nd">@Id</span>
+        <span class="kd">private</span> <span class="n">UUID</span> <span class="n">id</span><span class="o">;</span>
+
+        <span class="c1">// public getters/setters ...</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Table</span><span class="o">(</span><span class="n">name</span><span class="o">=</span><span class="s">"entity_b"</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="kd">class</span> <span class="nc">EntityB</span> <span class="o">{</span>
+        <span class="nd">@Id</span>
+        <span class="kd">private</span> <span class="n">UUID</span> <span class="n">id</span><span class="o">;</span>
+
+        <span class="c1">// reference on EntityA </span>
+        <span class="kd">private</span> <span class="n">UUID</span> <span class="n">refA</span><span class="o">;</span>
+        <span class="c1">// public getters/setters ...</span>
+    <span class="o">}</span>   
+
+    <span class="kd">public</span> <span class="kd">class</span> <span class="nf">TestNested</span><span class="o">()</span> <span class="o">{</span>
+
+        <span class="nd">@Test</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">saveNested</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+            <span class="n">EntityA</span> <span class="n">a</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">EntityA</span><span class="o">();</span>
+            <span class="n">mappingSession</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">a</span><span class="o">);</span>
+
+            <span class="n">EntityB</span> <span class="n">b</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">EntityB</span><span class="o">();</span>
+            <span class="n">b</span><span class="o">.</span><span class="na">setRefA</span><span class="o">(</span><span class="n">a</span><span class="o">.</span><span class="na">getId</span><span class="o">());</span>
+            <span class="n">mappingSession</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">b</span><span class="o">);</span>
+        <span class="o">}</span>
+
+        <span class="nd">@Test</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">loadNested</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+            <span class="n">UUID</span> <span class="n">bId</span> <span class="o">=</span> <span class="n">some_id</span><span class="o">;</span>
+            <span class="n">EntityB</span> <span class="n">b</span> <span class="o">=</span> <span class="n">mappingSession</span><span class="o">.</span><span class="na">load</span><span class="o">(</span><span class="n">bId</span><span class="o">);</span>
+            <span class="n">EntityA</span> <span class="n">a</span> <span class="o">=</span> <span class="n">mappingSession</span><span class="o">.</span><span class="na">load</span><span class="o">(</span><span class="n">b</span><span class="o">.</span><span class="na">getRefA</span><span class="o">());</span>
+        <span class="o">}</span>
+
+    <span class="o">}</span>
+</pre></div>
+
+<p><a name="queries_mapping"></a></p>
+
+<h3>
+<a name="mapping-custom-queries" class="anchor" href="#mapping-custom-queries"><span class="octicon octicon-link"></span></a>Mapping Custom Queries</h3>
+
+<p><a name="queries_howto"></a></p>
+
+<ul>
+<li>
+<p>How To Run<br>
+There are two ways to run and map the query:<br>
+1) run using mapping session</p>
+
+<div class="highlight highlight-java"><pre><span class="kn">import</span> <span class="nn">com.datastax.driver.mapping.MappingSession</span><span class="o">;</span>
+<span class="o">...</span>
+<span class="n">List</span><span class="o">&lt;</span><span class="n">Entity</span><span class="o">&gt;</span> <span class="n">result</span> <span class="o">=</span> <span class="n">mappingSession</span><span class="o">.</span><span class="na">getByQuery</span><span class="o">(</span><span class="n">Entity</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">query</span><span class="o">);</span>
+</pre></div>
+
+<p>2) run using DataStax session and map the ResultSet</p>
+
+<div class="highlight highlight-java"><pre><span class="kn">import</span> <span class="nn">com.datastax.driver.core.Session</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">com.datastax.driver.core.ResultSet</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">com.datastax.driver.mapping.MappingSession</span><span class="o">;</span>
+<span class="o">...</span>
+<span class="n">ResultSet</span> <span class="n">rs</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="na">execute</span><span class="o">(</span><span class="n">query</span><span class="o">);</span>  
+<span class="n">List</span><span class="o">&lt;</span><span class="n">Entity</span><span class="o">&gt;</span> <span class="n">result</span> <span class="o">=</span> <span class="n">mappingSession</span><span class="o">.</span><span class="na">getFromResultSet</span><span class="o">(</span><span class="n">Entity</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">rs</span><span class="o">);</span>
+</pre></div>
+</li>
+</ul><p><a name="queries_gnomes"></a></p>
+
+<ul>
+<li>Any-to-Any and Magic Gnomes<br>
+This is the coolest feature of the module. Your Entity doesn't have to match the table.<br>
+You can populate any entity from any query (Any-to-Any).<br>
+Consider example: </li>
+</ul><div class="highlight highlight-java"><pre>    <span class="kd">public</span> <span class="kd">class</span> <span class="nc">AnyObject</span> <span class="o">{</span>
+        <span class="kd">private</span> <span class="n">String</span> <span class="n">name</span><span class="o">;</span>
+        <span class="kd">private</span> <span class="kt">int</span> <span class="n">age</span><span class="o">;</span>
+        <span class="c1">// public getters/setters ...</span>
+    <span class="o">}</span>
+</pre></div>
+
+<p>You can populate this object from any ResultSet which contains 'name' and 'age' columns.  </p>
+
+<div class="highlight highlight-java"><pre>    <span class="n">ResultSet</span> <span class="n">rs</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="na">execute</span><span class="o">(</span><span class="s">"SELECT name, age, birth_date, salary FROM person"</span><span class="o">);</span> 
+    <span class="n">List</span><span class="o">&lt;</span><span class="n">AnyObject</span><span class="o">&gt;</span> <span class="n">result</span> <span class="o">=</span> <span class="n">mappingSession</span><span class="o">.</span><span class="na">getFromResultSet</span><span class="o">(</span><span class="n">AnyObject</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">rs</span><span class="o">);</span>
+</pre></div>
+
+<p>In this particular case 'name' and 'age' will be populated on 'AnyObject'. 'birth_date' and 'salary' will be ignored and no errors will be thrown.<br>
+The biggest advantage that we can reuse the same entity to query different results from even different tables.
+Entity doesn't have to map, match or relate to the table at all. 
+Many thank to magic gnomes under the hood making all these work.</p>
+
+<p><a name="queries_building"></a></p>
+
+<h3>
+<a name="building-custom-queries" class="anchor" href="#building-custom-queries"><span class="octicon octicon-link"></span></a>Building Custom Queries</h3>
+
+<p><a name="queries_cql"></a></p>
+
+<ul>
+<li>CQL String</li>
+</ul><div class="highlight highlight-java"><pre>    <span class="kn">import</span> <span class="nn">com.datastax.driver.mapping.MappingSession</span><span class="o">;</span>
+    <span class="o">...</span> 
+
+    <span class="c1">// build query</span>
+    <span class="n">String</span> <span class="n">query</span> <span class="o">=</span> <span class="s">"SELECT name, age, birth_date, salary FROM person"</span><span class="o">);</span> 
+
+    <span class="c1">// run query                        </span>
+    <span class="n">List</span><span class="o">&lt;</span><span class="n">Entity</span><span class="o">&gt;</span> <span class="n">result</span> <span class="o">=</span> <span class="n">mappingSession</span><span class="o">.</span><span class="na">getByQuery</span><span class="o">(</span><span class="n">Entity</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">query</span><span class="o">);</span>   
+</pre></div>
+
+<p><a name="queries_builder"></a></p>
+
+<ul>
+<li>QueryBuilder (Better)<br>
+Datastax Driver shipped with a tool to build CQL statement.<br>
+You can build your query with Datastax QueryBuilder and map ResultSet on Entity.<br>
+QueryBuilder ensures you build correct CQL.</li>
+</ul><div class="highlight highlight-java"><pre>
+    <span class="kn">import</span> <span class="nn">com.datastax.driver.core.Statement</span><span class="o">;</span>
+    <span class="kn">import</span> <span class="nn">com.datastax.driver.core.querybuilder.QueryBuilder</span><span class="o">;</span>
+    <span class="kn">import</span> <span class="nn">com.datastax.driver.mapping.MappingSession</span><span class="o">;</span>
+    <span class="o">...</span>
+
+    <span class="c1">// build query</span>
+    <span class="n">Statement</span> <span class="n">query</span> <span class="o">=</span> <span class="n">QueryBuilder</span><span class="o">.</span><span class="na">select</span><span class="o">().</span><span class="na">all</span><span class="o">()</span>
+        <span class="o">.</span><span class="na">from</span><span class="o">(</span><span class="s">"your_keyspace"</span><span class="o">,</span> <span class="s">"your_table"</span><span class="o">).</span><span class="na">where</span><span class="o">(</span><span class="n">eq</span><span class="o">(</span><span class="s">"column"</span><span class="o">,</span> <span class="n">value</span><span class="o">));</span>
+
+    <span class="c1">// run query                        </span>
+    <span class="n">List</span><span class="o">&lt;</span><span class="n">Entity</span><span class="o">&gt;</span> <span class="n">result</span> <span class="o">=</span> <span class="n">mappingSession</span><span class="o">.</span><span class="na">getByQuery</span><span class="o">(</span><span class="n">Entity</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">query</span><span class="o">);</span>
+</pre></div>
+
+<p><a name="queries_meta"></a></p>
+
+<ul>
+<li>QueryBuilder with EntityMetadata (Even Better)<br>
+In early stages you may often change table and column names.<br>
+To avoid changing queries each time you rename something you can employ entity metadata.</li>
+</ul><div class="highlight highlight-java"><pre>    <span class="kn">import</span> <span class="nn">com.datastax.driver.core.Statement</span><span class="o">;</span>
+    <span class="kn">import</span> <span class="nn">com.datastax.driver.core.querybuilder.QueryBuilder</span><span class="o">;</span>
+    <span class="kn">import</span> <span class="nn">com.datastax.driver.mapping.MappingSession</span><span class="o">;</span>
+    <span class="kn">import</span> <span class="nn">com.datastax.driver.mapping.EntityFieldMetaData</span><span class="o">;</span>
+    <span class="kn">import</span> <span class="nn">com.datastax.driver.mapping.EntityTypeMetadata</span><span class="o">;</span>  
+    <span class="o">...</span>         
+
+    <span class="c1">// get Entity Metadata</span>
+    <span class="n">EntityTypeMetadata</span> <span class="n">emeta</span> <span class="o">=</span> <span class="n">EntityTypeParser</span><span class="o">.</span><span class="na">getEntityMetadata</span><span class="o">(</span><span class="n">Entity</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+
+    <span class="c1">// get field metadata by property/field name</span>
+    <span class="n">EntityFieldMetaData</span> <span class="n">fmeta</span> <span class="o">=</span> <span class="n">emeta</span><span class="o">.</span><span class="na">getFieldMetadata</span><span class="o">(</span><span class="n">field_name</span><span class="o">);</span> 
+
+    <span class="c1">// build query.</span>
+    <span class="n">Statement</span> <span class="n">query</span> <span class="o">=</span> <span class="n">QueryBuilder</span><span class="o">.</span><span class="na">select</span><span class="o">().</span><span class="na">all</span><span class="o">()</span>
+        <span class="o">.</span><span class="na">from</span><span class="o">(</span><span class="s">"your_keyspace"</span><span class="o">,</span> <span class="n">emeta</span><span class="o">.</span><span class="na">getTableName</span><span class="o">()).</span><span class="na">where</span><span class="o">(</span><span class="n">eq</span><span class="o">(</span><span class="n">fmeta</span><span class="o">.</span><span class="na">getColumnName</span><span class="o">(),</span> <span class="n">value</span><span class="o">));</span>
+
+    <span class="c1">// run query</span>
+    <span class="n">List</span><span class="o">&lt;</span><span class="n">Entity</span><span class="o">&gt;</span> <span class="n">result</span> <span class="o">=</span> <span class="n">mappingSession</span><span class="o">.</span><span class="na">getByQuery</span><span class="o">(</span><span class="n">Entity</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">query</span><span class="o">);</span>
+</pre></div>
+
+<p><a name="under"></a></p>
+
+<h3>
+<a name="under-the-hood" class="anchor" href="#under-the-hood"><span class="octicon octicon-link"></span></a>Under The Hood</h3>
+
+<p><a name="pscache"></a>    </p>
+
+<h4>
+<a name="prepared-statement-cache" class="anchor" href="#prepared-statement-cache"><span class="octicon octicon-link"></span></a>Prepared Statement Cache</h4>
+
+<p>For the performance gain most update/select/delete statements are built as Prepared Statements.
+Prepared Statements are reusable and placed in the static cache.
+Cache is Guava Cache implementation initialized as:</p>
+
+<div class="highlight highlight-java"><pre><span class="o">.</span><span class="na">expireAfterAccess</span><span class="o">(</span><span class="mi">5</span><span class="o">,</span> <span class="n">TimeUnit</span><span class="o">.</span><span class="na">MINUTES</span><span class="o">)</span>
+<span class="o">.</span><span class="na">maximumSize</span><span class="o">(</span><span class="mi">1000</span><span class="o">)</span>
+<span class="o">.</span><span class="na">concurrencyLevel</span><span class="o">(</span><span class="mi">4</span><span class="o">)</span>
+</pre></div>
+
+<p>If you want to tune the cache for better performance you can do it as:</p>
+
+<div class="highlight highlight-java"><pre><span class="n">Cache</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">PreparedStatement</span><span class="o">&gt;</span> <span class="n">cache</span> <span class="o">=</span> <span class="n">CacheBuilder</span>
+    <span class="o">.</span><span class="na">newBuilder</span><span class="o">()</span>
+    <span class="o">.</span><span class="na">expireAfterAccess</span><span class="o">(</span><span class="mi">60</span><span class="o">,</span> <span class="n">TimeUnit</span><span class="o">.</span><span class="na">MINUTES</span><span class="o">)</span>
+    <span class="o">.</span><span class="na">maximumSize</span><span class="o">(</span><span class="mi">10000</span><span class="o">)</span>
+    <span class="o">.</span><span class="na">concurrencyLevel</span><span class="o">(</span><span class="mi">8</span><span class="o">)</span>
+    <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+
+<span class="n">MappingSession</span><span class="o">.</span><span class="na">setStatementCache</span><span class="o">(</span><span class="n">cache</span><span class="o">);</span>
+</pre></div>
+
+<p><a href="https://code.google.com/p/guava-libraries/wiki/CachesExplained">More about Guava Cache</a>  </p>
+
+<p><a name="sync"></a>       </p>
+
+<h4>
+<a name="how-entity-get-synchronized" class="anchor" href="#how-entity-get-synchronized"><span class="octicon octicon-link"></span></a>How Entity get synchronized</h4>
+
+<p>The table structure is automatically synchronized with the entity definition on the first use of the entity.<br>
+Any SessionMapping call internally will check if the entity has already been synchronized and if not<br>
+it will run SchemaSync.sync. You can use sync API directly as:  </p>
+
+<div class="highlight highlight-java"><pre>    <span class="c1">// create or alter</span>
+    <span class="kn">import</span> <span class="nn">com.datastax.driver.mapping.schemasync.SchemaSync</span><span class="o">;</span>
+    <span class="o">...</span>
+    <span class="n">SchemaSync</span><span class="o">.</span><span class="na">sync</span><span class="o">(</span><span class="n">keyspace</span><span class="o">,</span> <span class="n">session</span><span class="o">,</span> <span class="n">Entity</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+</pre></div>
+
+<div class="highlight highlight-java"><pre>    <span class="c1">// drop table</span>
+    <span class="kn">import</span> <span class="nn">com.datastax.driver.mapping.schemasync.SchemaSync</span><span class="o">;</span>
+    <span class="o">...</span>
+    <span class="n">SchemaSync</span><span class="o">.</span><span class="na">drop</span><span class="o">(</span><span class="n">keyspace</span><span class="o">,</span> <span class="n">session</span><span class="o">,</span> <span class="n">Entity</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+</pre></div>
+
+<p>You don't need to use this API unless you have reasons.<br>
+Such as unittests or if you want to gain few milliseconds on the first use<br>
+you may want to invoke the synchronization on the application start up instead. </p>
+
+<p>As the project is evolving sometimes there is need to refactor entity, add or delete properties and indexes. 
+Again this all taken care automatically but with certain restrictions.<br>
+Please read to understand what will and will not be altered and synchronized.</p>
+
+<p>Not Alterable</p>
+
+<ul>
+<li>add/delete/rename primary key columns. (C* restriction)<br>
+</li>
+<li>change column data type to incompatible one, such as string to number. (C* restriction)<br>
+</li>
+<li>change property name which is not annotated as <a href="https://github.com/Column" class="user-mention">@Column</a>. This will be understood as a new property. </li>
+</ul><p>Alterable</p>
+
+<ul>
+<li>add new property.</li>
+<li>delete property.</li>
+<li>add index on column.</li>
+<li>change datatype to compatible one. Compatibility is enforced by C*.<br>
+</li>
+</ul><p><a name="metadata"></a></p>
+
+<h4>
+<a name="entity-metadata-and-data-types" class="anchor" href="#entity-metadata-and-data-types"><span class="octicon octicon-link"></span></a>Entity Metadata and Data Types</h4>
+
+<p>You may want to access Entity metadata if you are building custom Statements.<br>
+Entity Metadata contains corresponding table and column names.<br>
+Entity Metadata can be easily accessed anywhere in your code as:</p>
+
+<div class="highlight highlight-java"><pre>    <span class="n">EntityTypeMetadata</span> <span class="n">emeta</span> <span class="o">=</span> <span class="n">EntityTypeParser</span><span class="o">.</span><span class="na">getEntityMetadata</span><span class="o">(</span><span class="n">Entity</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+    <span class="n">emeta</span><span class="o">.</span><span class="na">getTableName</span><span class="o">();</span> <span class="c1">// corresponding table name in C*</span>
+
+    <span class="c1">// get field meta info by property name</span>
+    <span class="n">EntityFieldMetaData</span> <span class="n">fdata</span> <span class="o">=</span> <span class="n">emeta</span><span class="o">.</span><span class="na">getFieldMetadata</span><span class="o">(</span><span class="s">"email"</span><span class="o">);</span>
+
+    <span class="c1">// corresponding column name in C*</span>
+    <span class="n">String</span> <span class="n">columnName</span> <span class="o">=</span> <span class="n">fdata</span><span class="o">.</span><span class="na">getColumnName</span><span class="o">();</span> 
+
+     <span class="c1">// all the persistent fields on entity</span>
+    <span class="n">List</span><span class="o">&lt;</span><span class="n">EntityFieldMetaData</span><span class="o">&gt;</span> <span class="n">fields</span> <span class="o">=</span> <span class="n">emeta</span><span class="o">.</span><span class="na">getFields</span><span class="o">();</span>
+</pre></div>
+
+<p>Datastax driver has mapping of datastax types to java. But not all types are mapped as 1-to-1.<br><a href="http://www.datastax.com/documentation/developer/java-driver/1.0/webhelp/index.html#java-driver/reference/javaClass2Cql3Datatypes_r.html">CQL3 data types to Java types</a><br>
+In order the mapping to work the module defines backward mapping for the types.  </p>
+
+<table>
+<thead><tr>
+<th>Java type</th>
+<th>CQL3 data type</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>int</td>
+<td>int</td>
+</tr>
+<tr>
+<td>long</td>
+<td>bigint</td>
+</tr>
+<tr>
+<td>float</td>
+<td>float</td>
+</tr>
+<tr>
+<td>double</td>
+<td>double</td>
+</tr>
+<tr>
+<td>boolean</td>
+<td>boolean</td>
+</tr>
+<tr>
+<td>java.lang.Double</td>
+<td>double</td>
+</tr>
+<tr>
+<td>java.nio.ByteBuffer</td>
+<td>blob</td>
+</tr>
+<tr>
+<td>java.math.BigDecimal</td>
+<td>decimal</td>
+</tr>
+<tr>
+<td>java.lang.String</td>
+<td>text</td>
+</tr>
+<tr>
+<td>java.util.Date</td>
+<td>timestamp</td>
+</tr>
+<tr>
+<td>java.lang.Boolean</td>
+<td>boolean</td>
+</tr>
+<tr>
+<td>java.lang.Integer</td>
+<td>int</td>
+</tr>
+<tr>
+<td>java.lang.Long</td>
+<td>bigint</td>
+</tr>
+<tr>
+<td>java.util.Map</td>
+<td>map</td>
+</tr>
+<tr>
+<td>java.lang.Float</td>
+<td>float</td>
+</tr>
+<tr>
+<td>java.util.Set</td>
+<td>set</td>
+</tr>
+<tr>
+<td>java.math.BigInteger</td>
+<td>varint</td>
+</tr>
+<tr>
+<td>java.util.UUID</td>
+<td>uuid</td>
+</tr>
+<tr>
+<td>java.util.List</td>
+<td>list</td>
+</tr>
+</tbody>
+</table><p>You can override defaults as:</p>
+
+<div class="highlight highlight-java"><pre>    <span class="kn">import</span> <span class="nn">com.datastax.driver.core.DataType</span><span class="o">;</span>
+    <span class="o">...</span>
+    <span class="n">Map</span><span class="o">&lt;</span><span class="n">Class</span><span class="o">&lt;?&gt;,</span> <span class="n">DataType</span><span class="o">.</span><span class="na">Name</span><span class="o">&gt;</span> <span class="n">mapping</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashMap</span><span class="o">&lt;</span><span class="n">Class</span><span class="o">&lt;?&gt;,</span> <span class="n">DataType</span><span class="o">.</span><span class="na">Name</span><span class="o">&gt;();</span>
+    <span class="o">....</span> <span class="n">populate</span> <span class="n">the</span> <span class="n">map</span>
+    <span class="n">EntityTypeParser</span><span class="o">.</span><span class="na">setDataTypeMapping</span><span class="o">(</span><span class="n">mapping</span><span class="o">);</span>
+</pre></div>
+
+<p>Or override individual type:</p>
+
+<div class="highlight highlight-java"><pre>    <span class="kn">import</span> <span class="nn">com.datastax.driver.core.DataType</span><span class="o">;</span>
+    <span class="o">...</span>
+    <span class="n">EntityTypeParser</span><span class="o">.</span><span class="na">overrideDataTypeMapping</span><span class="o">(</span><span class="n">javaClass</span><span class="o">,</span> <span class="n">DataType</span><span class="o">.</span><span class="na">Name</span><span class="o">)</span>
+</pre></div>
+
+<p><a name="spring"></a></p>
+
+<h3>
+<a name="spring-framework-example" class="anchor" href="#spring-framework-example"><span class="octicon octicon-link"></span></a>Spring Framework Example</h3>
+
+<ul>
+<li>
+<p>Configure properties.<br>
+Let's imagine we have a property file /META-INF/cassandra.properties:</p>
+
+<pre><code>  cassandra.keyspace=your_keyspace
+  cassandra.node=127.0.0.1
+</code></pre>
+</li>
+<li>
+<p>Include properties in spring config:</p>
+
+<div class="highlight highlight-xml"><pre><span class="cp">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+<span class="nt">&lt;beans:beans</span> <span class="na">xmlns=</span><span class="s">"http://www.springframework.org/schema/mvc"</span>
+    <span class="na">xmlns:xsi=</span><span class="s">"http://www.w3.org/2001/XMLSchema-instance"</span>
+    <span class="na">xmlns:beans=</span><span class="s">"http://www.springframework.org/schema/beans"</span>
+    <span class="na">xmlns:context=</span><span class="s">"http://www.springframework.org/schema/context"</span>
+    <span class="na">xsi:schemaLocation=</span><span class="s">"http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd</span>
+<span class="s">    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd</span>
+<span class="s">    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd"</span><span class="nt">&gt;</span>
+
+    <span class="c">&lt;!-- Enables the Spring MVC @Controller programming model --&gt;</span>
+    <span class="nt">&lt;annotation-driven</span> <span class="nt">/&gt;</span>
+
+    <span class="nt">&lt;context:property-placeholder</span> <span class="na">location=</span><span class="s">"classpath*:/META-INF/cassandra.properties"</span><span class="nt">/&gt;</span>  
+
+    <span class="nt">&lt;context:component-scan</span> <span class="na">base-package=</span><span class="s">"your.package.path"</span> <span class="nt">/&gt;</span>
+ <span class="nt">&lt;/beans:beans&gt;</span> 
+</pre></div>
+</li>
+<li>
+<p>Define Entity</p>
+
+<div class="highlight highlight-java"><pre>    <span class="kn">import</span> <span class="nn">java.util.UUID</span><span class="o">;</span>
+
+    <span class="kn">import</span> <span class="nn">javax.persistence.Entity</span><span class="o">;</span>
+    <span class="kn">import</span> <span class="nn">javax.persistence.Column</span><span class="o">;</span>
+    <span class="kn">import</span> <span class="nn">javax.persistence.Id</span><span class="o">;</span>
+    <span class="kn">import</span> <span class="nn">javax.persistence.Table</span><span class="o">;</span>
+
+    <span class="nd">@Entity</span>
+    <span class="nd">@Table</span><span class="o">(</span><span class="n">name</span><span class="o">=</span><span class="s">"account"</span><span class="o">,</span> <span class="n">indexes</span> <span class="o">=</span> <span class="o">{</span><span class="nd">@Index</span><span class="o">(</span><span class="n">name</span><span class="o">=</span><span class="s">"account_email_idx"</span><span class="o">,</span> <span class="n">columnList</span><span class="o">=</span><span class="s">"email"</span> <span class="o">)})</span>
+    <span class="kd">public</span> <span class="kd">class</span> <span class="nc">Account</span> <span class="o">{</span>
+        <span class="nd">@Id</span>
+        <span class="kd">private</span> <span class="n">String</span> <span class="n">id</span> <span class="o">=</span> <span class="n">UUID</span><span class="o">.</span><span class="na">randomUUID</span><span class="o">().</span><span class="na">toString</span><span class="o">();</span>
+
+        <span class="nd">@Column</span><span class="o">(</span><span class="n">name</span><span class="o">=</span><span class="s">"email"</span><span class="o">)</span> 
+        <span class="kd">private</span> <span class="n">String</span> <span class="n">email</span><span class="o">;</span>           
+
+        <span class="kd">public</span> <span class="n">String</span> <span class="nf">getId</span><span class="o">()</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="n">id</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setId</span><span class="o">(</span><span class="n">String</span> <span class="n">id</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">this</span><span class="o">.</span><span class="na">id</span> <span class="o">=</span> <span class="n">id</span><span class="o">;</span>
+        <span class="o">}</span>           
+        <span class="kd">public</span> <span class="n">String</span> <span class="nf">getEmail</span><span class="o">()</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="n">email</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setEmail</span><span class="o">(</span><span class="n">String</span> <span class="n">email</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">this</span><span class="o">.</span><span class="na">email</span> <span class="o">=</span> <span class="n">email</span><span class="o">;</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+</pre></div>
+</li>
+<li>
+<p>Create session factory for C*:</p>
+
+<div class="highlight highlight-java"><pre>    <span class="kn">import</span> <span class="nn">org.springframework.beans.factory.annotation.Value</span><span class="o">;</span>
+    <span class="kn">import</span> <span class="nn">org.springframework.stereotype.Repository</span><span class="o">;</span>
+    <span class="kn">import</span> <span class="nn">com.datastax.driver.core.Cluster</span><span class="o">;</span>
+    <span class="kn">import</span> <span class="nn">com.datastax.driver.core.Session</span><span class="o">;</span>
+    <span class="kn">import</span> <span class="nn">com.datastax.driver.mapping.MappingSession</span><span class="o">;</span>
+    <span class="kn">import</span> <span class="nn">com.datastax.driver.mapping.schemasync.SchemaSync</span><span class="o">;</span>
+
+    <span class="nd">@Repository</span>
+    <span class="kd">public</span> <span class="kd">class</span> <span class="nc">CassandraSessionFactory</span> <span class="o">{</span>
+
+        <span class="nd">@Value</span><span class="o">(</span><span class="s">"${cassandra.keyspace}"</span><span class="o">)</span>
+        <span class="kd">private</span> <span class="n">String</span> <span class="n">keyspace</span><span class="o">;</span>
+
+        <span class="nd">@Value</span><span class="o">(</span><span class="s">"${cassandra.node}"</span><span class="o">)</span>
+        <span class="kd">private</span> <span class="n">String</span> <span class="n">node</span><span class="o">;</span>
+
+        <span class="kd">private</span> <span class="n">Cluster</span> <span class="n">cluster</span><span class="o">;</span>
+        <span class="kd">private</span> <span class="n">Session</span> <span class="n">session</span><span class="o">;</span>
+        <span class="kd">private</span> <span class="n">MappingSession</span> <span class="n">mappingSession</span><span class="o">;</span>
+
+        <span class="kd">public</span> <span class="n">Session</span> <span class="nf">getSession</span><span class="o">()</span> <span class="o">{</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">session</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">connect</span><span class="o">();</span>
+            <span class="o">}</span>
+            <span class="k">return</span> <span class="n">session</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="kd">public</span> <span class="n">MappingSession</span> <span class="nf">getMappingSession</span><span class="o">()</span> <span class="o">{</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">session</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">connect</span><span class="o">();</span>
+            <span class="o">}</span>
+            <span class="k">return</span> <span class="n">mappingSession</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="kd">public</span> <span class="n">String</span> <span class="nf">getKeyspace</span><span class="o">()</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="n">keyspace</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="cm">/** only 1 thread is permitted to open connection */</span>
+        <span class="kd">protected</span> <span class="kd">synchronized</span> <span class="kt">void</span> <span class="nf">connect</span><span class="o">()</span> <span class="o">{</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">session</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">cluster</span> <span class="o">=</span> <span class="n">Cluster</span><span class="o">.</span><span class="na">builder</span><span class="o">().</span><span class="na">addContactPoint</span><span class="o">(</span><span class="n">node</span><span class="o">).</span><span class="na">build</span><span class="o">();</span>
+                <span class="n">session</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="na">connect</span><span class="o">();</span>
+                <span class="n">session</span><span class="o">.</span><span class="na">execute</span><span class="o">(</span><span class="s">"CREATE KEYSPACE IF NOT EXISTS "</span><span class="o">+</span> <span class="n">getKeyspace</span><span class="o">()</span> <span class="o">+</span>
+                    <span class="s">" WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 3 }"</span><span class="o">);</span>
+
+                <span class="n">mappingSession</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">MappingSession</span><span class="o">(</span><span class="n">getKeyspace</span><span class="o">(),</span> <span class="n">getSession</span><span class="o">());</span>
+            <span class="o">}</span>   
+        <span class="o">}</span>
+    <span class="o">}</span>
+</pre></div>
+</li>
+<li>
+<p>Create DAO and inject factory into it:</p>
+
+<div class="highlight highlight-java"><pre>    <span class="kn">import</span> <span class="nn">java.util.List</span><span class="o">;</span>
+
+    <span class="kn">import</span> <span class="nn">org.springframework.beans.factory.annotation.Autowired</span><span class="o">;</span>
+    <span class="kn">import</span> <span class="nn">org.springframework.stereotype.Repository</span><span class="o">;</span>
+
+    <span class="kn">import</span> <span class="nn">static</span> <span class="n">com</span><span class="o">.</span><span class="na">datastax</span><span class="o">.</span><span class="na">driver</span><span class="o">.</span><span class="na">core</span><span class="o">.</span><span class="na">querybuilder</span><span class="o">.</span><span class="na">QueryBuilder</span><span class="o">.</span><span class="na">eq</span><span class="o">;</span>
+    <span class="kn">import</span> <span class="nn">com.datastax.driver.core.Statement</span><span class="o">;</span>
+    <span class="kn">import</span> <span class="nn">com.datastax.driver.core.querybuilder.QueryBuilder</span><span class="o">;</span>
+    <span class="kn">import</span> <span class="nn">com.datastax.driver.mapping.EntityFieldMetaData</span><span class="o">;</span>
+    <span class="kn">import</span> <span class="nn">com.datastax.driver.mapping.EntityTypeMetadata</span><span class="o">;</span>
+    <span class="kn">import</span> <span class="nn">com.datastax.driver.mapping.EntityTypeParser</span><span class="o">;</span>
+    <span class="kn">import</span> <span class="nn">com.datastax.driver.mapping.MappingSession</span><span class="o">;</span>  
+
+    <span class="nd">@Repository</span>
+    <span class="kd">public</span> <span class="kd">class</span> <span class="nc">AccountDAO</span> <span class="o">{</span>
+
+        <span class="nd">@Autowired</span>
+        <span class="n">CassandraSessionFactory</span> <span class="n">sf</span><span class="o">;</span>
+
+        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">save</span><span class="o">(</span><span class="n">Account</span> <span class="n">account</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">sf</span><span class="o">.</span><span class="na">getMappingSession</span><span class="o">().</span><span class="na">save</span><span class="o">(</span><span class="n">account</span><span class="o">);</span>   
+        <span class="o">}</span>
+
+        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">delete</span><span class="o">(</span><span class="n">Account</span> <span class="n">account</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">sf</span><span class="o">.</span><span class="na">getMappingSession</span><span class="o">().</span><span class="na">delete</span><span class="o">(</span><span class="n">account</span><span class="o">);</span> 
+        <span class="o">}</span>
+
+        <span class="kd">public</span> <span class="n">Account</span> <span class="nf">getById</span><span class="o">(</span><span class="n">Object</span> <span class="n">id</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="n">sf</span><span class="o">.</span><span class="na">getMappingSession</span><span class="o">().</span><span class="na">get</span><span class="o">(</span><span class="n">ChatAccount</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">id</span><span class="o">);</span>   
+        <span class="o">}</span>
+
+        <span class="kd">public</span> <span class="n">Account</span> <span class="nf">getByEmail</span><span class="o">(</span><span class="n">String</span> <span class="n">email</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+
+            <span class="n">Statement</span> <span class="n">stmt</span> <span class="o">=</span> <span class="n">buildQueryForColumn</span><span class="o">(</span><span class="s">"email"</span><span class="o">,</span> <span class="n">email</span><span class="o">);</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">stmt</span><span class="o">==</span><span class="kc">null</span><span class="o">)</span> <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+
+            <span class="n">List</span><span class="o">&lt;</span><span class="n">Account</span><span class="o">&gt;</span> <span class="n">result</span> <span class="o">=</span> <span class="n">sf</span><span class="o">.</span><span class="na">getMappingSession</span><span class="o">().</span><span class="na">getByQuery</span><span class="o">(</span><span class="n">Account</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">stmt</span><span class="o">);</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">result</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">||</span> <span class="n">result</span><span class="o">.</span><span class="na">size</span><span class="o">()==</span><span class="mi">0</span><span class="o">)</span> <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+
+            <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
+        <span class="o">}</span>
+
+        <span class="cm">/** Sample Building Select Statement for a single column with Datastax QueryBuilder */</span>
+        <span class="kd">protected</span> <span class="n">Statement</span> <span class="nf">buildQueryForColumn</span><span class="o">(</span><span class="n">String</span> <span class="n">propName</span><span class="o">,</span> <span class="n">Object</span> <span class="n">propVal</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">EntityTypeMetadata</span> <span class="n">emeta</span> <span class="o">=</span> <span class="n">EntityTypeParser</span><span class="o">.</span><span class="na">getEntityMetadata</span><span class="o">(</span><span class="n">Account</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+            <span class="n">EntityFieldMetaData</span> <span class="n">fmeta</span> <span class="o">=</span> <span class="n">emeta</span><span class="o">.</span><span class="na">getFieldMetadata</span><span class="o">(</span><span class="n">propName</span><span class="o">);</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">fmeta</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">return</span> <span class="n">QueryBuilder</span>
+                        <span class="o">.</span><span class="na">select</span><span class="o">().</span><span class="na">all</span><span class="o">()</span>
+                        <span class="o">.</span><span class="na">from</span><span class="o">(</span><span class="n">sf</span><span class="o">.</span><span class="na">getKeyspace</span><span class="o">(),</span> <span class="n">emeta</span><span class="o">.</span><span class="na">getTableName</span><span class="o">())</span>
+                        <span class="o">.</span><span class="na">where</span><span class="o">(</span><span class="n">eq</span><span class="o">(</span><span class="n">fmeta</span><span class="o">.</span><span class="na">getColumnName</span><span class="o">(),</span> <span class="n">propVal</span><span class="o">));</span>
+            <span class="o">}</span>
+            <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+</pre></div>
+</li>
+</ul>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Cassandra-driver-mapping maintained by <a href="https://github.com/valchkou">valchkou</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-23057632-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+
+  </body>
+</html>
