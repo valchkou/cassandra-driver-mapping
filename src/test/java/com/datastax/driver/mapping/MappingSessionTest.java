@@ -43,6 +43,7 @@ import org.junit.Test;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ConsistencyLevel;
+import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.policies.DefaultRetryPolicy;
@@ -51,6 +52,7 @@ import com.datastax.driver.mapping.EntityFieldMetaData;
 import com.datastax.driver.mapping.EntityTypeMetadata;
 import com.datastax.driver.mapping.EntityTypeParser;
 import com.datastax.driver.mapping.MappingSession;
+import com.datastax.driver.mapping.entity.Any;
 import com.datastax.driver.mapping.entity.CompositeKey;
 import com.datastax.driver.mapping.entity.EntityMixedCase;
 import com.datastax.driver.mapping.entity.EntityWithCollections;
@@ -726,4 +728,26 @@ public class MappingSessionTest {
 		loaded = target.get(EntityWithEnum.class, uuid);
 		assertNull(loaded);
 	}
+	
+	@Test
+	public void any2anyTest() throws Exception {
+		Date d = new Date();
+		UUID uuid = UUID.randomUUID();
+		Simple obj = new Simple();
+		obj.setTimestamp(d);
+		obj.setName("myName");
+		obj.setAge(55);
+		obj.setId(uuid);
+		
+		target.save(obj);
+		
+		ResultSet rs = session.execute("SELECT name, age, timestamp FROM simple");	
+		List<Any> result = target.getFromResultSet(Any.class, rs);
+		Any a = result.get(0);
+		assertEquals(obj.getAge(),a.getAge());
+		assertEquals(obj.getTimestamp(),a.getTimestamp());
+		assertEquals(obj.getName(),a.getName());
+		
+		target.delete(obj);
+	}	
 }

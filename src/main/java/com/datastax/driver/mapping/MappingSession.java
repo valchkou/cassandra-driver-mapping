@@ -713,7 +713,7 @@ public class MappingSession {
 					}
 				}
 			} catch (Exception e) {
-				return null;
+				// skip error to support any-2-any
 			}
 
 			// set properties' values 
