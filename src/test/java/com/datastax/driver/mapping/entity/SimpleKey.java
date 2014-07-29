@@ -1,8 +1,5 @@
 package com.datastax.driver.mapping.entity;
 
-import javax.persistence.Embeddable;
-
-@Embeddable
 public class SimpleKey {
 
 	private String name;

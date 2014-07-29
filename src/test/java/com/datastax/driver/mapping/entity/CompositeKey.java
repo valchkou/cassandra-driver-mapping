@@ -20,7 +20,7 @@ import java.util.Date;
 import javax.persistence.Embeddable;
 import javax.persistence.EmbeddedId;
 
-@Embeddable
+
 public class CompositeKey {
 	
 	@EmbeddedId

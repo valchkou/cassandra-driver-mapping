@@ -16,9 +16,8 @@
 package com.datastax.driver.mapping.entity;
 
 import java.util.Date;
-import java.util.UUID;
 
-import javax.persistence.Id;
+import javax.persistence.EmbeddedId;
 import javax.persistence.Table;
 
 import com.datastax.driver.mapping.annotation.TableProperties;
@@ -27,28 +26,24 @@ import com.datastax.driver.mapping.annotation.TableProperty;
 
 @Table(name = "test_entity_properties")
 @TableProperties(values = {
-		@TableProperty(value="comment='Important records'"),
-		@TableProperty(value="read_repair_chance = 1.0"),
-		@TableProperty(value="compression ={ 'sstable_compression' : 'DeflateCompressor', 'chunk_length_kb' : 64 }")
+		@TableProperty("CLUSTERING ORDER BY (rank DESC)"),
+		@TableProperty("comment='Important records'"),
+		@TableProperty("read_repair_chance = 1.0"),
+		@TableProperty("compression ={ 'sstable_compression' : 'DeflateCompressor', 'chunk_length_kb' : 64 }")
 	})
 public class EntityWithProperties {
 
-	@Id
-	private UUID uuid;
+	@EmbeddedId
+	private SimpleKey uuid;
 	private String email;
 	private Date timestamp;
-	private String name;
 
-	public UUID getUuid() {
+	public SimpleKey getUuid() {
 		return uuid;
 	}
 
-	public void setUuid(UUID uuid) {
+	public void setUuid(SimpleKey uuid) {
 		this.uuid = uuid;
-	}
-
-	public String getName() {
-		return name;
 	}
 
 	public String getEmail() {
@@ -57,10 +52,6 @@ public class EntityWithProperties {
 
 	public Date getTimestamp() {
 		return timestamp;
-	}
-
-	public void setName(String name) {
-		this.name = name;
 	}
 
 	public void setEmail(String email) {
