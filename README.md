@@ -236,30 +236,9 @@ CQL3 Statement
 <a name="mapping_composite"/>
 #### Compound Primary Key
 ```java
-import java.math.BigInteger;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.persistence.Id;
-import javax.persistence.Table;
-
-@Table(name="entity")
-public class Entity {
-	@Id
-	private java.util.UUID id;
-	private List<String> cats;
-	private Set<Date> dogs;
-	private Map<String, BigInteger> pets;
-	
-	// public getters/setters ...
-}
-```
-```java
 import javax.persistence.Embeddable;	
 
-@Embeddable
+
 public class CompositeKey {
 	private String name;
 	private int rank;
@@ -289,7 +268,6 @@ CQL3 Statement
 ```java
 import javax.persistence.Embeddable;	
 
-@Embeddable
 public class PartitionKey {
 	private String firstName;
 	private String lastName;
@@ -299,7 +277,6 @@ public class PartitionKey {
 ```java
 import javax.persistence.Embeddable;	
 
-@Embeddable
 public class CompositeKey {
 	@EmbeddedId
 	private PartitionKey key;
