@@ -323,10 +323,10 @@ CQL3 Statement
 ```
    CREATE TABLE IF NOT EXISTS ks.mytable (id bigint, name text, PRIMARY KEY(id)) WITH comment='Important records' AND read_repair_chance = 1.0 AND compression ={ 'sstable_compression' : 'DeflateCompressor', 'chunk_length_kb' : 64 }
 ```     
-
-
-
-
+  
+  
+  
+  
 ```java
 public class CompositeKey {
 	private String name;
