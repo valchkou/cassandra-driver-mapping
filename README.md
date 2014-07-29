@@ -325,8 +325,7 @@ CQL3 Statement
 ```     
   
   
-  
-  
+CLUSTERING ORDER 
 ```java
 public class CompositeKey {
 	private String name;
