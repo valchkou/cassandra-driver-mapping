@@ -236,9 +236,6 @@ CQL3 Statement
 <a name="mapping_composite"/>
 #### Compound Primary Key
 ```java
-import javax.persistence.Embeddable;	
-
-
 public class CompositeKey {
 	private String name;
 	private int rank;
@@ -266,8 +263,6 @@ CQL3 Statement
 <a name="mapping_partition"/>
 #### Composite Partition Key
 ```java
-import javax.persistence.Embeddable;	
-
 public class PartitionKey {
 	private String firstName;
 	private String lastName;
@@ -275,8 +270,6 @@ public class PartitionKey {
 }
 ```
 ```java
-import javax.persistence.Embeddable;	
-
 public class CompositeKey {
 	@EmbeddedId
 	private PartitionKey key;
@@ -314,9 +307,9 @@ import com.datastax.driver.mapping.annotation.TableProperty;
 
 @Table (name="mytable")
 @TableProperties(values = {
-	@TableProperty(value="comment='Important records'"),
-	@TableProperty(value="read_repair_chance = 1.0"),
-	@TableProperty(value="compression ={ 'sstable_compression' : 'DeflateCompressor', 'chunk_length_kb' : 64 }")
+	@TableProperty("comment='Important records'"),
+	@TableProperty("read_repair_chance = 1.0"),
+	@TableProperty("compression ={ 'sstable_compression' : 'DeflateCompressor', 'chunk_length_kb' : 64 }")
 })
 public class Entity {
 	
@@ -331,6 +324,35 @@ CQL3 Statement
    CREATE TABLE IF NOT EXISTS ks.mytable (id bigint, name text, PRIMARY KEY(id)) WITH comment='Important records' AND read_repair_chance = 1.0 AND compression ={ 'sstable_compression' : 'DeflateCompressor', 'chunk_length_kb' : 64 }
 ```     
 
+```java
+public class CompositeKey {
+	private String name;
+	private int rank;
+	// public getters/setters ...
+}
+```
+```java
+
+import javax.persistence.Table;
+import javax.persistence.EmbeddedId;	
+import com.datastax.driver.mapping.annotation.TableProperties;
+import com.datastax.driver.mapping.annotation.TableProperty;
+
+@Table(name="entity")
+@TableProperties(values = {
+		@TableProperty("CLUSTERING ORDER BY (rank DESC)")
+	})
+public class Entity {
+	@EmbeddedId
+	private CompositeKey key;
+	private String email;
+	// public getters/setters ...
+}
+```
+CQL3 Statement
+```
+   CREATE TABLE IF NOT EXISTS ks.entity (name text,  rank int, email text,  PRIMARY KEY(name, rank)) WITH CLUSTERING ORDER BY (rank DESC)
+```
 <a name="mapping_datatype"/>
 #### Override Column Data Type.   
 Datastax defines [data type mapping from Java to C*] (http://www.datastax.com/documentation/developer/java-driver/2.0/java-driver/reference/javaClass2Cql3Datatypes_r.html).  
