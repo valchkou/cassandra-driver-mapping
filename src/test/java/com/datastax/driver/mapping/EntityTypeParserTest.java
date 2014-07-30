@@ -171,7 +171,7 @@ public class EntityTypeParserTest {
 		List<String> props = meta.getProperties();
 		assertNotNull(props);
 		
-		assertEquals(3, props.size());
+		assertEquals(4, props.size());
 		assertTrue(props.contains("comment='Important records'"));
 		assertTrue(props.contains("read_repair_chance = 1.0"));
 		assertTrue(props.contains("compression ={ 'sstable_compression' : 'DeflateCompressor', 'chunk_length_kb' : 64 }"));
