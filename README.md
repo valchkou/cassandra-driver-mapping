@@ -18,9 +18,19 @@ Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.c
 - [Jump Start](#start)  
 	* [Maven Dependency](#jump_maven)
 	* [Init Mapping Session](#jump_init)
-	* [Save](#jump_save)
-	* [Get](#jump_get)
-	* [Delete](#jump_delete)
+	* [Save, Get, Delete](#jump_save)
+- [Save](#save)  
+	* [Save Entity](#jump_entity)
+	* [Save Individual Field](#save_prop)
+	* [Save with TTL](#save_ttl)
+	* [Save with Options](#save_opt)
+	* [Collections](#save_opt)
+	* [Batch](#save_batch)
+- [Get](#get)  
+	* [Get Entity](#jump_entity)
+	* [Get with Options](#save_prop)
+	* [Custom Queries](#save_ttl)
+	* [Collections](#save_batch)
 - [Various Mappings](#mapping)  
 	* [Basic](#mapping_basic)
 	* [Indexes](#mapping_index)
@@ -119,7 +129,20 @@ Or look at the [Spring Framework Example](#spring).
 	Entity entity = new Entity();
 	mappingSession.save(entity);
 ```
-OR
+
+- Get.
+```java
+	Entity entity = mappingSession.get(Entity.class, id);
+```
+
+- Delete.
+```java
+	mappingSession.delete(entity);	
+```
+
+<a name="save"/>
+### Save
+
 ```java
 	import com.datastax.driver.mapping.option.WriteOptions;
 	import com.datastax.driver.core.policies.DefaultRetryPolicy;
@@ -136,12 +159,9 @@ OR
 	mappingSession.save(entity, options);
 ```
 
-<a name="jump_get"/>
-- Get.
-```java
-	Entity entity = mappingSession.get(Entity.class, id);
-```
-OR
+<a name="get"/>
+### Get
+
 ```java
 	import com.datastax.driver.mapping.option.ReadOptions;
 	import com.datastax.driver.core.policies.DefaultRetryPolicy;
@@ -153,12 +173,6 @@ OR
 		.setRetryPolicy(DefaultRetryPolicy.INSTANCE);
 		
 	Entity entity = mappingSession.get(Entity.class, id, options);
-```
-
-<a name="jump_delete"/>
-- Delete.
-```java
-	mappingSession.delete(entity);	
 ```
 
 <a name="mapping"/>
