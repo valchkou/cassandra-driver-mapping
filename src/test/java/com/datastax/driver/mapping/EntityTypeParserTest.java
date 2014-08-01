@@ -31,7 +31,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.datastax.driver.core.DataType;
-import com.datastax.driver.mapping.EntityTypeMetadata;
 import com.datastax.driver.mapping.EntityTypeParser;
 import com.datastax.driver.mapping.entity.CompositeKey;
 import com.datastax.driver.mapping.entity.EntityOverrideDataType;
@@ -40,19 +39,18 @@ import com.datastax.driver.mapping.entity.EntityWithCompositeKey;
 import com.datastax.driver.mapping.entity.EntityWithEnum;
 import com.datastax.driver.mapping.entity.EntityWithKey;
 import com.datastax.driver.mapping.entity.EntityWithProperties;
+import com.datastax.driver.mapping.entity.EntityWithTtl;
 import com.datastax.driver.mapping.entity.Simple;
 import com.datastax.driver.mapping.entity.SimpleKey;
+import com.datastax.driver.mapping.meta.EntityFieldMetaData;
+import com.datastax.driver.mapping.meta.EntityTypeMetadata;
+import com.datastax.driver.mapping.meta.PrimaryKeyMetadata;
 
 public class EntityTypeParserTest {
 	
 	@Before
 	public void setUp() {
-		EntityTypeParser.remove(Simple.class);
-		EntityTypeParser.remove(EntityWithKey.class);
-		EntityTypeParser.remove(EntityWithEnum.class);
-		EntityTypeParser.remove(EntityWithCompositeKey.class);
-		EntityTypeParser.remove(EntityOverrideDataType.class);
-		EntityTypeParser.remove(EntityWithCollectionsOverride.class);
+		EntityTypeParser.removeAll();
 	}
 	
 	@Test
@@ -175,6 +173,15 @@ public class EntityTypeParserTest {
 		assertTrue(props.contains("comment='Important records'"));
 		assertTrue(props.contains("read_repair_chance = 1.0"));
 		assertTrue(props.contains("compression ={ 'sstable_compression' : 'DeflateCompressor', 'chunk_length_kb' : 64 }"));
+	}	
+
+	@Test
+	public void testGetEntityMetadataWithTtl() {
+		EntityTypeMetadata meta = EntityTypeParser.getEntityMetadata(EntityWithTtl.class);
+		assertEquals("test_entity_ttl", meta.getTableName());
+		assertEquals(0, meta.getIndexes().size());
+		assertEquals(3, meta.getFields().size());
+		assertEquals(3, meta.getTtl());
 	}	
 	
 	@Test

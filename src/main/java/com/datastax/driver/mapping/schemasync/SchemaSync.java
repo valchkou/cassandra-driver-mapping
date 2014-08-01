@@ -25,9 +25,9 @@ import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
-import com.datastax.driver.mapping.EntityFieldMetaData;
-import com.datastax.driver.mapping.EntityTypeMetadata;
 import com.datastax.driver.mapping.EntityTypeParser;
+import com.datastax.driver.mapping.meta.EntityFieldMetaData;
+import com.datastax.driver.mapping.meta.EntityTypeMetadata;
 
 /**
  * Static methods to synchronize entities' definition with Cassandra tables

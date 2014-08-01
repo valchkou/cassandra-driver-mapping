@@ -18,7 +18,7 @@ package com.datastax.driver.mapping.schemasync;
 import java.nio.ByteBuffer;
 
 import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.mapping.EntityTypeMetadata;
+import com.datastax.driver.mapping.meta.EntityTypeMetadata;
 
 public class DropTable extends RegularStatement {
 	

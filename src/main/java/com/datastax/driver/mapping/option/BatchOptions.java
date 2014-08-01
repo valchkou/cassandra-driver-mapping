@@ -18,10 +18,6 @@ package com.datastax.driver.mapping.option;
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.policies.RetryPolicy;
 
-/**
- * @author user
- *
- */
 public class BatchOptions {
 	private ConsistencyLevel consistencyLevel;
 	private RetryPolicy retryPolicy;

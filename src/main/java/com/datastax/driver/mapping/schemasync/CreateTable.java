@@ -19,8 +19,8 @@ import java.nio.ByteBuffer;
 import java.util.Iterator;
 
 import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.mapping.EntityFieldMetaData;
-import com.datastax.driver.mapping.EntityTypeMetadata;
+import com.datastax.driver.mapping.meta.EntityFieldMetaData;
+import com.datastax.driver.mapping.meta.EntityTypeMetadata;
 
 public class CreateTable extends RegularStatement {
 	

@@ -13,7 +13,7 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  */
-package com.datastax.driver.mapping;
+package com.datastax.driver.mapping.meta;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,6 +38,8 @@ public class EntityTypeMetadata {
 	private Map<String, String> indexes = new HashMap<String, String>();
 	// table properties
 	private List<String> properties = new ArrayList<String>();
+	// default time to leave
+	private int ttl = -100;
 	// true if synchronized with Cassandrass
 	private boolean synced = false;
 
@@ -217,5 +219,13 @@ public class EntityTypeMetadata {
 	
 	public boolean hasVersion() {
 		return this.versionField != null;
+	}
+
+	public int getTtl() {
+		return ttl;
+	}
+
+	public void setTtl(int ttl) {
+		this.ttl = ttl;
 	}	
 }

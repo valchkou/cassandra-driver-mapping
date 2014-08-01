@@ -48,8 +48,6 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.policies.DefaultRetryPolicy;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.mapping.EntityFieldMetaData;
-import com.datastax.driver.mapping.EntityTypeMetadata;
 import com.datastax.driver.mapping.EntityTypeParser;
 import com.datastax.driver.mapping.MappingSession;
 import com.datastax.driver.mapping.entity.Any;
@@ -61,10 +59,13 @@ import com.datastax.driver.mapping.entity.EntityWithCompositeKey;
 import com.datastax.driver.mapping.entity.EntityWithEnum;
 import com.datastax.driver.mapping.entity.EntityWithIndexes;
 import com.datastax.driver.mapping.entity.EntityWithKey;
+import com.datastax.driver.mapping.entity.EntityWithTtl;
 import com.datastax.driver.mapping.entity.EntityWithVersion;
 import com.datastax.driver.mapping.entity.Month;
 import com.datastax.driver.mapping.entity.Simple;
 import com.datastax.driver.mapping.entity.SimpleKey;
+import com.datastax.driver.mapping.meta.EntityFieldMetaData;
+import com.datastax.driver.mapping.meta.EntityTypeMetadata;
 import com.datastax.driver.mapping.option.WriteOptions;
 
 public class MappingSessionTest {
@@ -101,16 +102,7 @@ public class MappingSessionTest {
 	@After
 	public void cleanUp() {
 		session.execute("DROP KEYSPACE IF EXISTS "+ keyspace);
-		
-		EntityTypeParser.remove(Simple.class);
-		EntityTypeParser.remove(EntityWithIndexes.class);
-		EntityTypeParser.remove(EntityWithKey.class);
-		EntityTypeParser.remove(EntityWithCollections.class);
-		EntityTypeParser.remove(EntityWithCompositeKey.class);
-		EntityTypeParser.remove(EntityMixedCase.class);
-		EntityTypeParser.remove(EntityWithVersion.class);
-		EntityTypeParser.remove(EntityWithCollectionsOverride.class);
-		EntityTypeParser.remove(EntityWithEnum.class);
+		EntityTypeParser.removeAll();
 	}
 	
 	@Test
@@ -167,6 +159,47 @@ public class MappingSessionTest {
 		
 		Thread.sleep(3000);
 		loaded = target.get(Simple.class, uuid);
+		assertNull(loaded);
+	}
+
+	@Test
+	public void saveAndGetWithDefaultTtlTest() throws Exception {
+		UUID uuid = UUID.randomUUID();
+		EntityWithTtl obj = new EntityWithTtl();
+		obj.setTimestamp(new Date());
+		obj.setId(uuid);
+		
+		EntityWithTtl loaded = target.get(EntityWithTtl.class, uuid);
+		assertNull(loaded);
+		target.save(obj);
+		loaded = target.get(EntityWithTtl.class, uuid);
+		assertNotNull(loaded);
+		
+		Thread.sleep(4000);
+		loaded = target.get(EntityWithTtl.class, uuid);
+		assertNull(loaded);
+	}
+
+	@Test
+	public void saveAndGetWithOverrideTtlTest() throws Exception {
+		UUID uuid = UUID.randomUUID();
+		EntityWithTtl obj = new EntityWithTtl();
+		obj.setTimestamp(new Date());
+		obj.setId(uuid);
+		
+		EntityWithTtl loaded = target.get(EntityWithTtl.class, uuid);
+		assertNull(loaded);
+		
+		target.save(obj, new WriteOptions().setTtl(10));
+		
+		// ttl is 10 sec. obj still should be alive
+		Thread.sleep(5000);
+		loaded = target.get(EntityWithTtl.class, uuid);
+		assertNotNull(loaded);
+
+		// 10 sec passed, obj should expire
+		Thread.sleep(5000);
+		loaded = target.get(EntityWithTtl.class, uuid);
 		assertNull(loaded);
 	}
 	
@@ -623,6 +656,57 @@ public class MappingSessionTest {
 		assertNull(loaded2);
 		assertNotNull(loaded1);
 	}
+
+	@Test
+	public void batchTtlTest() throws Exception {
+		
+		UUID uuid1 = UUID.randomUUID();
+		Simple obj1 = new Simple();
+		obj1.setTimestamp(new Date());
+		obj1.setId(uuid1);
+
+		UUID uuid2 = UUID.randomUUID();
+		EntityWithTtl obj2 = new EntityWithTtl();
+		obj2.setTimestamp(new Date());
+		obj2.setId(uuid2);
+
+		UUID uuid3 = UUID.randomUUID();
+		EntityWithTtl obj3 = new EntityWithTtl();
+		obj3.setTimestamp(new Date());
+		obj3.setId(uuid3);
+		
+		target.withBatch()
+			.save(obj1)
+			.save(obj2)
+			.save(obj3, new WriteOptions().setTtl(10))
+			.execute();
+		
+		Simple loaded1 = target.get(Simple.class, uuid1);
+		EntityWithTtl loaded2 = target.get(EntityWithTtl.class, uuid2);
+		EntityWithTtl loaded3 = target.get(EntityWithTtl.class, uuid3);
+		
+		assertNotNull(loaded1);
+		assertNotNull(loaded2);
+		assertNotNull(loaded3);
+		
+		Thread.sleep(5000);
+		loaded1 = target.get(Simple.class, uuid1);
+		loaded2 = target.get(EntityWithTtl.class, uuid2);
+		loaded3 = target.get(EntityWithTtl.class, uuid3);		
+		assertNotNull(loaded1);
+		assertNull(loaded2);
+		assertNotNull(loaded3);
+
+		Thread.sleep(5000);
+		loaded1 = target.get(Simple.class, uuid1);
+		loaded2 = target.get(EntityWithTtl.class, uuid2);
+		loaded3 = target.get(EntityWithTtl.class, uuid3);		
+		assertNotNull(loaded1);
+		assertNull(loaded2);
+		assertNull(loaded3);
+		
+		target.delete(loaded1);
+	}
 	
 	@Test
 	public void addToSetTest() throws Exception {
@@ -727,6 +811,31 @@ public class MappingSessionTest {
 		target.delete(loaded);
 		loaded = target.get(EntityWithEnum.class, uuid);
 		assertNull(loaded);
+	}
+
+	@Test
+	public void updateIndividualPropertyTest() throws Exception {
+		UUID uuid = UUID.randomUUID();
+		Simple obj = new Simple();
+		obj.setName("myName");
+		obj.setAge(55);
+		obj.setId(uuid);
+		target.save(obj);
+		
+		target.updateValue(uuid, Simple.class, "name", "yourName");
+		target.updateValue(uuid, Simple.class, "age", 25);
+		Simple loaded =  target.get(Simple.class, uuid);
+		assertEquals(25, loaded.getAge());
+		assertEquals("yourName", loaded.getName());
+		
+		EntityWithEnum eobj = new EntityWithEnum();
+		eobj.setId(uuid);
+		eobj.setMonth(Month.JUNE);	
+		target.save(eobj);
+		
+		target.updateValue(uuid, EntityWithEnum.class, "month", Month.MAY);
+		EntityWithEnum eloaded = target.get(EntityWithEnum.class, uuid);
+		assertEquals(Month.MAY, eloaded.getMonth());
 	}
 	
 	@Test

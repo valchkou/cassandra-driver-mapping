@@ -29,12 +29,12 @@ import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
-import com.datastax.driver.mapping.EntityTypeMetadata;
 import com.datastax.driver.mapping.EntityTypeParser;
 import com.datastax.driver.mapping.entity.EntityWithCompositeKey;
 import com.datastax.driver.mapping.entity.EntityWithIndexes;
 import com.datastax.driver.mapping.entity.EntityWithIndexesV2;
 import com.datastax.driver.mapping.entity.EntityWithProperties;
+import com.datastax.driver.mapping.meta.EntityTypeMetadata;
 import com.datastax.driver.mapping.schemasync.SchemaSync;
 
 

@@ -15,26 +15,10 @@
  */
 package com.datastax.driver.mapping;
 
-import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.ttl;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.timestamp;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.set;
-
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.RegularStatement;
@@ -44,17 +28,14 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.Batch;
 import com.datastax.driver.core.querybuilder.BuiltStatement;
-import com.datastax.driver.core.querybuilder.Delete;
-import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
-import com.datastax.driver.core.querybuilder.Update;
+import com.datastax.driver.mapping.builder.MappingBuilder;
+import com.datastax.driver.mapping.meta.EntityTypeMetadata;
 import com.datastax.driver.mapping.option.BatchOptions;
 import com.datastax.driver.mapping.option.ReadOptions;
 import com.datastax.driver.mapping.option.WriteOptions;
 import com.datastax.driver.mapping.schemasync.SchemaSync;
 import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 
 /**
  * API to work with entities to be persisted in Cassandra. This is lightweight
@@ -66,39 +47,11 @@ import com.google.common.cache.CacheBuilder;
  * <code> msession.delete(entity); </code>
  */
 public class MappingSession {
-	protected static final Logger log = Logger.getLogger(EntityFieldMetaData.class.getName());
+	protected static final Logger log = Logger.getLogger(MappingSession.class.getName());
+	
 	protected Session session;
 	protected String keyspace;
 	protected boolean doNotSync;
-	protected static Cache<String, PreparedStatement> statementCache = CacheBuilder
-			.newBuilder()
-			.expireAfterAccess(5, TimeUnit.MINUTES)
-            .maximumSize(1000)
-            .concurrencyLevel(4)
-            .build();
-
-	/**
-	 * Get statement from the cache or
-	 * Prepare statement and place it in the cache.
-	 * @return PreparedStatement.
-	 */
-	protected static PreparedStatement getOrPrepareStatement(final Session session, final BuiltStatement stmt, String key) {
-		PreparedStatement ps = null;
-		try {
-			ps = statementCache.get(key, new Callable<PreparedStatement>() {
-				@Override
-				public PreparedStatement call() throws Exception {
-					return session.prepare(stmt);
-				}
-			 });
-		} catch (ExecutionException e) {
-			// if the error caused by prepare the client will get it as is,
-			// otherwise process will not blow and statement will not be cached.
-			return session.prepare(stmt); 
-		}
-				
-		return ps;
-	}
 	
 	public MappingSession(String keyspace, Session session) {
 		this(keyspace, session, false);
@@ -113,10 +66,8 @@ public class MappingSession {
 	 * Return the persistent instance of the given entity class with the given
 	 * identifier, or null if there is no such persistent instance
 	 * 
-	 * @param clazz
-	 *            - a persistent class
-	 * @param id
-	 *            - an identifier
+	 * @param clazz- a persistent class
+	 * @param id- an identifier
 	 * @return a persistent instance or null
 	 */
 	public <T> T get(Class<T> clazz, Object id) {
@@ -127,18 +78,14 @@ public class MappingSession {
 	 * Return the persistent instance of the given entity class with the given
 	 * identifier, or null if there is no such persistent instance
 	 * 
-	 * @param clazz
-	 *            - a persistent class
-	 * @param id
-	 *            - an identifier
-	 * @param options
-	 *            - read options supported by Cassandra. such as read
-	 *            consistency
+	 * @param clazz- a persistent class
+	 * @param id- an identifier
+	 * @param options- read options supported by Cassandra such as read consistency
 	 * @return a persistent instance or null
 	 */
 	public <T> T get(Class<T> clazz, Object id, ReadOptions options) {
 		maybeSync(clazz);
-		BoundStatement bs = prepareSelect(clazz, id, options);
+		BoundStatement bs = MappingBuilder.prepareSelect(clazz, id, options, keyspace, session);
 		ResultSet rs = session.execute(bs);
 		List<T> all = getFromResultSet(clazz, rs);
 		if (all.size() > 0) {
@@ -154,7 +101,7 @@ public class MappingSession {
 	 */
 	public <E> void delete(E entity) {
 		maybeSync(entity.getClass());
-		BuiltStatement bs = buildDelete(entity);
+		BuiltStatement bs = MappingBuilder.buildDelete(entity, keyspace);
 		session.execute(bs);
 	}
 
@@ -166,7 +113,7 @@ public class MappingSession {
 	 */
 	public <T> void delete(Class<T> clazz, Object id) {
 		maybeSync(clazz);
-		BuiltStatement bs = buildDelete(clazz, id);
+		BuiltStatement bs = MappingBuilder.buildDelete(clazz, id, keyspace);
 		session.execute(bs);
 	}
 	
@@ -174,8 +121,7 @@ public class MappingSession {
 	 * Persist the given instance Entity must have a property id or a property
 	 * annotated with @Id
 	 * 
-	 * @param entity
-	 *            - an instance of a persistent class
+	 * @param entity- an instance of a persistent class
 	 * @return saved instance
 	 */
 	public <E> E save(E entity) {
@@ -186,14 +132,12 @@ public class MappingSession {
 	 * Persist the given instance Entity must have a property id or a property
 	 * annotated with @Id
 	 * 
-	 * @param entity
-	 *            - an instance of a persistent class
+	 * @param entity- an instance of a persistent class
 	 * @return saved instance
 	 */
 	public <E> E save(E entity, WriteOptions options) {
-		
-		Statement stmt = prepareSave(entity, options);
-		log.fine(stmt.toString());
+		maybeSync(entity.getClass());
+		Statement stmt = MappingBuilder.prepareSave(entity, options, keyspace);
 		ResultSet rs = session.execute(stmt);
 		
 		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(entity.getClass());
@@ -207,31 +151,12 @@ public class MappingSession {
 		return entity;
 	}
 	
-	protected <E> BuiltStatement prepareSave(E entity, WriteOptions options) {
-		Class<?> clazz = entity.getClass();
-		maybeSync(clazz);
-		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
-		long version = Long.MIN_VALUE;
-		if (entityMetadata.hasVersion()) {
-			EntityFieldMetaData verField = entityMetadata.getVersionField();
-			version = ((Long) verField.getValue(entity)).longValue();
-		}
-
-		BuiltStatement stmt = null;
-		if (version > 0) {
-			stmt = buildUpdate(entity, options);
-		} else {
-			stmt = buildInsert(entity, options);
-		}
-		return stmt;
-	}
 
 	/**
 	 * Execute the query and populate the list with items of given class.
 	 * 
 	 * @param clazz
-	 * @param query
-	 *            Statement
+	 * @param query Statement
 	 * @return List of items
 	 */
 	public <T> List<T> getByQuery(Class<T> clazz, Statement query) {
@@ -261,26 +186,10 @@ public class MappingSession {
 	 */
 	public void remove(Object id, Class<?> clazz, String propertyName, Object item) {
 		maybeSync(clazz);
-		EntityTypeMetadata emeta = EntityTypeParser.getEntityMetadata(clazz);
-		EntityFieldMetaData fmeta = emeta.getFieldMetadata(propertyName);
-		Update update = update(keyspace, emeta.getTableName());
-
-		if (item instanceof Set<?> && fmeta.getType() == Set.class) {
-			Set<?> set = (Set<?>)item;
-			if (set.size() == 0) return;
-			update.with(QueryBuilder.removeAll(fmeta.getColumnName(), set));
-		} else if (item instanceof List<?> && fmeta.getType() == List.class) {
-			List<?> list = (List<?>) item;
-			if (list.size() == 0) return;
-			update.with(QueryBuilder.discardAll(fmeta.getColumnName(), list));
-		} else if (fmeta.getType() == Set.class) {
-			update.with(QueryBuilder.remove(fmeta.getColumnName(), item));
-		} else if (fmeta.getType() == List.class) {
-			update.with(QueryBuilder.discard(fmeta.getColumnName(), item));
-		}
-
-		prepareAndExecuteUpdate(id, emeta, update);
+		BoundStatement bs = MappingBuilder.prepareRemoveItemsFromSetOrList(id, clazz, propertyName, item, keyspace, session);
+		session.execute(bs);
 	}
+	
 	
 	/**
 	 * delete value for the column
@@ -290,10 +199,8 @@ public class MappingSession {
 	 */
 	public void deleteValue(Object id, Class<?> clazz, String propertyName) {
 		maybeSync(clazz);
-		EntityTypeMetadata emeta = EntityTypeParser.getEntityMetadata(clazz);
-		EntityFieldMetaData fmeta = emeta.getFieldMetadata(propertyName);
-		Delete delete = QueryBuilder.delete(fmeta.getColumnName()).from(keyspace, emeta.getTableName());
-		prepareAndExecuteDelete(id, emeta, delete);
+		BoundStatement bs = MappingBuilder.prepareAndExecuteDelete(id, clazz, propertyName, keyspace, session);
+		session.execute(bs);
 	}
 	
 	/**
@@ -308,7 +215,7 @@ public class MappingSession {
 	}
 
 	/**
-	 * append value to the Set, List or Map value can be .
+	 * append value to the Set, List or Map.
 	 * @param id - entity Primary Key
 	 * @param clazz - entity class
 	 * @param propertyName - property of entity to be modified
@@ -317,31 +224,35 @@ public class MappingSession {
 	 */	
 	public void append(Object id, Class<?> clazz, String propertyName, Object item, WriteOptions options) {
 		maybeSync(clazz);
-		EntityTypeMetadata emeta = EntityTypeParser.getEntityMetadata(clazz);
-		EntityFieldMetaData fmeta = emeta.getFieldMetadata(propertyName);
-		Update update = update(keyspace, emeta.getTableName());
-
-		if (item instanceof Set<?> && fmeta.getType() == Set.class) {
-			Set<?> set = (Set<?>)item;
-			if (set.size() == 0) return;
-			update.with(QueryBuilder.addAll(fmeta.getColumnName(), set));
-		} else if (item instanceof List<?> && fmeta.getType() == List.class) {
-			List<?> list = (List<?>) item;
-			if (list.size() == 0) return;
-			update.with(QueryBuilder.appendAll(fmeta.getColumnName(), list));
-		} else if (item instanceof Map<?, ?>) {
-			Map<?,?> map = (Map<?,?>) item;
-			if (map.size() == 0) return;
-			update.with(QueryBuilder.putAll(fmeta.getColumnName(), map));
-		} else if (fmeta.getType() == Set.class) {
-			update.with(QueryBuilder.add(fmeta.getColumnName(), item));
-		} else if (fmeta.getType() == List.class) {
-			update.with(QueryBuilder.append(fmeta.getColumnName(), item));
-		}
-		applyOptions(options, update);
-		prepareAndExecuteUpdate(id, emeta, update);
+		BoundStatement bs = MappingBuilder.prepareAppendItemToCollection(id, clazz, propertyName, item, options, keyspace, session);
+		session.execute(bs);
 	}
 
+	/**
+	 * Save individual value.
+	 * @param id - entity Primary Key
+	 * @param clazz - entity class
+	 * @param propertyName - property of entity to be modified
+	 * @param value
+	 */
+	public void updateValue(Object id, Class<?> clazz, String propertyName, Object value) {
+		updateValue(id, clazz, propertyName, value, null);
+	}
+
+	/**
+	 * Save individual value with "options"
+	 * @param id - entity Primary Key
+	 * @param clazz - entity class
+	 * @param propertyName - property of entity to be modified
+	 * @param value
+	 * @param options - WriteOptions 
+	 */	
+	public void updateValue(Object id, Class<?> clazz, String propertyName, Object value, WriteOptions options) {
+		maybeSync(clazz);
+		BoundStatement bs = MappingBuilder.prepareUpdateValue(id, clazz, propertyName, value, options, keyspace, session);
+		session.execute(bs);
+	}
+	
 	/**
 	 * add items at the beginning of the List
 	 * @param id - entity Primary Key
@@ -363,19 +274,8 @@ public class MappingSession {
 	 */	
 	public void prepend(Object id, Class<?> clazz, String propertyName, Object item, WriteOptions options) {
 		maybeSync(clazz);
-		EntityTypeMetadata emeta = EntityTypeParser.getEntityMetadata(clazz);
-		EntityFieldMetaData fmeta = emeta.getFieldMetadata(propertyName);
-		Update update = update(keyspace, emeta.getTableName());
-
-		if (item instanceof List<?> && fmeta.getType() == List.class) {
-			List<?> list = (List<?>) item;
-			if (list.size() == 0) return;
-			update.with(QueryBuilder.prependAll(fmeta.getColumnName(), list));
-		} else if (fmeta.getType() == List.class) {
-			update.with(QueryBuilder.prepend(fmeta.getColumnName(), item));
-		}
-		applyOptions(options, update);
-		prepareAndExecuteUpdate(id, emeta, update);
+		BoundStatement bs = MappingBuilder.preparePrependItemToList(id, clazz, propertyName, item, options, keyspace, session);
+		session.execute(bs);
 	}
 
 	/**
@@ -401,285 +301,8 @@ public class MappingSession {
 	 */	
 	public void replaceAt(Object id, Class<?> clazz, String propertyName, Object item, int idx, WriteOptions options) {
 		maybeSync(clazz);
-		EntityTypeMetadata emeta = EntityTypeParser.getEntityMetadata(clazz);
-		EntityFieldMetaData fmeta = emeta.getFieldMetadata(propertyName);
-		Update update = update(keyspace, emeta.getTableName());
-
-		if (fmeta.getType() == List.class) {
-			update.with(QueryBuilder.setIdx(fmeta.getColumnName(), idx, item));
-		}
-		applyOptions(options, update);
-		prepareAndExecuteUpdate(id, emeta, update);
-	}
-
-	protected void prepareAndExecuteUpdate(Object id, EntityTypeMetadata emeta, Update update) {
-		List<String> pkCols = emeta.getPkColumns();
-		for (String col : pkCols) {
-			update.where(eq(col, QueryBuilder.bindMarker()));
-		}
-		prepareAndExecute(id, emeta, update, pkCols);
-	}
-
-	protected void prepareAndExecuteDelete(Object id, EntityTypeMetadata emeta, Delete delete) {
-		List<String> pkCols = emeta.getPkColumns();
-		for (String col : pkCols) {
-			delete.where(eq(col, QueryBuilder.bindMarker()));
-		}
-		prepareAndExecute(id, emeta, delete, pkCols);
-	}
-
-	protected void prepareAndExecute(Object id, EntityTypeMetadata emeta, BuiltStatement stmt, List<String> pkCols) {
-		// bind parameters
-		Object[] values = emeta.getIdValues(id).toArray(new Object[pkCols.size()]);
-		String q = stmt.getQueryString();
-		PreparedStatement ps = getOrPrepareStatement(session, stmt, q); 
-		BoundStatement bs = ps.bind(values);
+		BoundStatement bs = MappingBuilder.prepareReplaceAt(id, clazz, propertyName, item, idx, options, keyspace, session); 
 		session.execute(bs);
-	}
-	
-	/**
-	 * Statement to persist an entity in Cassandra
-	 * 
-	 * @param entity to be inserted
-	 * @return com.datastax.driver.core.BoundStatement
-	 */
-	protected <E> BuiltStatement buildInsert(E entity, WriteOptions options) {
-		Class<?> clazz = entity.getClass();
-		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
-		String table = entityMetadata.getTableName();
-		List<EntityFieldMetaData> fields = entityMetadata.getFields();
-
-		List<String> pkCols = entityMetadata.getPkColumns();
-		List<Object> pkVals = entityMetadata.getEntityPKValues(entity);
-
-		String[] columns = new String[fields.size()];
-		Object[] values = new Object[fields.size()];
-
-		EntityFieldMetaData verField = null;
-		Object newVersion = null;
-		Object oldVersion = null;
-
-		// increment and set @Version field
-		if (entityMetadata.hasVersion()) {
-			verField = entityMetadata.getVersionField();
-			oldVersion = verField.getValue(entity);
-			newVersion = incVersion(oldVersion);
-			verField.setValue(entity, newVersion);
-		}
-
-		for (int i = 0; i < fields.size(); i++) {
-			EntityFieldMetaData f = fields.get(i);
-			String colName = f.getColumnName();
-			Object colVal = null;
-			if (pkCols.contains(colName)) {
-				int idx = pkCols.indexOf(colName);
-				colVal = pkVals.get(idx);
-			} else {
-				colVal = f.getValue(entity);
-			}
-			columns[i] = colName;
-			if (f.equals(verField)) {
-				values[i] = newVersion;
-			} else {
-				values[i] = colVal;
-			}
-		}
-		Insert insert = insertInto(keyspace, table).values(columns, values);
-		if (verField != null) {
-			insert.ifNotExists();
-		}
-
-		applyOptions(options, insert);
-		return insert;
-	}
-
-	/**
-	 * @param options
-	 * @param insert
-	 */
-	protected void applyOptions(WriteOptions options, Insert insert) {
-		// apply options to insert
-		if (options != null) {
-			if (options.getTtl() != -1) {
-				insert.using(ttl(options.getTtl()));
-			}
-			if (options.getTimestamp() != -1) {
-				insert.using(timestamp(options.getTimestamp()));
-			}
-
-			if (options.getConsistencyLevel() != null) {
-				insert.setConsistencyLevel(options.getConsistencyLevel());
-			}
-
-			if (options.getConsistencyLevel() != null) {
-				insert.setRetryPolicy(options.getRetryPolicy());
-			}
-		}
-	}
-
-	/**
-	 * Statement to persist an entity in Cassandra
-	 * 
-	 * @param entity to be inserted
-	 * @return com.datastax.driver.core.BoundStatement
-	 */
-	protected <E> BuiltStatement buildUpdate(E entity, WriteOptions options) {
-		Class<?> clazz = entity.getClass();
-		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
-		String table = entityMetadata.getTableName();
-		List<EntityFieldMetaData> fields = entityMetadata.getFields();
-
-		List<String> pkCols = entityMetadata.getPkColumns();
-		List<Object> pkVals = entityMetadata.getEntityPKValues(entity);
-
-		String[] columns = new String[fields.size()];
-		Object[] values = new Object[fields.size()];
-		Update update = update(keyspace, table);
-
-		EntityFieldMetaData verField = null;
-		Object newVersion = null;
-		Object oldVersion = null;
-
-		// increment and set @Version field
-		if (entityMetadata.hasVersion()) {
-			verField = entityMetadata.getVersionField();
-			oldVersion = verField.getValue(entity);
-			newVersion = incVersion(oldVersion);
-			verField.setValue(entity, newVersion);
-			update.onlyIf(eq(verField.getColumnName(), oldVersion));
-		}
-
-		for (int i = 0; i < fields.size(); i++) {
-			EntityFieldMetaData field = fields.get(i);
-			String colName = field.getColumnName();
-			Object colVal = null;
-			if (pkCols.contains(colName)) {
-				int idx = pkCols.indexOf(colName);
-				colVal = pkVals.get(idx);
-				update.where(eq(colName, colVal));
-				continue;
-			} else {
-				colVal = field.getValue(entity);
-			}
-			columns[i] = colName;
-			if (field.equals(verField)) {
-				values[i] = newVersion;
-			} else {
-				values[i] = colVal;
-			}
-			update.with(set(colName, colVal));
-		}
-
-		applyOptions(options, update);
-		return update;
-	}
-
-	/**
-	 * @param options
-	 * @param update
-	 */
-	protected void applyOptions(WriteOptions options, Update update) {
-		if (options != null) {
-			if (options.getTtl() != -1) {
-				update.using(ttl(options.getTtl()));
-			}
-			if (options.getTimestamp() != -1) {
-				update.using(timestamp(options.getTimestamp()));
-			}
-
-			if (options.getConsistencyLevel() != null) {
-				update.setConsistencyLevel(options.getConsistencyLevel());
-			}
-
-			if (options.getConsistencyLevel() != null) {
-				update.setRetryPolicy(options.getRetryPolicy());
-			}
-		}
-	}
-
-	protected Object incVersion(Object version) {
-		long newVersion = 0;
-		try {
-			newVersion = ((Long) version).longValue();
-			newVersion += 1;
-		} catch (Exception e) {
-			return version;
-		}
-		return newVersion;
-	}
-
-	/**
-	 * Prepare BoundStatement to select row by id
-	 */
-	protected <T> BoundStatement prepareSelect(Class<T> clazz, Object id, final ReadOptions options) {
-		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
-		final List<String> pkCols = entityMetadata.getPkColumns();
-		final String table = entityMetadata.getTableName();
-
-		// get prepared statement
-		PreparedStatement ps = null;
-		try {
-			ps = statementCache.get(table, new Callable<PreparedStatement>() {
-				@Override
-				public PreparedStatement call() throws Exception {
-					Select stmt = buildSelectAll(table, pkCols, options);
-					return session.prepare(stmt);
-				}
-			 });
-		} catch (ExecutionException e) {
-			// if the error caused by prepare the client will get it as is,
-			// otherwise process will not blow and statement will not be cached.
-			Select stmt = buildSelectAll(table, pkCols, options);
-			ps = session.prepare(stmt); 
-		}
-
-		// bind parameters
-		Object[] values = entityMetadata.getIdValues(id).toArray(new Object[pkCols.size()]);
-		BoundStatement bs = ps.bind(values);
-		return bs;
-	}
-	
-	protected Select buildSelectAll(String table, List<String> pkCols, ReadOptions options) {
-		Select select = select().all().from(keyspace, table);
-		for (String col : pkCols) {
-			select.where(eq(col, QueryBuilder.bindMarker()));
-		}
-
-		if (options != null) {
-			if (options.getConsistencyLevel() != null) {
-				select.setConsistencyLevel(options.getConsistencyLevel());
-			}
-
-			if (options.getRetryPolicy() != null) {
-				select.setRetryPolicy(options.getRetryPolicy());
-			}
-		}
-		return select;
-	}
-
-	protected <E> BuiltStatement buildDelete(E entity) {
-		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(entity.getClass());
-		List<String> pkCols = entityMetadata.getPkColumns();
-		Object[] values = entityMetadata.getEntityPKValues(entity).toArray(new Object[pkCols.size()]);
-		Delete delete = buildDelete(entityMetadata, pkCols, values);
-		return delete;
-	}
-
-	protected <T> BuiltStatement buildDelete(Class<T> clazz, Object id) {
-		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
-		List<String> pkCols = entityMetadata.getPkColumns();
-		Object[] values = entityMetadata.getIdValues(id).toArray(new Object[pkCols.size()]);
-		Delete delete = buildDelete(entityMetadata, pkCols, values);
-		return delete;
-	}
-
-	protected <T> Delete buildDelete(EntityTypeMetadata entityMetadata, List<String> pkCols, Object[] values) {
-		String table = entityMetadata.getTableName();
-		Delete delete = QueryBuilder.delete().from(keyspace, table);
-		for (int i=0; i<values.length; i++) {
-			delete.where(eq(pkCols.get(i), values[i]));
-		}
-		return delete;
 	}
 	
 	/**
@@ -690,53 +313,7 @@ public class MappingSession {
 	 * @throws Exception
 	 */
 	public <T> List<T> getFromResultSet(Class<T> clazz, ResultSet rs) {
-		List<T> result = new ArrayList<T>();
-		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
-		for (Row row : rs.all()) {
-			T entity = null;
-			Object primaryKey = null;
-			Object partitionKey = null;
-			
-			// create PK
-			try {
-				entity = clazz.newInstance();
-				PrimaryKeyMetadata pkmeta = entityMetadata.getPrimaryKeyMetadata();
-				if (pkmeta.isCompound()) {
-					EntityFieldMetaData pkField = pkmeta.getOwnField();
-					primaryKey = pkField.getType().newInstance();
-					pkField.setValue(entity, primaryKey);
-					if (pkmeta.hasPartitionKey()) {
-						PrimaryKeyMetadata partmeta = pkmeta.getPartitionKey();
-						EntityFieldMetaData partField = partmeta.getOwnField();
-						partitionKey = partField.getType().newInstance();
-						partField.setValue(primaryKey, partitionKey);
-					}
-				}
-			} catch (Exception e) {
-				// skip error to support any-2-any
-			}
-
-			// set properties' values 
-			for (EntityFieldMetaData field : entityMetadata.getFields()) {
-				Object value = getValueFromRow(row, field);
-				try {
-					if (value != null) {
-						if (field.isPartition()) {
-							field.setValue(partitionKey, value);
-						} else if (field.isPrimary()) {
-							field.setValue(primaryKey, value);
-						} else {
-							field.setValue(entity, value);
-						}
-
-					}
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-			}
-			result.add(entity);
-		}
-		return result;
+		return MappingBuilder.getFromResultSet(clazz, rs);
 	}
 
 	/** run sync if not yet done */
@@ -749,100 +326,6 @@ public class MappingSession {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	protected Object getValueFromRow(Row row, EntityFieldMetaData field) {
-		Object value = null;
-		try {
-			if (field.hasCollectionType()) {
-				value = field.getCollectionType().newInstance();
-			}
-			
-			DataType.Name dataType = field.getDataType();
-			switch (dataType) {
-			case INET:
-				value = row.getInet(field.getColumnName());
-				break;			
-			case ASCII:
-				value = row.getString(field.getColumnName());
-				break;
-			case BLOB:
-				value = row.getBytes(field.getColumnName());
-				break;
-			case BOOLEAN:
-				value = row.getBool(field.getColumnName());
-				break;
-			case TEXT:
-				value = row.getString(field.getColumnName());
-				break;
-			case TIMESTAMP:
-				value = row.getDate(field.getColumnName());
-				break;
-			case UUID:
-				value = row.getUUID(field.getColumnName());
-				break;
-			case TIMEUUID:
-				value = row.getUUID(field.getColumnName());
-				break;				
-			case INT:
-				value = row.getInt(field.getColumnName());
-				break;
-			case COUNTER:
-				value = row.getInt(field.getColumnName());
-				break;				
-			case DOUBLE:
-				value = row.getDouble(field.getColumnName());
-				break;
-			case BIGINT:
-				value = row.getLong(field.getColumnName());
-				break;
-			case DECIMAL:
-				value = row.getDecimal(field.getColumnName());
-				break;
-			case VARINT:
-				value = row.getVarint(field.getColumnName());
-				break;
-			case FLOAT:
-				value = row.getFloat(field.getColumnName());
-				break;
-			case VARCHAR:
-				value = row.getString(field.getColumnName());
-				break;
-			case MAP:
-				if (value == null) {
-					value = new HashMap<Object, Object>();
-				}
-				Map<Object, Object> data = row.getMap(field.getColumnName(), Object.class, Object.class);
-				if (!data.isEmpty()) {
-					((Map<Object, Object>)value).putAll(data);
-				}
-				break;
-			case LIST:
-				if (value == null) {
-					value = new ArrayList<Object>();
-				}
-				List<Object> lst = row.getList(field.getColumnName(), Object.class);
-				if (!lst.isEmpty()) {
-					((List<Object>)value).addAll(lst);
-				}
-				break;
-			case SET:
-				if (value == null) {
-					value = new HashSet<Object>();
-				}
-				Set<Object> set = row.getSet(field.getColumnName(), Object.class);
-				if (!set.isEmpty()) {
-					((Set<Object>)value).addAll(set);
-				}
-				break;
-			default:
-				break;
-			}
-		} catch (Exception ex) {
-			log.info(ex.toString());
-		}
-		return value;
-	}
-	
 	public BatchExecutor withBatch() {
 		return new BatchExecutor(this);
 	}
@@ -858,15 +341,21 @@ public class MappingSession {
 		}
 		
 		public <E> BatchExecutor delete(E entity) {
-			b.add(m.buildDelete(entity)); 
+			b.add(MappingBuilder.buildDelete(entity, m.keyspace)); 
 			return this;
 		}
 		
 		public <E> BatchExecutor save(E entity) {
-			b.add(m.prepareSave(entity, null)); 
+			save(entity, null);
 			return this;
 		}
 
+		public <E> BatchExecutor save(E entity, WriteOptions options) {
+			m.maybeSync(entity.getClass());
+			b.add(MappingBuilder.prepareSave(entity, options, m.keyspace)); 
+			return this;
+		}
+ 		
 		public void withOptions(BatchOptions options) {
 			// apply options to insert
 			if (options != null) {
@@ -874,7 +363,7 @@ public class MappingSession {
 					b.setConsistencyLevel(options.getConsistencyLevel());
 				}
 
-				if (options.getConsistencyLevel() != null) {
+				if (options.getRetryPolicy() != null) {
 					b.setRetryPolicy(options.getRetryPolicy());
 				}
 			}
@@ -894,12 +383,10 @@ public class MappingSession {
 	}
 
 	public static Cache<String, PreparedStatement> getStatementCache() {
-		return statementCache;
+		return MappingBuilder.getStatementCache();
 	}
 
-	public static void setStatementCache(
-			Cache<String, PreparedStatement> statementCache) {
-		MappingSession.statementCache = statementCache;
+	public static void setStatementCache(Cache<String, PreparedStatement> statementCache) {
+		MappingBuilder.setStatementCache(statementCache);
 	}
-
 }

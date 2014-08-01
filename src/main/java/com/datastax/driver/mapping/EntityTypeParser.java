@@ -34,10 +34,13 @@ import javax.persistence.Transient;
 import javax.persistence.Version;
 
 import com.datastax.driver.core.DataType;
-import com.datastax.driver.mapping.EntityFieldMetaData;
 import com.datastax.driver.mapping.annotation.CollectionType;
 import com.datastax.driver.mapping.annotation.TableProperties;
 import com.datastax.driver.mapping.annotation.TableProperty;
+import com.datastax.driver.mapping.annotation.Ttl;
+import com.datastax.driver.mapping.meta.EntityFieldMetaData;
+import com.datastax.driver.mapping.meta.EntityTypeMetadata;
+import com.datastax.driver.mapping.meta.PrimaryKeyMetadata;
 
 /**
  * This class parses persistent Entity.class and creates EntityTypeMetadata instance.
@@ -94,7 +97,14 @@ public class EntityTypeParser {
 	public static <T> void remove(Class<T> clazz) {
 		entityData.remove(clazz);
 	}
-	
+
+	/** 
+	 * Remove entity metadata from the cache.
+	 */
+	public static <T> void removeAll() {
+		entityData.clear();
+	}
+
 	/** 
 	 * Returns List<FieldData> - all the fields which can be persisted for the given Entity type 
 	 * the field to be persisted must have getter/setter and not be annotated as @Transient
@@ -150,6 +160,12 @@ public class EntityTypeParser {
 				result.addProperty(prop.value());
 			}
 		}
+		
+		// parse ttl
+		annotation = clazz.getAnnotation(Ttl.class);
+		if(annotation instanceof Ttl){
+			result.setTtl(((Ttl)annotation).value());
+		}		
 		return result;
 	}
 	
