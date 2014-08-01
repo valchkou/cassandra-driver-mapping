@@ -23,6 +23,7 @@ import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
@@ -38,9 +39,9 @@ import com.datastax.driver.mapping.schemasync.SchemaSync;
 import com.google.common.cache.Cache;
 
 /**
- * API to work with entities to be persisted in Cassandra. This is lightweight
- * wrapper for the datastax Session Usage: create one instance per datastax
- * Session or have a new one for each request.
+ * API to work with entities to be persisted in Cassandra. 
+ * This is lightweight wrapper for the datastax Session. 
+ * Usage: create one instance per datastax Session or have a new one for each request.
  * <code> MappingSession msession = new MappingSession(keyspace, session); </code>
  * <code> msession.save(entity); </code>
  * <code> msession.get(Entity.class, id); </code>
@@ -86,71 +87,15 @@ public class MappingSession {
 	public <T> T get(Class<T> clazz, Object id, ReadOptions options) {
 		maybeSync(clazz);
 		BoundStatement bs = MappingBuilder.prepareSelect(clazz, id, options, keyspace, session);
-		ResultSet rs = session.execute(bs);
-		List<T> all = getFromResultSet(clazz, rs);
-		if (all.size() > 0) {
-			return all.get(0);
+		if (bs != null) {
+			ResultSet rs = session.execute(bs);
+			List<T> all = getFromResultSet(clazz, rs);
+			if (all.size() > 0) {
+				return all.get(0);
+			}
 		}
 		return null;
 	}
-
-	/**
-	 * Delete the given instance
-	 * 
-	 * @param entity - an instance of a persistent class
-	 */
-	public <E> void delete(E entity) {
-		maybeSync(entity.getClass());
-		BuiltStatement bs = MappingBuilder.buildDelete(entity, keyspace);
-		session.execute(bs);
-	}
-
-	/**
-	 * Delete the given instance by ID(Primary key)
-	 * 
-	 * @param clazz - type of the object
-	 * @param id - primary key of the object
-	 */
-	public <T> void delete(Class<T> clazz, Object id) {
-		maybeSync(clazz);
-		BuiltStatement bs = MappingBuilder.buildDelete(clazz, id, keyspace);
-		session.execute(bs);
-	}
-	
-	/**
-	 * Persist the given instance Entity must have a property id or a property
-	 * annotated with @Id
-	 * 
-	 * @param entity- an instance of a persistent class
-	 * @return saved instance
-	 */
-	public <E> E save(E entity) {
-		return save(entity, null);
-	}
-
-	/**
-	 * Persist the given instance Entity must have a property id or a property
-	 * annotated with @Id
-	 * 
-	 * @param entity- an instance of a persistent class
-	 * @return saved instance
-	 */
-	public <E> E save(E entity, WriteOptions options) {
-		maybeSync(entity.getClass());
-		Statement stmt = MappingBuilder.prepareSave(entity, options, keyspace);
-		ResultSet rs = session.execute(stmt);
-		
-		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(entity.getClass());
-		if (entityMetadata.hasVersion()) {
-			Row row = rs.one();
-			if (!(row != null && row.getBool("[applied]"))) {
-				return null;
-			}
-		}
-
-		return entity;
-	}
-	
 
 	/**
 	 * Execute the query and populate the list with items of given class.
@@ -178,6 +123,120 @@ public class MappingSession {
 	}
 
 	/**
+	 * Convert ResultSet into List<T>. Create an instance of <T> for each row.
+	 * To populate instance of <T> iterate through the entity fields and
+	 * retrieve the value from the ResultSet by the field name
+	 * 
+	 * @throws Exception
+	 */
+	public <T> List<T> getFromResultSet(Class<T> clazz, ResultSet rs) {
+		return MappingBuilder.getFromResultSet(clazz, rs);
+	}
+	
+	/**
+	 * Delete the given instance
+	 * 
+	 * @param entity - an instance of a persistent class
+	 */
+	public <E> void delete(E entity) {
+		maybeSync(entity.getClass());
+		BuiltStatement bs = MappingBuilder.buildDelete(entity, keyspace);
+		execute(bs);
+	}
+
+	/**
+	 * Delete the given instance by ID(Primary key)
+	 * 
+	 * @param clazz - type of the object
+	 * @param id - primary key of the object
+	 */
+	public <T> void delete(Class<T> clazz, Object id) {
+		maybeSync(clazz);
+		BuiltStatement bs = MappingBuilder.buildDelete(clazz, id, keyspace);
+		execute(bs);
+	}
+
+	/**
+	 * Delete the given instance
+	 * 
+	 * @param entity - an instance of a persistent class
+	 */
+	public <E> ResultSetFuture deleteAsync(E entity) {
+		maybeSync(entity.getClass());
+		BuiltStatement bs = MappingBuilder.buildDelete(entity, keyspace);
+		return executeAsync(bs);
+	}
+
+	/**
+	 * Delete the given instance by ID(Primary key)
+	 * 
+	 * @param clazz - type of the object
+	 * @param id - primary key of the object
+	 */
+	public <T> ResultSetFuture deleteAsync(Class<T> clazz, Object id) {
+		maybeSync(clazz);
+		BuiltStatement bs = MappingBuilder.buildDelete(clazz, id, keyspace);
+		return executeAsync(bs);
+	}
+	
+	/**
+	 * Persist the given instance Entity must have a property id or a property
+	 * annotated with @Id
+	 * 
+	 * @param entity- an instance of a persistent class
+	 * @return saved instance
+	 */
+	public <E> E save(E entity) {
+		return save(entity, null);
+	}
+
+	/**
+	 * Persist the given instance Entity must have a property id or a property
+	 * annotated with @Id
+	 * 
+	 * @param entity- an instance of a persistent class
+	 * @return saved instance
+	 */
+	public <E> ResultSetFuture saveAsync(E entity) {
+		return saveAsync(entity, null);
+	}
+	
+	/**
+	 * Persist the given instance Entity must have a property id or a property
+	 * annotated with @Id
+	 * 
+	 * @param entity- an instance of a persistent class
+	 * @return saved instance
+	 */
+	public <E> E save(E entity, WriteOptions options) {
+		maybeSync(entity.getClass());
+		Statement stmt = MappingBuilder.prepareSave(entity, options, keyspace);
+		ResultSet rs = session.execute(stmt);
+		
+		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(entity.getClass());
+		if (entityMetadata.hasVersion()) {
+			Row row = rs.one();
+			if (!(row != null && row.getBool("[applied]"))) {
+				return null;
+			}
+		}
+		return entity;
+	}
+	
+	/**
+	 * Persist the given instance Entity must have a property id or a property
+	 * annotated with @Id
+	 * 
+	 * @param entity- an instance of a persistent class
+	 * @return saved instance
+	 */
+	public <E> ResultSetFuture saveAsync(E entity, WriteOptions options) {
+		maybeSync(entity.getClass());
+		Statement stmt = MappingBuilder.prepareSave(entity, options, keyspace);
+		return executeAsync(stmt);
+	}
+	
+	/**
 	 * remove an item or items from the Set or List.
 	 * @param id - entity PK
 	 * @param clazz - entity class
@@ -187,12 +246,25 @@ public class MappingSession {
 	public void remove(Object id, Class<?> clazz, String propertyName, Object item) {
 		maybeSync(clazz);
 		BoundStatement bs = MappingBuilder.prepareRemoveItemsFromSetOrList(id, clazz, propertyName, item, keyspace, session);
-		session.execute(bs);
+		execute(bs);
 	}
 	
+	/**
+	 * remove an item or items from the Set or List.
+	 * @param id - entity PK
+	 * @param clazz - entity class
+	 * @param propertyName - property of entity to be modified
+	 * @param item - a single item, List or Set
+	 */
+	public ResultSetFuture removeAsync(Object id, Class<?> clazz, String propertyName, Object item) {
+		maybeSync(clazz);
+		BoundStatement bs = MappingBuilder.prepareRemoveItemsFromSetOrList(id, clazz, propertyName, item, keyspace, session);
+		return executeAsync(bs);
+	}
+
 	
 	/**
-	 * delete value for the column
+	 * delete individual value
 	 * @param id - entity Primary Key
 	 * @param clazz - entity class
 	 * @param propertyName - property of entity to be modified
@@ -200,7 +272,19 @@ public class MappingSession {
 	public void deleteValue(Object id, Class<?> clazz, String propertyName) {
 		maybeSync(clazz);
 		BoundStatement bs = MappingBuilder.prepareAndExecuteDelete(id, clazz, propertyName, keyspace, session);
-		session.execute(bs);
+		execute(bs);
+	}
+
+	/**
+	 * delete individual value
+	 * @param id - entity Primary Key
+	 * @param clazz - entity class
+	 * @param propertyName - property of entity to be modified
+	 */
+	public ResultSetFuture deleteValueAsync(Object id, Class<?> clazz, String propertyName) {
+		maybeSync(clazz);
+		BoundStatement bs = MappingBuilder.prepareAndExecuteDelete(id, clazz, propertyName, keyspace, session);
+		return executeAsync(bs);
 	}
 	
 	/**
@@ -225,9 +309,34 @@ public class MappingSession {
 	public void append(Object id, Class<?> clazz, String propertyName, Object item, WriteOptions options) {
 		maybeSync(clazz);
 		BoundStatement bs = MappingBuilder.prepareAppendItemToCollection(id, clazz, propertyName, item, options, keyspace, session);
-		session.execute(bs);
+		execute(bs);
 	}
 
+	
+	/**
+	 * append value to the Set, List or Map value can be .
+	 * @param id - entity Primary Key
+	 * @param clazz - entity class
+	 * @param propertyName - property of entity to be modified
+	 * @param item - a single value, a List, Set or a Map
+	 */
+	public ResultSetFuture appendAsync(Object id, Class<?> clazz, String propertyName, Object item) {
+		return appendAsync(id, clazz, propertyName, item, null);
+	}
+
+	/**
+	 * append value to the Set, List or Map.
+	 * @param id - entity Primary Key
+	 * @param clazz - entity class
+	 * @param propertyName - property of entity to be modified
+	 * @param item - a single value, a List, Set or a Map
+	 * @param options - WriteOptions 
+	 */	
+	public ResultSetFuture appendAsync(Object id, Class<?> clazz, String propertyName, Object item, WriteOptions options) {
+		maybeSync(clazz);
+		BoundStatement bs = MappingBuilder.prepareAppendItemToCollection(id, clazz, propertyName, item, options, keyspace, session);
+		return executeAsync(bs);
+	}	
 	/**
 	 * Save individual value.
 	 * @param id - entity Primary Key
@@ -240,6 +349,17 @@ public class MappingSession {
 	}
 
 	/**
+	 * Save individual value.
+	 * @param id - entity Primary Key
+	 * @param clazz - entity class
+	 * @param propertyName - property of entity to be modified
+	 * @param value
+	 */
+	public ResultSetFuture updateValueAsync(Object id, Class<?> clazz, String propertyName, Object value) {
+		return updateValueAsync(id, clazz, propertyName, value, null);
+	}
+	
+	/**
 	 * Save individual value with "options"
 	 * @param id - entity Primary Key
 	 * @param clazz - entity class
@@ -250,7 +370,21 @@ public class MappingSession {
 	public void updateValue(Object id, Class<?> clazz, String propertyName, Object value, WriteOptions options) {
 		maybeSync(clazz);
 		BoundStatement bs = MappingBuilder.prepareUpdateValue(id, clazz, propertyName, value, options, keyspace, session);
-		session.execute(bs);
+		execute(bs);
+	}
+
+	/**
+	 * Save individual value with "options"
+	 * @param id - entity Primary Key
+	 * @param clazz - entity class
+	 * @param propertyName - property of entity to be modified
+	 * @param value
+	 * @param options - WriteOptions 
+	 */	
+	public ResultSetFuture updateValueAsync(Object id, Class<?> clazz, String propertyName, Object value, WriteOptions options) {
+		maybeSync(clazz);
+		BoundStatement bs = MappingBuilder.prepareUpdateValue(id, clazz, propertyName, value, options, keyspace, session);
+		return executeAsync(bs);
 	}
 	
 	/**
@@ -269,15 +403,40 @@ public class MappingSession {
 	 * @param id - entity Primary Key
 	 * @param clazz - entity class
 	 * @param propertyName - property of entity to be modified
+	 * @param item - a single value or a List,
+	 */
+	public ResultSetFuture prependAsync(Object id, Class<?> clazz, String propertyName, Object item) {
+		return prependAsync(id, clazz, propertyName, item, null);
+	}
+	
+	/**
+	 * add items at the beginning of the List
+	 * @param id - entity Primary Key
+	 * @param clazz - entity class
+	 * @param propertyName - property of entity to be modified
 	 * @param item - a single value or a List
 	 * @param options - WriteOptions 
 	 */	
 	public void prepend(Object id, Class<?> clazz, String propertyName, Object item, WriteOptions options) {
 		maybeSync(clazz);
 		BoundStatement bs = MappingBuilder.preparePrependItemToList(id, clazz, propertyName, item, options, keyspace, session);
-		session.execute(bs);
+		execute(bs);
 	}
 
+	/**
+	 * add items at the beginning of the List
+	 * @param id - entity Primary Key
+	 * @param clazz - entity class
+	 * @param propertyName - property of entity to be modified
+	 * @param item - a single value or a List
+	 * @param options - WriteOptions 
+	 */	
+	public ResultSetFuture prependAsync(Object id, Class<?> clazz, String propertyName, Object item, WriteOptions options) {
+		maybeSync(clazz);
+		BoundStatement bs = MappingBuilder.preparePrependItemToList(id, clazz, propertyName, item, options, keyspace, session);
+		return executeAsync(bs);
+	}
+	
 	/**
 	 * place item at the specified position in the List.
 	 * @param id - entity Primary Key
@@ -296,24 +455,41 @@ public class MappingSession {
 	 * @param clazz - entity class
 	 * @param propertyName - property of entity to be modified
 	 * @param item - new value,
+	 * @param idx - index where new value will be placed at 
+	 */
+	public ResultSetFuture replaceAtAsync(Object id, Class<?> clazz, String propertyName, Object item, int idx) {
+		return replaceAtAsync(id, clazz, propertyName, item, idx, null);
+	}
+	
+	/**
+	 * place item at the specified position in the List.
+	 * @param id - entity Primary Key
+	 * @param clazz - entity class
+	 * @param propertyName - property of entity to be modified
+	 * @param item - new value,
 	 * @param idx - index where new value will be placed at
 	 * @param options - WriteOptions  
 	 */	
 	public void replaceAt(Object id, Class<?> clazz, String propertyName, Object item, int idx, WriteOptions options) {
 		maybeSync(clazz);
 		BoundStatement bs = MappingBuilder.prepareReplaceAt(id, clazz, propertyName, item, idx, options, keyspace, session); 
-		session.execute(bs);
+		execute(bs);
 	}
-	
+
 	/**
-	 * Convert ResultSet into List<T>. Create an instance of <T> for each row.
-	 * To populate instance of <T> iterate through the entity fields and
-	 * retrieve the value from the ResultSet by the field name
-	 * 
-	 * @throws Exception
-	 */
-	public <T> List<T> getFromResultSet(Class<T> clazz, ResultSet rs) {
-		return MappingBuilder.getFromResultSet(clazz, rs);
+	 * place item at the specified position in the List.
+	 * @param id - entity Primary Key
+	 * @param clazz - entity class
+	 * @param propertyName - property of entity to be modified
+	 * @param item - new value,
+	 * @param idx - index where new value will be placed at
+	 * @param options - WriteOptions  
+	 * @return 
+	 */	
+	public ResultSetFuture replaceAtAsync(Object id, Class<?> clazz, String propertyName, Object item, int idx, WriteOptions options) {
+		maybeSync(clazz);
+		BoundStatement bs = MappingBuilder.prepareReplaceAt(id, clazz, propertyName, item, idx, options, keyspace, session); 
+		return executeAsync(bs);
 	}
 
 	/** run sync if not yet done */
@@ -372,6 +548,10 @@ public class MappingSession {
 		public void execute() {
 			m.session.execute(b);
 		}
+		
+		public ResultSetFuture executeAsync() {
+			return m.session.executeAsync(b);
+		}		
 	}
 
 	public boolean isDoNotSync() {
@@ -388,5 +568,31 @@ public class MappingSession {
 
 	public static void setStatementCache(Cache<String, PreparedStatement> statementCache) {
 		MappingBuilder.setStatementCache(statementCache);
+	}
+
+	protected void execute(BoundStatement bs) {
+		if (bs != null) {
+			session.execute(bs);
+		}
+	}
+
+	protected void execute(Statement s) {
+		if (s != null) {
+			session.execute(s);
+		}
+	}
+	
+	protected ResultSetFuture executeAsync(BoundStatement bs) {
+		if (bs != null) {
+			return session.executeAsync(bs);
+		}
+		return null;
+	}
+	
+	protected ResultSetFuture executeAsync(Statement s) {
+		if (s != null) {
+			return session.executeAsync(s);
+		}
+		return null;
 	}
 }
