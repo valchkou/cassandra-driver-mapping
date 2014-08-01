@@ -45,7 +45,6 @@ Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.c
 - [Optimistic Lock](#lock)
 	* [Lightweight transactions](#lock_transactions)
 	* [@Version](#lock_version)
-- [Batch](#batch)
 - [Nested Entities](#nested)
 - [Under The Hood](#under)
 	* [Prepared Statement Cache](#pscache)  
@@ -340,6 +339,24 @@ Many thank to magic gnomes under the hood making all these work.
 
     /** Asynchronously Delete Entity by ID(Primary key) */
     ResultSetFuture f = mappinSession.deleteAsync(Entity.class, id);
+```
+
+<a name="batch"/>
+### Batch
+```java
+	mappingSession.withBatch()
+		.save(entityA)
+		.save(entityB, writeOptions)
+		.delete(entityD)
+		.execute();
+```
+
+```java
+	ResultSetFuture f = mappingSession.withBatch()
+		.save(entityA)
+		.save(entityB, writeOptions)
+		.delete(entityD)
+		.executeAsync();
 ```
 
 <a name="mapping"/>
@@ -771,19 +788,6 @@ The property must be of "long" data type. Whenever you save entity the version g
 		assertNull(saved);
 	}		
 ```
-
-<a name="batch"/>
-### Batch
-```java
-		
-	mappingSession.withBatch()
-		.save(entityA)
-		.save(entityB)
-		.delete(entityC)
-		.delete(entityD)
-		.execute();
-```
-
 
 <a name="nested"/>
 ### Nested Entities
