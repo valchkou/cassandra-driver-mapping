@@ -132,9 +132,11 @@ Or look at the [Spring Framework Example](#spring).
 	mappingSession.delete(entity);	
 ```
 
-- [API Reference](#api)
+<a name="api"/>
+#### API Reference
+
 <a name="save"/>
-### Save
+#### Save
 
 <a name="save_entity"/>
 ```java
@@ -221,29 +223,28 @@ Collections
 ```
 
 <a name="queries_mapping"/>
-- Custom Queries 
+- Custom Queries.  
 This section describes how to use your Custom Queries with the Mapping Module.  
+There are two ways to run and map Custom Query    
 
-There are two ways to run and map Custom Query:  
-	1) run using mapping session
-	```java
-	import com.datastax.driver.mapping.MappingSession;
-	...
-	List<Entity> result = mappingSession.getByQuery(Entity.class, query);
-	```
+1) run using mapping session
+```java
+import com.datastax.driver.mapping.MappingSession;
+...
+List<Entity> result = mappingSession.getByQuery(Entity.class, query);
+```
 
-	2) run using DataStax session and map the ResultSet
-	```java
-	import com.datastax.driver.core.Session;
-	import com.datastax.driver.core.ResultSet;
-	import com.datastax.driver.mapping.MappingSession;
-	...
-	ResultSet rs = session.execute(query);	
-	List<Entity> result = mappingSession.getFromResultSet(Entity.class, rs);
-	```
-
-
+2) run using DataStax session and map the ResultSet
+```java
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.mapping.MappingSession;
+...
+ResultSet rs = session.execute(query);	
+List<Entity> result = mappingSession.getFromResultSet(Entity.class, rs);
+```
 Section below describes how you can build Custom Queries.
+
 - CQL String
 ```java
 	import com.datastax.driver.mapping.MappingSession;
