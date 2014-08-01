@@ -22,7 +22,7 @@ Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.c
 - [API Reference](#api)
 	* [Write](#write)  
 	* [Read](#read)  
-		- [Read API](#read_api)
+		- [Read API](#read)
 		- [Read Options](#read_opt)
 		- [Custom Queries](#queries_mapping)  
 		- [Any-to-Any and Magic Gnomes](#queries_gnomes)
@@ -47,10 +47,6 @@ Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.c
 	* [@Version](#lock_version)
 - [Batch](#batch)
 - [Nested Entities](#nested)
-- [Building Custom Queries](#queries_building)
-	* [CQL String](#queries_cql)
-	* [QueryBuilder (better)](#queries_builder)	
-	* [QueryBuilder with EntityMetadata (even better)](#queries_meta)
 - [Under The Hood](#under)
 	* [Prepared Statement Cache](#pscache)  
 	* [How Entity get synchronized](#sync)  
@@ -64,8 +60,10 @@ The features provided by the module include:
 
 - OM Layer
   	* Get entity from Cassandra.
-  	* Save entity to Cassandra.
-	* Delete entity from Cassandra.
+  	* Save entity to Cassandra. Both Synchronous and Asynchronous.
+  	* Update individual value. Both Synchronous and Asynchronous.
+	* Delete entity from Cassandra. Both Synchronous and Asynchronous.
+	* Batch Save/Update/Delete. Both Synchronous and Asynchronous.
 	* Run and map custom Queries and ResultSets.
 
 - Schema Sync
@@ -134,6 +132,7 @@ Or look at the [Spring Framework Example](#spring).
 	mappingSession.delete(entity);	
 ```
 
+- [API Reference](#api)
 <a name="save"/>
 ### Save
 
