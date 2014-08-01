@@ -218,10 +218,10 @@ Collections
     mappinSession.delete(Entity.class, id);
 
     /** Asynchronously delete Entity  */
-    public <E> ResultSetFuture deleteAsync(E entity);
+    ResultSetFuture f = mappinSession.deleteAsync(entity);
 
     /** Asynchronously Delete Entity by ID(Primary key) */
-    public <T> ResultSetFuture deleteAsync(Class<T> clazz, Object id);
+    ResultSetFuture f = mappinSession.deleteAsync(Entity.class, id);
 ```
 
 <a name="mapping"/>
