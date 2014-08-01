@@ -667,7 +667,7 @@ public class Entity {
 ```
 This is default TTL for the entity and will be set whenever entity of this type saved.
 You can override default TTL at at time when you save entity as:
-``java
+```java
 mappingSession.save(entity, new WriteOptions().setTtl(600)); // expires in 10 minutes
 ```
 
