@@ -19,18 +19,18 @@ Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.c
 	* [Maven Dependency](#jump_maven)
 	* [Init Mapping Session](#jump_init)
 	* [Save, Get, Delete](#jump_save)
-- [Save](#save)  
-	* [Save Entity](#jump_entity)
-	* [Save Individual Field](#save_prop)
-	* [Save with TTL](#save_ttl)
-	* [Save with Options](#save_opt)
-	* [Collections](#save_opt)
-	* [Batch](#save_batch)
-- [Get](#get)  
-	* [Get Entity](#jump_entity)
-	* [Get with Options](#save_prop)
-	* [Custom Queries](#save_ttl)
-	* [Collections](#save_batch)
+
+- [API Reference] (#api) 
+ - write
+ - read
+ - delete
+ - batch
+ 
+- [Write](#write)  
+- [Read](#read)  
+- [Delete](#delete) 
+- [Batch](#batch) 
+
 - [Various Mappings](#mapping)  
 	* [Basic](#mapping_basic)
 	* [Indexes](#mapping_index)
@@ -143,12 +143,32 @@ Or look at the [Spring Framework Example](#spring).
 <a name="save"/>
 ### Save
 
+<a name="save_entity"/>
+```java
+	Entity entity = new Entity();
+	mappingSession.save(entity);
+```
+
+<a name="save_prop"/>
+Instead of saveing the whole Entity you can Save Individual Field instead.  
+This function has limitation. The whole Object with this ID should be created first.
+```java
+	Entity entity = new Entity();
+	mappingSession.save(entity);
+```
+
+
+<a name="save_ttl"/>
+Save with TTL
+
+<a name="save_opt"/>
+All Save/Upate methods support accept as an "WriteOptions" optional argument 
 ```java
 	import com.datastax.driver.mapping.option.WriteOptions;
 	import com.datastax.driver.core.policies.DefaultRetryPolicy;
 	import com.datastax.driver.core.ConsistencyLevel;
 	...
-	// using options
+	// create options
 	WriteOptions options = new WriteOptions()
 		.setTtl(300)
 		.setTimestamp(42)
@@ -158,6 +178,19 @@ Or look at the [Spring Framework Example](#spring).
 	Entity entity = new Entity();
 	mappingSession.save(entity, options);
 ```
+```java
+	import com.datastax.driver.mapping.option.WriteOptions;
+	...
+	Entity entity = new Entity();
+	mappingSession.saveValue(entity, new WriteOptions().setTtl(300));
+```
+<a name="save_col"/>
+Collections
+
+<a name="save_ttl"/>
+
+<a name="save_batch"/>
+
 
 <a name="get"/>
 ### Get
@@ -173,6 +206,22 @@ Or look at the [Spring Framework Example](#spring).
 		.setRetryPolicy(DefaultRetryPolicy.INSTANCE);
 		
 	Entity entity = mappingSession.get(Entity.class, id, options);
+```
+
+### Delete
+<a name="delete"/>
+```java
+    /** Delete Entity  */
+    mappinSession.delete(entity);
+
+    /** Delete Entity by ID(Primary key) */
+    mappinSession.delete(Entity.class, id);
+
+    /** Asynchronously delete Entity  */
+    public <E> ResultSetFuture deleteAsync(E entity);
+
+    /** Asynchronously Delete Entity by ID(Primary key) */
+    public <T> ResultSetFuture deleteAsync(Class<T> clazz, Object id);
 ```
 
 <a name="mapping"/>
