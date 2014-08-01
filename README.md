@@ -15,18 +15,20 @@ Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.c
 
 ### Table of Contents  
 - [Features](#features)  
-- [Jump Start](#start)  
+- [Jump Start](#start)
 	* [Maven Dependency](#jump_maven)
 	* [Init Mapping Session](#jump_init)
 	* [Save, Get, Delete](#jump_save)
-
-- [API Reference](#api) 
+- [API Reference](#api)
 	* [Write](#write)  
 	* [Read](#read)  
+		- [Read API](#read_api)
+		- [Read Options](#read_opt)
+		- [Custom Queries](#queries_mapping)  
+		- [Any-to-Any and Magic Gnomes](#queries_gnomes)
 	* [Delete](#delete) 
 	* [Batch](#batch) 
-
-- [Various Mappings](#mapping)  
+- [Various Mappings](#mapping)
 	* [Basic](#mapping_basic)
 	* [Indexes](#mapping_index)
 	* [Compound Primary Key](#mapping_composite)
@@ -45,9 +47,6 @@ Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.c
 	* [@Version](#lock_version)
 - [Batch](#batch)
 - [Nested Entities](#nested)
-- [Mapping Custom Queries](#queries_mapping)  
-	* [How To Run](#queries_howto)
-	* [Any-to-Any and Magic Gnomes](#queries_gnomes)
 - [Building Custom Queries](#queries_building)
 	* [CQL String](#queries_cql)
 	* [QueryBuilder (better)](#queries_builder)	
@@ -207,6 +206,7 @@ Collections
     /** Convert custom ResultSet into Collection of Entities */
     List<Entity> list = mappingSession.getFromResultSet(Entity.class, resultSet);
 ```
+<a name="read_opt"/>
 - Supported Read Options: ConsistencyLevel, RetryPolicy:
 ```java
 	import com.datastax.driver.mapping.option.ReadOptions;
@@ -220,6 +220,109 @@ Collections
 		
 	Entity entity = mappingSession.get(Entity.class, id, options);
 ```
+
+<a name="queries_mapping"/>
+- Custom Queries 
+This section describes how to use your Custom Queries with the Mapping Module.  
+
+There are two ways to run and map Custom Query:  
+	1) run using mapping session
+	```java
+	import com.datastax.driver.mapping.MappingSession;
+	...
+	List<Entity> result = mappingSession.getByQuery(Entity.class, query);
+	```
+
+	2) run using DataStax session and map the ResultSet
+	```java
+	import com.datastax.driver.core.Session;
+	import com.datastax.driver.core.ResultSet;
+	import com.datastax.driver.mapping.MappingSession;
+	...
+	ResultSet rs = session.execute(query);	
+	List<Entity> result = mappingSession.getFromResultSet(Entity.class, rs);
+	```
+
+
+Section below describes how you can build Custom Queries.
+- CQL String
+```java
+	import com.datastax.driver.mapping.MappingSession;
+	... 
+	
+	// build query
+	String query = "SELECT name, age, birth_date, salary FROM person");	
+	
+	// run query						
+	List<Entity> result = mappingSession.getByQuery(Entity.class, query);	
+```
+
+- QueryBuilder (Better)  
+Datastax Driver shipped with a tool to build CQL statement.  
+You can build your query with Datastax QueryBuilder and map ResultSet on Entity.  
+QueryBuilder ensures you build correct CQL.
+```java
+				
+	import com.datastax.driver.core.Statement;
+	import com.datastax.driver.core.querybuilder.QueryBuilder;
+	import com.datastax.driver.mapping.MappingSession;
+	...
+
+	// build query
+	Statement query = QueryBuilder.select().all().from("your_keyspace", "your_table").where(eq("column", value));
+	
+	// run query						
+	List<Entity> result = mappingSession.getByQuery(Entity.class, query);
+```
+
+- QueryBuilder with EntityMetadata (Even Better)  
+In early stages you may often change table and column names.  
+To avoid changing queries each time you rename something you can employ entity metadata.
+```java
+	import com.datastax.driver.core.Statement;
+	import com.datastax.driver.core.querybuilder.QueryBuilder;
+	import com.datastax.driver.mapping.MappingSession;
+	import com.datastax.driver.mapping.EntityFieldMetaData;
+	import com.datastax.driver.mapping.EntityTypeMetadata;	
+	...			
+	
+	// get Entity Metadata
+	EntityTypeMetadata emeta = EntityTypeParser.getEntityMetadata(Entity.class);
+	
+	// get field metadata by property/field name
+	EntityFieldMetaData fmeta = emeta.getFieldMetadata(field_name); 
+	
+	// build query.
+	Statement query = QueryBuilder.select().all()
+		.from("your_keyspace", emeta.getTableName()).where(eq(fmeta.getColumnName(), value));
+							
+	// run query
+	List<Entity> result = mappingSession.getByQuery(Entity.class, query);
+```
+
+<a name="queries_gnomes"/>
+- Any-to-Any and Magic Gnomes  
+This is the coolest feature of the module. Your Entity doesn't have to match the table.  
+You can populate any entity from any query (Any-to-Any).  
+Consider example: 
+```java
+	public class AnyObject {
+		private String name;
+		private int age;
+		// public getters/setters ...
+	}
+```
+You can populate this object from any ResultSet which contains 'name' and 'age' columns.  
+```java
+	ResultSet rs = session.execute("SELECT name, age, birth_date, salary FROM person");	
+	List<AnyObject> result = mappingSession.getFromResultSet(AnyObject.class, rs);
+```
+In this particular case 'name' and 'age' will be populated on 'AnyObject'. 'birth_date' and 'salary' will be ignored and no errors will be thrown.  
+The biggest advantage that we can reuse the same entity to query different results from even different tables.
+Entity doesn't have to map, match or relate to the table at all. 
+Many thank to magic gnomes under the hood making all these work.
+
+
 
 <a name="delete"/>
 ### Delete
@@ -682,7 +785,9 @@ The property must be of "long" data type. Whenever you save entity the version g
 
 <a name="nested"/>
 ### Nested Entities
-This section shows how you can support nested entities with C* and Mapping Add-on.
+Cussandra does not support nested entities nor it has integrity constraints.
+So there is no automatic support for nested entities.
+This Section describes how you can support Nested entities manually.
 ```java
 	
 	@Table(name="entity_a")
@@ -723,114 +828,6 @@ This section shows how you can support nested entities with C* and Mapping Add-o
 		}
 		
 	}
-```
-
-
-<a name="queries_mapping"/>
-### Mapping Custom Queries
-
-<a name="queries_howto"/>
-- How To Run  
-There are two ways to run and map the query:  
-	1) run using mapping session
-	```java
-	import com.datastax.driver.mapping.MappingSession;
-	...
-	List<Entity> result = mappingSession.getByQuery(Entity.class, query);
-	```
-
-	2) run using DataStax session and map the ResultSet
-	```java
-	import com.datastax.driver.core.Session;
-	import com.datastax.driver.core.ResultSet;
-	import com.datastax.driver.mapping.MappingSession;
-	...
-	ResultSet rs = session.execute(query);	
-	List<Entity> result = mappingSession.getFromResultSet(Entity.class, rs);
-	```
-
-<a name="queries_gnomes"/>
-- Any-to-Any and Magic Gnomes  
-This is the coolest feature of the module. Your Entity doesn't have to match the table.  
-You can populate any entity from any query (Any-to-Any).  
-Consider example: 
-```java
-	public class AnyObject {
-		private String name;
-		private int age;
-		// public getters/setters ...
-	}
-```
-You can populate this object from any ResultSet which contains 'name' and 'age' columns.  
-```java
-	ResultSet rs = session.execute("SELECT name, age, birth_date, salary FROM person");	
-	List<AnyObject> result = mappingSession.getFromResultSet(AnyObject.class, rs);
-```
-In this particular case 'name' and 'age' will be populated on 'AnyObject'. 'birth_date' and 'salary' will be ignored and no errors will be thrown.  
-The biggest advantage that we can reuse the same entity to query different results from even different tables.
-Entity doesn't have to map, match or relate to the table at all. 
-Many thank to magic gnomes under the hood making all these work.
-
-<a name="queries_building"/>
-### Building Custom Queries
-	
-<a name="queries_cql"/>
-- CQL String
-```java
-	import com.datastax.driver.mapping.MappingSession;
-	... 
-	
-	// build query
-	String query = "SELECT name, age, birth_date, salary FROM person");	
-	
-	// run query						
-	List<Entity> result = mappingSession.getByQuery(Entity.class, query);	
-```
-
-<a name="queries_builder"/>
-- QueryBuilder (Better)  
-Datastax Driver shipped with a tool to build CQL statement.  
-You can build your query with Datastax QueryBuilder and map ResultSet on Entity.  
-QueryBuilder ensures you build correct CQL.
-```java
-				
-	import com.datastax.driver.core.Statement;
-	import com.datastax.driver.core.querybuilder.QueryBuilder;
-	import com.datastax.driver.mapping.MappingSession;
-	...
-
-	// build query
-	Statement query = QueryBuilder.select().all()
-		.from("your_keyspace", "your_table").where(eq("column", value));
-	
-	// run query						
-	List<Entity> result = mappingSession.getByQuery(Entity.class, query);
-```
-
-<a name="queries_meta"/>
-- QueryBuilder with EntityMetadata (Even Better)  
-In early stages you may often change table and column names.  
-To avoid changing queries each time you rename something you can employ entity metadata.
-```java
-	import com.datastax.driver.core.Statement;
-	import com.datastax.driver.core.querybuilder.QueryBuilder;
-	import com.datastax.driver.mapping.MappingSession;
-	import com.datastax.driver.mapping.EntityFieldMetaData;
-	import com.datastax.driver.mapping.EntityTypeMetadata;	
-	...			
-	
-	// get Entity Metadata
-	EntityTypeMetadata emeta = EntityTypeParser.getEntityMetadata(Entity.class);
-	
-	// get field metadata by property/field name
-	EntityFieldMetaData fmeta = emeta.getFieldMetadata(field_name); 
-	
-	// build query.
-	Statement query = QueryBuilder.select().all()
-		.from("your_keyspace", emeta.getTableName()).where(eq(fmeta.getColumnName(), value));
-							
-	// run query
-	List<Entity> result = mappingSession.getByQuery(Entity.class, query);
 ```
 
 <a name="under"/>
