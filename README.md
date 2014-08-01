@@ -20,16 +20,11 @@ Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.c
 	* [Init Mapping Session](#jump_init)
 	* [Save, Get, Delete](#jump_save)
 
-- [API Reference] (#api) 
- - write
- - read
- - delete
- - batch
- 
-- [Write](#write)  
-- [Read](#read)  
-- [Delete](#delete) 
-- [Batch](#batch) 
+- [API Reference](#api) 
+	* [Write](#write)  
+	* [Read](#read)  
+	* [Delete](#delete) 
+	* [Batch](#batch) 
 
 - [Various Mappings](#mapping)  
 	* [Basic](#mapping_basic)
@@ -192,9 +187,27 @@ Collections
 <a name="save_batch"/>
 
 
-<a name="get"/>
-### Get
+<a name="read"/>
+### Read
 
+```java
+    /** Get Entity by Id(Primary Key) */
+    Entity e = mappingSession.get(Entity.class, id);
+
+    /** Get Entity by Id(Primary Key) with Options */
+    Entity e = mappingSession.get(Entity.class, id, readOptions);
+
+    /** Get Collection of Entities by custom Query Statement  */
+    List<Entity> list = mappingSession.getByQuery(Entity.class,  queryStatement);
+
+    /** Get Collection of Entities by custom Query String  */
+    List<Entity> list = mappingSession.getByQuery(Entity.class,  queryString);
+    
+
+    /** Convert custom ResultSet into Collection of Entities */
+    List<Entity> list = mappingSession.getFromResultSet(Entity.class, resultSet);
+```
+- Supported Read Options: ConsistencyLevel, RetryPolicy:
 ```java
 	import com.datastax.driver.mapping.option.ReadOptions;
 	import com.datastax.driver.core.policies.DefaultRetryPolicy;
@@ -208,8 +221,8 @@ Collections
 	Entity entity = mappingSession.get(Entity.class, id, options);
 ```
 
-### Delete
 <a name="delete"/>
+### Delete
 ```java
     /** Delete Entity  */
     mappinSession.delete(entity);
