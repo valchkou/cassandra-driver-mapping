@@ -36,6 +36,8 @@ Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.c
 	* [Table Properties](#mapping_properties)
 	* [Override Column Type, TIMEUUID](#mapping_datatype)
 	* [Mixed Case for Column Names](#mapping_mixed)
+	* [Collections](#mapping_collections)
+	* [TTL](#mapping_ttl)
 - [Collections](#collections)
 	* [Mapping](#mapping_collections)
 	* [Optimized operations](#collections_opt)	
@@ -611,7 +613,6 @@ CQL3 Statement
    CREATE TABLE IF NOT EXISTS ks.mytable ("KEY" int, firstName text, "last_NAME" text, AGE int, PRIMARY KEY("KEY"))
 ```     
 
-   
 <a name="mapping_collections"/>
 #### Collections
 
@@ -634,7 +635,8 @@ NOTE: this is strictly java side feature and does not effect how your data store
 import com.datastax.driver.mapping.annotation.CollectionType;
 	...
 @Table (name="entity")
-public class Entity {	
+public class Entity {
+	...
 	@CollectionType(LinkedList.class)
 	private List<String> cats;
 	
@@ -643,19 +645,37 @@ public class Entity {
 
 	@CollectionType(TreeMap.class)
 	private Map<String, BigInteger> pets;
+	...
 }
 ```
-
 CQL3 Statement
 ```
    CREATE TABLE IF NOT EXISTS ks.entity (id uuid, cats list<text>, dogs set<timestamp>, pets map<text, varint>,  PRIMARY KEY(id))
 ```     
 For more info on collections please refer [Datastax Using Collection] (http://www.datastax.com/documentation/cql/3.1/cql/cql_using/use_collections_c.html)
 
+<a name="mapping_ttl"/>
+#### TTL
+```java
+import com.datastax.driver.mapping.annotation.Ttl;
+...
+@Ttl(300) // expires in 5 minutes
+@Table (name="mytable")
+public class Entity {
+   ...
+}
+```
+This is default TTL for the entity and will be set whenever entity of this type saved.
+You can override default TTL at at time when you save entity as:
+``java
+mappingSession.save(entity, new WriteOptions().setTtl(600)); // expires in 10 minutes
+```
+
 <a name="collections_opt"/>
 #### Optimized operations  
 You can work with your collection properties as you would normally work with other entity properties.  
 In addition C* provides optimized operations on collections. Those operations do not require to load and save the whole entity. C* allows us directly manipulate collections.   
+
 
 
 <a name="collections_list"/>
