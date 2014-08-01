@@ -60,11 +60,13 @@ The features provided by the module include:
 
 - OM Layer
   	* Get entity from Cassandra.
-  	* Save entity to Cassandra. Both Synchronous and Asynchronous.
-  	* Update individual value. Both Synchronous and Asynchronous.
-	* Delete entity from Cassandra. Both Synchronous and Asynchronous.
-	* Batch Save/Update/Delete. Both Synchronous and Asynchronous.
-	* Run and map custom Queries and ResultSets.
+  	* Save entity to Cassandra.     (Synchronous and Asynchronous).
+  	* Update individual value.      (Synchronous and Asynchronous).
+	* Delete entity from Cassandra. (Synchronous and Asynchronous).
+	* Batch Save/Delete.            (Synchronous and Asynchronous).
+	* Run and Map custom Queries and ResultSets.
+	* Entity Versioning and Optimistic Concurrency control.
+	* Direct Collections Modifications
 
 - Schema Sync
   	* Automatically create table and indexes from Entity. 
