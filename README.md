@@ -34,7 +34,7 @@ Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.c
 	* [Compound Primary Key](#mapping_composite)
 	* [Composite Partition Key](#mapping_partition)
 	* [Table Properties](#mapping_properties)
-	* [Override Column Data Type](#mapping_datatype)
+	* [Override Column Type, TIMEUUID](#mapping_datatype)
 	* [Mixed Case for Column Names](#mapping_mixed)
 - [Collections](#collections)
 	* [Mapping](#mapping_collections)
@@ -554,7 +554,7 @@ CQL3 Statement
    CREATE TABLE IF NOT EXISTS ks.entity (name text,  rank int, email text,  PRIMARY KEY(name, rank)) WITH CLUSTERING ORDER BY (rank DESC)
 ```
 <a name="mapping_datatype"/>
-#### Override Column Data Type.   
+#### Override Column Type, TIMEUUID.
 Datastax defines [data type mapping from Java to C*] (http://www.datastax.com/documentation/developer/java-driver/2.0/java-driver/reference/javaClass2Cql3Datatypes_r.html).  
 This addon defines opposite way mapping. [You can explore daults here](#metadata).    
 But in case you don't like defaults you are able to override the type on the column level.   
@@ -611,18 +611,30 @@ CQL3 Statement
    CREATE TABLE IF NOT EXISTS ks.mytable ("KEY" int, firstName text, "last_NAME" text, AGE int, PRIMARY KEY("KEY"))
 ```     
 
-<a name="collections"/>
-### Collections
    
 <a name="mapping_collections"/>
-#### Mapping
+#### Collections
 
 Collections must have generic type defined. Only java.util.List, Map and Set are allowed.  
 By default implementation of HashMap, HashSet and ArrayList are used.
-If you are unhappy with that fact and would like your data to be baked with specific collection implementation you can apply an annotation as shown below.
 ```java
-	import com.datastax.driver.mapping.annotation.CollectionType;
+@Table (name="entity")
+public class Entity {
 	...
+	private List<String> cats;
+	private Set<Date> dogs;
+	private Map<String, BigInteger> pets;
+	...
+}
+```
+
+If you are unhappy with defaults and would like your data to be baked with specific collection implementation you can apply an annotation as shown below.  
+NOTE: this is strictly java side feature and does not effect how your data stored in C*.     
+```java
+import com.datastax.driver.mapping.annotation.CollectionType;
+	...
+@Table (name="entity")
+public class Entity {	
 	@CollectionType(LinkedList.class)
 	private List<String> cats;
 	
@@ -633,7 +645,6 @@ If you are unhappy with that fact and would like your data to be baked with spec
 	private Map<String, BigInteger> pets;
 }
 ```
-NOTE: this is strictly java side feature and does not effect how your data stored in C*.     
 
 CQL3 Statement
 ```
