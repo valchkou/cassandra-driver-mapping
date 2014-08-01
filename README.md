@@ -21,6 +21,9 @@ Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.c
 	* [Save, Get, Delete](#jump_save)
 - [API Reference](#api)
 	* [Write](#write)  
+		- [Write API](#write)
+		- [Write Options](#write_opt)
+	 	- [Collections Samples](#write_col)
 	* [Read](#read)  
 		- [Read API](#read)
 		- [Read Options](#read_opt)
@@ -132,29 +135,70 @@ Or look at the [Spring Framework Example](#spring).
 <a name="api"/>
 #### API Reference
 
-<a name="save"/>
-#### Save
+<a name="write"/>
+#### Write
 
-<a name="save_entity"/>
+<a name="write"/>
 ```java
-	Entity entity = new Entity();
-	mappingSession.save(entity);
+    /** Asynchronously Remove an item or items from the Set or List. */
+    ResultSetFuture f = mappingSession.removeAsync(id, Entity.class, propertyName, item);
+
+    /** Append value to the Set, List or Map. Value can be a single value, a List, Set or a Map. */
+    mappingSession.append(id, Entity.class, propertyName, value);
+
+    /** Append value to the Set, List or Map with WriteOptions. Value can be a single value, a List, Set or a Map. */
+    mappingSession.append(id, Entity.class, propertyName, value, writeOptions);
+ 
+    /** Asynchronously Append value to the Set, List or Map. Value can be a single value, a List, Set or a Map. */
+    ResultSetFuture f = mappingSession.appendAsync(id, Entity.class, propertyName, value);
+
+    /** Asynchronously Append value to the Set, List or Map with WriteOptions. Value can be a single value, a List, Set or a Map. */
+    ResultSetFuture f = mappingSession.appendAsync(id, Entity.class, propertyName, value, writeOptions);
+ 
+    /** Save Individual Value. */
+    mappingSession.updateValue(id, Entity.class, propertyName, value);
+
+    /** Save Individual Value with WriteOptions. */
+    mappingSession.updateValue(id, Entity.class, propertyName, value, writeOptions);
+    
+    /** Asynchronously Save Individual Value. */
+    ResultSetFuture f = mappingSession.updateValueAsync(id, Entity.class, propertyName, value);
+    
+    /** Asynchronously Save Individual Value with WriteOptions. */
+    ResultSetFuture f = mappingSession.updateValueAsync(id, Entity.class, propertyName, value, writeOptions);
+
+    /** Place value at the beginning of the List. 
+     *  Value can be a single value or a List. */
+    mappingSession.prepend(id, Entity.class, propertyName, value);
+
+    /** Place value at the beginning of the List with WriteOptions. 
+     *  Value can be a single value or a List. */
+    mappingSession.prepend(id, Entity.class, propertyName, value, writeOptions);
+    
+    /** Asynchronously Place value at the beginning of the List. 
+     *  Value can be a single value or a List. */
+    ResultSetFuture f = mappingSession.prependAsync(id, Entity.class, propertyName, value);
+
+    /** Asynchronously Place value at the beginning of the List with WriteOptions. 
+     *  Value can be a single value or a List. */
+    ResultSetFuture f = mappingSession.prependAsync(id, Entity.class, propertyName, value, writeOptions);
+  
+    /** Replace item at the specified position in the List. */
+    mappingSession.replaceAt(id, Entity.class, propertyName, item, index);
+    
+    /** Replace item at the specified position in the List with WriteOptions. */
+    mappingSession.replaceAt(id, Entity.class, propertyName, item, index, writeOptions);
+    
+    /** Asynchronously Replace item at the specified position in the List. */
+    ResultSetFuture f = mappingSession.replaceAtAsync(id, Entity.class, propertyName, item, index);
+
+    /** Asynchronously Replace item at the specified position in the List with WriteOptions. */
+    ResultSetFuture f = mappingSession.replaceAtAsync(id, Entity.class, propertyName, item, index, writeOptions);
 ```
 
-<a name="save_prop"/>
-Instead of saveing the whole Entity you can Save Individual Field instead.  
-This function has limitation. The whole Object with this ID should be created first.
-```java
-	Entity entity = new Entity();
-	mappingSession.save(entity);
-```
-
-
-<a name="save_ttl"/>
-Save with TTL
-
-<a name="save_opt"/>
-All Save/Upate methods support accept as an "WriteOptions" optional argument 
+<a name="write_opt"/>
+- Write Options.   
+All Save/Upate methodsaccept a "WriteOptions" optional argument 
 ```java
 	import com.datastax.driver.mapping.option.WriteOptions;
 	import com.datastax.driver.core.policies.DefaultRetryPolicy;
@@ -176,13 +220,92 @@ All Save/Upate methods support accept as an "WriteOptions" optional argument
 	Entity entity = new Entity();
 	mappingSession.saveValue(entity, new WriteOptions().setTtl(300));
 ```
-<a name="save_col"/>
-Collections
 
-<a name="save_ttl"/>
+<a name="write_col"/>
+- Collections Samples
+You can work with your collection properties as you would normally work with other entity properties.  
+In addition C* provides optimized operations on collections. Those operations do not require to load and save the whole entity. C* allows us directly manipulate collections.   
 
-<a name="save_batch"/>
+<a name="collections_list"/>
+- List operations
+```java
+// append item to list
+mappingSession.append(id, Entity.class, "cats", "Black Cat");
 
+// append item to be expired in 5 sec
+mappingSession.append(id, Entity.class, "cats", "Expired Cat", new WriteOptions().setTtl(5));
+
+// prepend item
+mappingSession.prepend(id, Entity.class, "cats", "First Cat");
+
+// replace item at specified index
+mappingSession.replaceAt(id, Entity.class, "cats", "Grey Cat", 1);
+
+// append List of items
+List<String> addCats = new ArrayList<String>();
+addCats.add("Red Cat");
+addCats.add("Green Cat");
+mappingSession.append(id, Entity.class, "cats", addCats);
+
+// remove item
+mappingSession.remove(id, Entity.class, "cats", "Grey Cat");
+
+// remove List of items
+List<String> removeCats = new ArrayList<String>();
+removeCats.add("Red Cat");
+removeCats.add("Green Cat");
+mappingSession.remove(id, Entity.class, "cats", removeCats);
+
+// remove all items
+mappingSession.deleteValue(id, Entity.class, "cats");
+```
+
+<a name="collections_set"/>
+- Set operations
+```java
+// append item
+mappingSession.append(id, Entity.class, "dogs", "Black Dog");
+
+// append item to be expired in 5 sec
+mappingSession.append(id, Entity.class, "dogs", "Expired Dog", new WriteOptions().setTtl(5));
+
+// append Set of items
+Set<String> addDogs = new HashSet<String>();
+addDogs.add("Red Dog");
+addDogs.add("Green Dog");
+mappingSession.append(id, Entity.class, "dogs", addDogs);
+
+// remove item
+mappingSession.remove(id, Entity.class, "dogs", "Black Dog");
+
+// remove Set of items
+Set<String> removeDogs = new HashSet<String>();
+removeDogs.add("Red Dog");
+removeDogs.add("Green Dog");
+mappingSession.remove(id, Entity.class, "dogs", removeDogs);
+
+// remove all items
+mappingSession.deleteValue(id, Entity.class, "dogs");
+```
+
+<a name="collections_map"/>
+- Map operations
+```java
+/** append item */
+Map<String, BigInteger> pets = new HashMap<String, BigInteger>();
+pets.put("Red Dogs", 25);
+pets.put("Black Cats", 50);
+mappingSession.append(id, Entity.class, "pets", pets);
+
+/** append items to be expired in 5 sec */
+Map<String, BigInteger> pets = new HashMap<String, BigInteger>();
+pets.put("Green Dogs", 25);
+pets.put("Brown Cats", 50);
+mappingSession.append(id, Entity.class, "pets", pets, new WriteOptions().setTtl(5));
+
+/** remove all items */
+mappingSession.deleteValue(id, Entity.class, "pets");
+```
 
 <a name="read"/>
 #### Read
@@ -670,94 +793,6 @@ This is default TTL for the entity and will be set whenever entity of this type 
 You can override default TTL at at time when you save entity as:
 ```java
 mappingSession.save(entity, new WriteOptions().setTtl(600)); // expires in 10 minutes
-```
-
-<a name="collections_opt"/>
-#### Optimized operations  
-You can work with your collection properties as you would normally work with other entity properties.  
-In addition C* provides optimized operations on collections. Those operations do not require to load and save the whole entity. C* allows us directly manipulate collections.   
-
-
-
-<a name="collections_list"/>
-- List operations
-```java
-// append item to list
-mappingSession.append(id, Entity.class, "cats", "Black Cat");
-
-// append item to be expired in 5 sec
-mappingSession.append(id, Entity.class, "cats", "Expired Cat", new WriteOptions().setTtl(5));
-
-// prepend item
-mappingSession.prepend(id, Entity.class, "cats", "First Cat");
-
-// replace item at specified index
-mappingSession.replaceAt(id, Entity.class, "cats", "Grey Cat", 1);
-
-// append List of items
-List<String> addCats = new ArrayList<String>();
-addCats.add("Red Cat");
-addCats.add("Green Cat");
-mappingSession.append(id, Entity.class, "cats", addCats);
-
-// remove item
-mappingSession.remove(id, Entity.class, "cats", "Grey Cat");
-
-// remove List of items
-List<String> removeCats = new ArrayList<String>();
-removeCats.add("Red Cat");
-removeCats.add("Green Cat");
-mappingSession.remove(id, Entity.class, "cats", removeCats);
-
-// remove all items
-mappingSession.deleteValue(id, Entity.class, "cats");
-```
-
-<a name="collections_set"/>
-- Set operations
-```java
-// append item
-mappingSession.append(id, Entity.class, "dogs", "Black Dog");
-
-// append item to be expired in 5 sec
-mappingSession.append(id, Entity.class, "dogs", "Expired Dog", new WriteOptions().setTtl(5));
-
-// append Set of items
-Set<String> addDogs = new HashSet<String>();
-addDogs.add("Red Dog");
-addDogs.add("Green Dog");
-mappingSession.append(id, Entity.class, "dogs", addDogs);
-
-// remove item
-mappingSession.remove(id, Entity.class, "dogs", "Black Dog");
-
-// remove Set of items
-Set<String> removeDogs = new HashSet<String>();
-removeDogs.add("Red Dog");
-removeDogs.add("Green Dog");
-mappingSession.remove(id, Entity.class, "dogs", removeDogs);
-
-// remove all items
-mappingSession.deleteValue(id, Entity.class, "dogs");
-```
-
-<a name="collections_map"/>
-- Map operations
-```java
-/** append item */
-Map<String, BigInteger> pets = new HashMap<String, BigInteger>();
-pets.put("Red Dogs", 25);
-pets.put("Black Cats", 50);
-mappingSession.append(id, Entity.class, "pets", pets);
-
-/** append items to be expired in 5 sec */
-Map<String, BigInteger> pets = new HashMap<String, BigInteger>();
-pets.put("Green Dogs", 25);
-pets.put("Brown Cats", 50);
-mappingSession.append(id, Entity.class, "pets", pets, new WriteOptions().setTtl(5));
-
-/** remove all items */
-mappingSession.deleteValue(id, Entity.class, "pets");
 ```
 
 <a name="lock"/>
