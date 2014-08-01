@@ -38,12 +38,6 @@ Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.c
 	* [Mixed Case for Column Names](#mapping_mixed)
 	* [Collections](#mapping_collections)
 	* [TTL](#mapping_ttl)
-- [Collections](#collections)
-	* [Mapping](#mapping_collections)
-	* [Optimized operations](#collections_opt)	
-		- [List](#collections_list)
-		- [Set](#collections_set)
-		- [Map](#collections_map)
 - [Optimistic Lock](#lock)
 	* [Lightweight transactions](#lock_transactions)
 	* [@Version](#lock_version)
@@ -341,6 +335,13 @@ Many thank to magic gnomes under the hood making all these work.
 
     /** Asynchronously Delete Entity by ID(Primary key) */
     ResultSetFuture f = mappinSession.deleteAsync(Entity.class, id);
+    
+    /** Delete Individual Value */
+    mappingSession.deleteValue(id, Entity.class, propertyName);
+
+    /** Asynchronously Delete Individual Value */
+    ResultSetFuture f = mappingSession.deleteValueAsync(id, Entity.class, propertyName);
+    
 ```
 
 <a name="batch"/>
