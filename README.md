@@ -186,7 +186,7 @@ Collections
 
 
 <a name="read"/>
-### Read
+#### Read
 
 ```java
     /** Get Entity by Id(Primary Key) */
@@ -324,7 +324,7 @@ Many thank to magic gnomes under the hood making all these work.
 
 
 <a name="delete"/>
-### Delete
+#### Delete
 ```java
     /** Delete Entity  */
     mappinSession.delete(entity);
