@@ -28,7 +28,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
 
-import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
@@ -43,15 +42,11 @@ import org.junit.Test;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.policies.DefaultRetryPolicy;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.mapping.EntityTypeParser;
 import com.datastax.driver.mapping.MappingSession;
-import com.datastax.driver.mapping.entity.Any;
 import com.datastax.driver.mapping.entity.CompositeKey;
 import com.datastax.driver.mapping.entity.EntityMixedCase;
 import com.datastax.driver.mapping.entity.EntityWithCollections;
@@ -61,12 +56,9 @@ import com.datastax.driver.mapping.entity.EntityWithEnum;
 import com.datastax.driver.mapping.entity.EntityWithIndexes;
 import com.datastax.driver.mapping.entity.EntityWithKey;
 import com.datastax.driver.mapping.entity.EntityWithTtl;
-import com.datastax.driver.mapping.entity.EntityWithVersion;
 import com.datastax.driver.mapping.entity.Month;
 import com.datastax.driver.mapping.entity.Simple;
 import com.datastax.driver.mapping.entity.SimpleKey;
-import com.datastax.driver.mapping.meta.EntityFieldMetaData;
-import com.datastax.driver.mapping.meta.EntityTypeMetadata;
 import com.datastax.driver.mapping.option.WriteOptions;
 
 public class MappingSessionAsyncTest {
