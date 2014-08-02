@@ -412,8 +412,9 @@ public class MappingSessionAsyncTest {
 		assertEquals(new Integer(33), loaded.getTrades().get(2));
 		assertEquals(3, loaded.getTrades().size());
 		
-		target.replaceAtAsync(id, EntityWithCollections.class, "trades", 22, 1);
+		f = target.replaceAtAsync(id, EntityWithCollections.class, "trades", 22, 1);
 		f.getUninterruptibly();
+		
 		loaded = target.get(EntityWithCollections.class, id);
 		assertEquals(new Integer(22), loaded.getTrades().get(1));	
 		assertEquals(3, loaded.getTrades().size());
