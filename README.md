@@ -140,6 +140,22 @@ Or look at the [Spring Framework Example](#spring).
 
 <a name="write"/>
 ```java
+    /** Persist Entity */
+    mappingSession.save(entity);
+
+    /** Asynchronously Persist Entity */
+    ResultSetFuture f = mappingSession.saveAsync(entity);
+
+    /** Persist Entity with WriteOptions*/
+    mappingSession.save(entity, writeOptions);
+
+    /** Asynchronously Persist Entity with WriteOptions */
+    ResultSetFuture f = mappingSession.saveAsync(entity, writeOptions);    
+
+
+    /** Remove an item or items from the Set or List. */
+    mappingSession.remove(id, Entity.class, propertyName, item);
+
     /** Asynchronously Remove an item or items from the Set or List. */
     ResultSetFuture f = mappingSession.removeAsync(id, Entity.class, propertyName, item);
 
@@ -222,7 +238,7 @@ All Save/Upate methodsaccept a "WriteOptions" optional argument
 ```
 
 <a name="write_col"/>
-- Collections Samples
+- Collections Samples.  
 You can work with your collection properties as you would normally work with other entity properties.  
 In addition C* provides optimized operations on collections. Those operations do not require to load and save the whole entity. C* allows us directly manipulate collections.   
 
