@@ -214,7 +214,7 @@ Or look at the [Spring Framework Example](#spring).
 
 <a name="write_opt"/>
 - Write Options.   
-All Save/Upate methodsaccept a "WriteOptions" optional argument 
+Save/Upate methods accept "WriteOptions" argument. See how to use it below.
 ```java
 	import com.datastax.driver.mapping.option.WriteOptions;
 	import com.datastax.driver.core.policies.DefaultRetryPolicy;
