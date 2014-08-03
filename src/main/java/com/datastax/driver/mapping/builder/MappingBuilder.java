@@ -530,15 +530,15 @@ public class MappingBuilder {
 		return result;
 	}
 	
-	public static BoundStatement prepareAndExecuteUpdate(Object id, EntityTypeMetadata emeta, Update update, Session session) {
+	public static BoundStatement prepareUpdate(Object id, EntityTypeMetadata emeta, Update update, Session session) {
 		List<String> pkCols = emeta.getPkColumns();
 		for (String col : pkCols) {
 			update.where(eq(col, QueryBuilder.bindMarker()));
 		}
-		return prepareAndExecute(id, emeta, update, pkCols, session);
+		return prepareBoundStatement(id, emeta, update, pkCols, session);
 	}
 
-	public static <T> BoundStatement prepareAndExecuteDelete(Object id, Class<T> clazz, String propertyName, String keyspace, Session session) {
+	public static <T> BoundStatement prepareDelete(Object id, Class<T> clazz, String propertyName, String keyspace, Session session) {
 		EntityTypeMetadata emeta = EntityTypeParser.getEntityMetadata(clazz);
 		EntityFieldMetaData fmeta = emeta.getFieldMetadata(propertyName);
 		Delete delete = QueryBuilder.delete(fmeta.getColumnName()).from(keyspace, emeta.getTableName());		
@@ -546,10 +546,10 @@ public class MappingBuilder {
 		for (String col : pkCols) {
 			delete.where(eq(col, QueryBuilder.bindMarker()));
 		}
-		return prepareAndExecute(id, emeta, delete, pkCols, session);
+		return prepareBoundStatement(id, emeta, delete, pkCols, session);
 	}
 
-	public static BoundStatement prepareAndExecute(Object id, EntityTypeMetadata emeta, BuiltStatement stmt, List<String> pkCols, Session session) {
+	public static BoundStatement prepareBoundStatement(Object id, EntityTypeMetadata emeta, BuiltStatement stmt, List<String> pkCols, Session session) {
 		// bind parameters
 		Object[] values = emeta.getIdValues(id).toArray(new Object[pkCols.size()]);
 		String q = stmt.getQueryString();
@@ -576,7 +576,7 @@ public class MappingBuilder {
 			update.with(QueryBuilder.discard(fmeta.getColumnName(), item));
 		}
 
-		return prepareAndExecuteUpdate(id, emeta, update, session);		
+		return prepareUpdate(id, emeta, update, session);		
 	}	
 	
 	public static BoundStatement prepareUpdateValue(Object id, Class<?> clazz, String propertyName, Object value, WriteOptions options, String keyspace, Session session) {
@@ -588,7 +588,7 @@ public class MappingBuilder {
 		}
 		update.with(set(fmeta.getColumnName(), value));
 		applyOptions(options, update, null);
-		return prepareAndExecuteUpdate(id, emeta, update, session);		
+		return prepareUpdate(id, emeta, update, session);		
 	}	
 	
 	public static BoundStatement prepareAppendItemToCollection(Object id, Class<?> clazz, String propertyName, Object item, WriteOptions options, String keyspace, Session session) {
@@ -614,7 +614,7 @@ public class MappingBuilder {
 			update.with(QueryBuilder.append(fmeta.getColumnName(), item));
 		} 
 		applyOptions(options, update, null);
-		return prepareAndExecuteUpdate(id, emeta, update, session);		
+		return prepareUpdate(id, emeta, update, session);		
 	}	
 
 	public static BoundStatement preparePrependItemToList(Object id, Class<?> clazz, String propertyName, Object item, WriteOptions options, String keyspace, Session session) {
@@ -630,7 +630,7 @@ public class MappingBuilder {
 			update.with(QueryBuilder.prepend(fmeta.getColumnName(), item));
 		}
 		applyOptions(options, update, null);
-		return prepareAndExecuteUpdate(id, emeta, update, session);		
+		return prepareUpdate(id, emeta, update, session);		
 	}	
 	
 	public static BoundStatement prepareReplaceAt(Object id, Class<?> clazz, String propertyName, Object item, int idx, WriteOptions options, String keyspace, Session session) {
@@ -642,7 +642,7 @@ public class MappingBuilder {
 			update.with(QueryBuilder.setIdx(fmeta.getColumnName(), idx, item));
 		}
 		applyOptions(options, update, null);
-		return prepareAndExecuteUpdate(id, emeta, update, session);
+		return prepareUpdate(id, emeta, update, session);
 	}	
 
 }

@@ -39,9 +39,11 @@ import com.datastax.driver.mapping.schemasync.SchemaSync;
 import com.google.common.cache.Cache;
 
 /**
- * API to work with entities to be persisted in Cassandra. 
+ * Object Mapper API to work with entities to be persisted in Cassandra. 
  * This is lightweight wrapper for the datastax Session. 
- * Usage: create one instance per datastax Session or have a new one for each request.
+ * This class is ThreadSafe and can be shared.
+ * Create one instance per datastax Session or create a new one for each request.
+ * Usage: 
  * <code> MappingSession msession = new MappingSession(keyspace, session); </code>
  * <code> msession.save(entity); </code>
  * <code> msession.get(Entity.class, id); </code>
@@ -54,27 +56,44 @@ public class MappingSession {
 	protected String keyspace;
 	protected boolean doNotSync;
 	
+	/**
+	 * Constructor  
+	 * @param keyspace name 
+	 * @param session Initialized Datastax Session
+	 */
 	public MappingSession(String keyspace, Session session) {
 		this(keyspace, session, false);
 	}
 
+    /**
+     * Constructor 
+     * @param keyspace name 
+     * @param session Initialized Datastax Session
+	 * @param doNotSync if set to true the mappingSession will not synchronize entity definition with Cassandra
+	 */
 	public MappingSession(String keyspace, Session session, boolean doNotSync) {
 		this.session = session;
 		this.keyspace = keyspace;
 		this.doNotSync = doNotSync;
 	}	
-	/* (non-Javadoc)
-	 * @see com.datastax.driver.mapping.MappingSessionInterface#get(java.lang.Class, java.lang.Object)
+
+	/**
+	 * Get Entity by Id(Primary Key)
+	 * @param class Entity.class
+	 * @param id primary key
+	 * @return Entity instance or null
 	 */
-	
 	public <T> T get(Class<T> clazz, Object id) {
 		return get(clazz, id, null);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.datastax.driver.mapping.MappingSessionInterface#get(java.lang.Class, java.lang.Object, com.datastax.driver.mapping.option.ReadOptions)
+	/**
+     * Get Entity by Id(Primary Key)
+     * @param class Entity.class
+     * @param id primary key
+	 * @param options ReadOptions 
+	 * @return Entity instance or null
 	 */
-	
 	public <T> T get(Class<T> clazz, Object id, ReadOptions options) {
 		maybeSync(clazz);
 		BoundStatement bs = MappingBuilder.prepareSelect(clazz, id, options, keyspace, session);
@@ -88,92 +107,109 @@ public class MappingSession {
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.datastax.driver.mapping.MappingSessionInterface#getByQuery(java.lang.Class, com.datastax.driver.core.Statement)
-	 */
-	
+    /**
+     * Get Collection of Entities by custom Query Statement	
+     * @param class Entity.class
+     * @param query Statement
+     * @return List<Entity> if nothing is retrieved empty List<Entity> is returned 
+     */
 	public <T> List<T> getByQuery(Class<T> clazz, Statement query) {
 		maybeSync(clazz);
 		return getFromResultSet(clazz, session.execute(query));
 	}
 
-	/* (non-Javadoc)
-	 * @see com.datastax.driver.mapping.MappingSessionInterface#getByQuery(java.lang.Class, java.lang.String)
-	 */
-	
+    /**
+     * Get Collection of Entities by custom Query String 
+     * @param class Entity.class
+     * @param query String
+     * @return List<Entity> if nothing is retrieved empty List<Entity> is returned 
+     */
 	public <T> List<T> getByQuery(Class<T> clazz, String query) {
 		maybeSync(clazz);
 		return getFromResultSet(clazz, session.execute(query));
 	}
 
-	/* (non-Javadoc)
-	 * @see com.datastax.driver.mapping.MappingSessionInterface#getFromResultSet(java.lang.Class, com.datastax.driver.core.ResultSet)
-	 */
-	
+    /**
+     * Convert custom ResultSet into List<Entity>. No Cassandra invocations are performed. 
+     * @param class Entity.class
+     * @param query String
+     * @return List<Entity> or empty List<Entity> if nothing mapped.
+     */
 	public <T> List<T> getFromResultSet(Class<T> clazz, ResultSet rs) {
 		return MappingBuilder.getFromResultSet(clazz, rs);
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.datastax.driver.mapping.MappingSessionInterface#delete(E)
+	/**
+	 * Delete Entity
+	 * @param entity
 	 */
-	
 	public <E> void delete(E entity) {
 		maybeSync(entity.getClass());
 		BuiltStatement bs = MappingBuilder.buildDelete(entity, keyspace);
 		execute(bs);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.datastax.driver.mapping.MappingSessionInterface#delete(java.lang.Class, java.lang.Object)
+	/**
+	 * Delete Entity by ID(Primary key)
+	 * @param class Entity.class
+	 * @param id Primary Key
 	 */
-	
 	public <T> void delete(Class<T> clazz, Object id) {
 		maybeSync(clazz);
 		BuiltStatement bs = MappingBuilder.buildDelete(clazz, id, keyspace);
 		execute(bs);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.datastax.driver.mapping.MappingSessionInterface#deleteAsync(E)
-	 */
-	
+    /**
+     * Asynchronously Delete Entity
+     * @param entity
+     * @return ResultSetFuture
+     */	
 	public <E> ResultSetFuture deleteAsync(E entity) {
 		maybeSync(entity.getClass());
 		BuiltStatement bs = MappingBuilder.buildDelete(entity, keyspace);
 		return executeAsync(bs);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.datastax.driver.mapping.MappingSessionInterface#deleteAsync(java.lang.Class, java.lang.Object)
-	 */
-	
+    /**
+     * Asynchronously Delete Entity by ID(Primary key)
+     * @param class Entity.class
+     * @param id Primary Key
+     */	
 	public <T> ResultSetFuture deleteAsync(Class<T> clazz, Object id) {
 		maybeSync(clazz);
 		BuiltStatement bs = MappingBuilder.buildDelete(clazz, id, keyspace);
 		return executeAsync(bs);
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.datastax.driver.mapping.MappingSessionInterface#save(E)
+	/**
+	 * Save Entity. 
+	 * If Entity has @Version field, in attempt to save not the latest version null is returned.
+	 * @param entity
+	 * @return ResultSetFuture. 
 	 */
-	
 	public <E> E save(E entity) {
 		return save(entity, null);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.datastax.driver.mapping.MappingSessionInterface#saveAsync(E)
-	 */
-	
+    /**
+     * Save Entity. 
+     * If Entity has @Version field, in attempt to save not the latest version 
+     * the entity will not be saved and no Exceptions will be thrown.
+     * @param entity
+     * @return ResultSetFuture. 
+     */	
 	public <E> ResultSetFuture saveAsync(E entity) {
 		return saveAsync(entity, null);
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.datastax.driver.mapping.MappingSessionInterface#save(E, com.datastax.driver.mapping.option.WriteOptions)
-	 */
-	
+    /**
+     * Save Entity. 
+     * If Entity has @Version field, in attempt to save not the latest version null is returned.
+     * @param entity
+     * @param options WriteOptions
+     * @return ResultSetFuture. 
+     */	
 	public <E> E save(E entity, WriteOptions options) {
 		maybeSync(entity.getClass());
 		Statement stmt = MappingBuilder.prepareSave(entity, options, keyspace);
@@ -189,215 +225,291 @@ public class MappingSession {
 		return entity;
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.datastax.driver.mapping.MappingSessionInterface#saveAsync(E, com.datastax.driver.mapping.option.WriteOptions)
-	 */
-	
+    /**
+     * Asynchronously Save Entity. 
+     * If Entity has @Version field, in attempt to save not the latest version 
+     * the entity will not be saved and no Exceptions will be thrown.
+     * @param entity
+     * @param options WriteOptions
+     * @return ResultSetFuture. 
+     */ 
 	public <E> ResultSetFuture saveAsync(E entity, WriteOptions options) {
 		maybeSync(entity.getClass());
 		Statement stmt = MappingBuilder.prepareSave(entity, options, keyspace);
 		return executeAsync(stmt);
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.datastax.driver.mapping.MappingSessionInterface#remove(java.lang.Object, java.lang.Class, java.lang.String, java.lang.Object)
+	/**
+	 * Remove an item or items from the Set or List. 
+	 * @param id Primary Key
+	 * @param class Entity.class
+	 * @param propertyName property of Entity to modify
+	 * @param item can be single value, a List or a Set of values to remove.
 	 */
-	
 	public void remove(Object id, Class<?> clazz, String propertyName, Object item) {
 		maybeSync(clazz);
 		BoundStatement bs = MappingBuilder.prepareRemoveItemsFromSetOrList(id, clazz, propertyName, item, keyspace, session);
 		execute(bs);
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.datastax.driver.mapping.MappingSessionInterface#removeAsync(java.lang.Object, java.lang.Class, java.lang.String, java.lang.Object)
-	 */
-	
+    /**
+     * Asynchronously Remove an item or items from the Set or List. 
+     * @param id Primary Key
+     * @param class Entity.class
+     * @param propertyName property of Entity to modify
+     * @param item can be single value, a List or a Set of values to remove.
+     * @return ResultSetFuture. 
+     */
 	public ResultSetFuture removeAsync(Object id, Class<?> clazz, String propertyName, Object item) {
 		maybeSync(clazz);
 		BoundStatement bs = MappingBuilder.prepareRemoveItemsFromSetOrList(id, clazz, propertyName, item, keyspace, session);
 		return executeAsync(bs);
 	}
 
-	
-	/* (non-Javadoc)
-	 * @see com.datastax.driver.mapping.MappingSessionInterface#deleteValue(java.lang.Object, java.lang.Class, java.lang.String)
+	/**
+	 * Delete value for an individual property
+	 * @param id Primary Key
+	 * @param class Entity.class
+	 * @param propertyName Entity property
 	 */
-	
 	public void deleteValue(Object id, Class<?> clazz, String propertyName) {
 		maybeSync(clazz);
-		BoundStatement bs = MappingBuilder.prepareAndExecuteDelete(id, clazz, propertyName, keyspace, session);
+		BoundStatement bs = MappingBuilder.prepareDelete(id, clazz, propertyName, keyspace, session);
 		execute(bs);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.datastax.driver.mapping.MappingSessionInterface#deleteValueAsync(java.lang.Object, java.lang.Class, java.lang.String)
-	 */
-	
+    /**
+     * Asynchronously Delete value for an individual property
+     * @param id Primary Key
+     * @param class Entity.class
+     * @param propertyName Entity property
+     * @return ResultSetFuture.
+     */
 	public ResultSetFuture deleteValueAsync(Object id, Class<?> clazz, String propertyName) {
 		maybeSync(clazz);
-		BoundStatement bs = MappingBuilder.prepareAndExecuteDelete(id, clazz, propertyName, keyspace, session);
+		BoundStatement bs = MappingBuilder.prepareDelete(id, clazz, propertyName, keyspace, session);
 		return executeAsync(bs);
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.datastax.driver.mapping.MappingSessionInterface#append(java.lang.Object, java.lang.Class, java.lang.String, java.lang.Object)
+	/**
+	 * Asynchronously Append value or values to the Set, List or Map.
+     * @param id Primary Key
+     * @param class Entity.class
+     * @param propertyName Entity property
+	 * @param item can be a single value, a List, Set or a Map of values
 	 */
-	
 	public void append(Object id, Class<?> clazz, String propertyName, Object item) {
 		append(id, clazz, propertyName, item, null);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.datastax.driver.mapping.MappingSessionInterface#append(java.lang.Object, java.lang.Class, java.lang.String, java.lang.Object, com.datastax.driver.mapping.option.WriteOptions)
-	 */	
-	
+    /**
+     * Append value or values to the Set, List or Map.
+     * @param id Primary Key
+     * @param class Entity.class
+     * @param propertyName Entity property
+     * @param item can be a single value, a List, Set or a Map of values
+     * @param options WriteOptions
+     */
 	public void append(Object id, Class<?> clazz, String propertyName, Object item, WriteOptions options) {
 		maybeSync(clazz);
 		BoundStatement bs = MappingBuilder.prepareAppendItemToCollection(id, clazz, propertyName, item, options, keyspace, session);
 		execute(bs);
 	}
 
-	
-	/* (non-Javadoc)
-	 * @see com.datastax.driver.mapping.MappingSessionInterface#appendAsync(java.lang.Object, java.lang.Class, java.lang.String, java.lang.Object)
-	 */
-	
+	/**
+     * Asynchronously Append value or values to the Set, List or Map.
+     * @param id Primary Key
+     * @param class Entity.class
+     * @param propertyName Entity property
+     * @param item can be a single value, a List, Set or a Map of values
+     * @return ResultSetFuture.
+     */
 	public ResultSetFuture appendAsync(Object id, Class<?> clazz, String propertyName, Object item) {
 		return appendAsync(id, clazz, propertyName, item, null);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.datastax.driver.mapping.MappingSessionInterface#appendAsync(java.lang.Object, java.lang.Class, java.lang.String, java.lang.Object, com.datastax.driver.mapping.option.WriteOptions)
-	 */	
-	
+    /**
+     * Asynchronously Append value or values to the Set, List or Map.
+     * @param id Primary Key
+     * @param class Entity.class
+     * @param propertyName Entity property
+     * @param item can be a single value, a List, Set or a Map of values
+     * @param options WriteOptions
+     * @return ResultSetFuture.
+     */
 	public ResultSetFuture appendAsync(Object id, Class<?> clazz, String propertyName, Object item, WriteOptions options) {
 		maybeSync(clazz);
 		BoundStatement bs = MappingBuilder.prepareAppendItemToCollection(id, clazz, propertyName, item, options, keyspace, session);
 		return executeAsync(bs);
 	}	
-	/* (non-Javadoc)
-	 * @see com.datastax.driver.mapping.MappingSessionInterface#updateValue(java.lang.Object, java.lang.Class, java.lang.String, java.lang.Object)
-	 */
-	
+
+    /**
+     * Replace existing value with a new one.
+     * @param id Primary Key
+     * @param class Entity.class
+     * @param propertyName Entity property
+     * @param value new value
+     */
 	public void updateValue(Object id, Class<?> clazz, String propertyName, Object value) {
 		updateValue(id, clazz, propertyName, value, null);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.datastax.driver.mapping.MappingSessionInterface#updateValueAsync(java.lang.Object, java.lang.Class, java.lang.String, java.lang.Object)
-	 */
-	
+    /**
+     * Asynchronously Replace existing value with a new one.
+     * @param id Primary Key
+     * @param class Entity.class
+     * @param propertyName Entity property
+     * @param value new value
+     * @return ResultSetFuture.
+     */
 	public ResultSetFuture updateValueAsync(Object id, Class<?> clazz, String propertyName, Object value) {
 		return updateValueAsync(id, clazz, propertyName, value, null);
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.datastax.driver.mapping.MappingSessionInterface#updateValue(java.lang.Object, java.lang.Class, java.lang.String, java.lang.Object, com.datastax.driver.mapping.option.WriteOptions)
-	 */	
-	
+    /**
+     * Replace existing value with a new one.
+     * @param id Primary Key
+     * @param class Entity.class
+     * @param propertyName Entity property
+     * @param value new value
+     * @param options WriteOptions
+     */
 	public void updateValue(Object id, Class<?> clazz, String propertyName, Object value, WriteOptions options) {
 		maybeSync(clazz);
 		BoundStatement bs = MappingBuilder.prepareUpdateValue(id, clazz, propertyName, value, options, keyspace, session);
 		execute(bs);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.datastax.driver.mapping.MappingSessionInterface#updateValueAsync(java.lang.Object, java.lang.Class, java.lang.String, java.lang.Object, com.datastax.driver.mapping.option.WriteOptions)
-	 */	
-	
+    /**
+     * Asynchronously Replace existing value with a new one.
+     * @param id Primary Key
+     * @param class Entity.class
+     * @param propertyName Entity property
+     * @param value new value
+     * @param options WriteOptions
+     * @return ResultSetFuture.
+     */
 	public ResultSetFuture updateValueAsync(Object id, Class<?> clazz, String propertyName, Object value, WriteOptions options) {
 		maybeSync(clazz);
 		BoundStatement bs = MappingBuilder.prepareUpdateValue(id, clazz, propertyName, value, options, keyspace, session);
 		return executeAsync(bs);
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.datastax.driver.mapping.MappingSessionInterface#prepend(java.lang.Object, java.lang.Class, java.lang.String, java.lang.Object)
-	 */
-	
+    /**
+     * Place item or items at the beginning of the List.
+     * @param id Primary Key
+     * @param class Entity.class
+     * @param propertyName Entity property
+     * @param item can be a single item or a List of items
+     */
 	public void prepend(Object id, Class<?> clazz, String propertyName, Object item) {
 		prepend(id, clazz, propertyName, item, null);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.datastax.driver.mapping.MappingSessionInterface#prependAsync(java.lang.Object, java.lang.Class, java.lang.String, java.lang.Object)
-	 */
-	
+    /**
+     * Asynchronously Place item or items at the beginning of the List.
+     * @param id Primary Key
+     * @param class Entity.class
+     * @param propertyName Entity property
+     * @param item can be a single item or a List of items
+     * @return ResultSetFuture.
+     */
 	public ResultSetFuture prependAsync(Object id, Class<?> clazz, String propertyName, Object item) {
 		return prependAsync(id, clazz, propertyName, item, null);
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.datastax.driver.mapping.MappingSessionInterface#prepend(java.lang.Object, java.lang.Class, java.lang.String, java.lang.Object, com.datastax.driver.mapping.option.WriteOptions)
-	 */	
-	
+    /**
+     * Place item or items at the beginning of the List.
+     * @param id Primary Key
+     * @param class Entity.class
+     * @param propertyName Entity property
+     * @param item can be a single item or a List of items
+     * @param options WriteOptions
+     */
 	public void prepend(Object id, Class<?> clazz, String propertyName, Object item, WriteOptions options) {
 		maybeSync(clazz);
 		BoundStatement bs = MappingBuilder.preparePrependItemToList(id, clazz, propertyName, item, options, keyspace, session);
 		execute(bs);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.datastax.driver.mapping.MappingSessionInterface#prependAsync(java.lang.Object, java.lang.Class, java.lang.String, java.lang.Object, com.datastax.driver.mapping.option.WriteOptions)
-	 */	
-	
+    /**
+     * Asynchronously Place item or items at the beginning of the List.
+     * @param id Primary Key
+     * @param class Entity.class
+     * @param propertyName Entity property
+     * @param item can be a single item or a List of items
+     * @param options WriteOptions
+     * @return ResultSetFuture.
+     */
 	public ResultSetFuture prependAsync(Object id, Class<?> clazz, String propertyName, Object item, WriteOptions options) {
 		maybeSync(clazz);
 		BoundStatement bs = MappingBuilder.preparePrependItemToList(id, clazz, propertyName, item, options, keyspace, session);
 		return executeAsync(bs);
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.datastax.driver.mapping.MappingSessionInterface#replaceAt(java.lang.Object, java.lang.Class, java.lang.String, java.lang.Object, int)
-	 */
-	
+    /**
+     * Replace item at the specified position in the List.
+     * @param id Primary Key
+     * @param class Entity.class
+     * @param propertyName Entity property
+     * @param item 
+     * @param idx index of the item to replace. Starts from 0.
+     */
 	public void replaceAt(Object id, Class<?> clazz, String propertyName, Object item, int idx) {
 		replaceAt(id, clazz, propertyName, item, idx, null);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.datastax.driver.mapping.MappingSessionInterface#replaceAtAsync(java.lang.Object, java.lang.Class, java.lang.String, java.lang.Object, int)
-	 */
-	
+    /**
+     * Asynchronously Replace item at the specified position in the List.
+     * @param id Primary Key
+     * @param class Entity.class
+     * @param propertyName Entity property
+     * @param item 
+     * @param idx index of the item to replace. Starts from 0.
+     * @return ResultSetFuture.
+     */
 	public ResultSetFuture replaceAtAsync(Object id, Class<?> clazz, String propertyName, Object item, int idx) {
 		return replaceAtAsync(id, clazz, propertyName, item, idx, null);
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.datastax.driver.mapping.MappingSessionInterface#replaceAt(java.lang.Object, java.lang.Class, java.lang.String, java.lang.Object, int, com.datastax.driver.mapping.option.WriteOptions)
-	 */	
-	
+    /**
+     * Replace item at the specified position in the List.
+     * @param id Primary Key
+     * @param class Entity.class
+     * @param propertyName Entity property
+     * @param item 
+     * @param idx index of the item to replace. Starts from 0.
+     * @param options WriteOptions
+     */
 	public void replaceAt(Object id, Class<?> clazz, String propertyName, Object item, int idx, WriteOptions options) {
 		maybeSync(clazz);
 		BoundStatement bs = MappingBuilder.prepareReplaceAt(id, clazz, propertyName, item, idx, options, keyspace, session); 
 		execute(bs);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.datastax.driver.mapping.MappingSessionInterface#replaceAtAsync(java.lang.Object, java.lang.Class, java.lang.String, java.lang.Object, int, com.datastax.driver.mapping.option.WriteOptions)
-	 */	
-	
+    /**
+     * Asynchronously Replace item at the specified position in the List.
+     * @param id Primary Key
+     * @param class Entity.class
+     * @param propertyName Entity property
+     * @param item 
+     * @param idx index of the item to replace. Starts from 0.
+     * @param options WriteOptions
+     * @return ResultSetFuture.
+     */
 	public ResultSetFuture replaceAtAsync(Object id, Class<?> clazz, String propertyName, Object item, int idx, WriteOptions options) {
 		maybeSync(clazz);
 		BoundStatement bs = MappingBuilder.prepareReplaceAt(id, clazz, propertyName, item, idx, options, keyspace, session); 
 		return executeAsync(bs);
 	}
 
-	/** run sync if not yet done */
-	protected void maybeSync(Class<?> clazz) {
-		if (doNotSync) return; // forced to skip sync
-		
-		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
-		if (!entityMetadata.isSynced()) {
-			SchemaSync.sync(keyspace, session, clazz);
-		}
-	}
+
 
 	public BatchExecutor withBatch() {
 		return new BatchExecutor(this);
 	}
 	
+	/** This Class is wrapper for batch operations. */
 	public static class BatchExecutor {
 		List<RegularStatement> statements = new ArrayList<RegularStatement>();
 		MappingSession m;
@@ -423,9 +535,12 @@ public class MappingSession {
 			b.add(MappingBuilder.prepareSave(entity, options, m.keyspace)); 
 			return this;
 		}
- 		
+	    
+		/**
+		 * Apply Options to the whole batch statement.
+		 * @param options
+		 */
 		public void withOptions(BatchOptions options) {
-			// apply options to insert
 			if (options != null) {
 				if (options.getConsistencyLevel() != null) {
 					b.setConsistencyLevel(options.getConsistencyLevel());
@@ -437,27 +552,48 @@ public class MappingSession {
 			}
 		}
 		
+		/** execute batch statement */
 		public void execute() {
 			m.session.execute(b);
 		}
 		
+		/** 
+		 * Asynchronously execute batch statement 
+		 * @return ResultSetFuture
+		 */
 		public ResultSetFuture executeAsync() {
 			return m.session.executeAsync(b);
 		}		
 	}
 
+	/**
+	 * @return true if sync is turned off.
+	 */
 	public boolean isDoNotSync() {
 		return doNotSync;
 	}
 
+	/**
+	 * Turn sync off for all entities.
+	 * Entity definitions will not be synced with Cassandra within this MappingSession.
+	 * @param doNotSynch true|false
+	 */
 	public void setDoNotSync(boolean doNotSynch) {
 		this.doNotSync = doNotSynch;
 	}
 
+    /**
+     * get PreparedStatement Cache. May be used to retrieve cache statistics or to access cache directly. 
+     * @param statementCache
+     */	
 	public static Cache<String, PreparedStatement> getStatementCache() {
 		return MappingBuilder.getStatementCache();
 	}
 
+	/**
+	 * replace default PreparedStatement Cache with your customized one.
+	 * @param statementCache
+	 */
 	public static void setStatementCache(Cache<String, PreparedStatement> statementCache) {
 		MappingBuilder.setStatementCache(statementCache);
 	}
@@ -487,4 +623,14 @@ public class MappingSession {
 		}
 		return null;
 	}
+	
+    /** run sync if not yet done */
+    protected void maybeSync(Class<?> clazz) {
+        if (doNotSync) return; // forced to skip sync
+        
+        EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
+        if (!entityMetadata.isSynced()) {
+            SchemaSync.sync(keyspace, session, clazz);
+        }
+    }	
 }
