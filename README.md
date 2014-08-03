@@ -19,7 +19,7 @@ Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.c
 	* [Maven Dependency](#jump_maven)
 	* [Init Mapping Session](#jump_init)
 	* [Save, Get, Delete](#jump_save)
-- [API Reference](#api)
+- [Mapping Session API](#api)
 	* [Write](#write)  
 		- [Write API](#write)
 		- [Write Options](#write_opt)
@@ -133,7 +133,7 @@ Or look at the [Spring Framework Example](#spring).
 ```
 
 <a name="api"/>
-#### Mapping Session API
+### Mapping Session API
 
 <a name="write"/>
 #### Write
@@ -470,22 +470,22 @@ Many thank to magic gnomes under the hood making all these work.
 #### Delete
 ```java
     /** Delete Entity  */
-    mappinSession.delete(entity);
+    delete(entity);
 
     /** Delete Entity by ID(Primary key) */
-    mappinSession.delete(Entity.class, id);
+    delete(Entity.class, id);
 
     /** Asynchronously delete Entity  */
-    ResultSetFuture f = mappinSession.deleteAsync(entity);
+    deleteAsync(entity);
 
     /** Asynchronously Delete Entity by ID(Primary key) */
-    ResultSetFuture f = mappinSession.deleteAsync(Entity.class, id);
+    deleteAsync(Entity.class, id);
     
     /** Delete Individual Value */
-    mappingSession.deleteValue(id, Entity.class, propertyName);
+    deleteValue(id, Entity.class, propertyName);
 
     /** Asynchronously Delete Individual Value */
-    ResultSetFuture f = mappingSession.deleteValueAsync(id, Entity.class, propertyName);
+    deleteValueAsync(id, Entity.class, propertyName);
     
 ```
 
