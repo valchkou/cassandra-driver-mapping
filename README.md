@@ -134,9 +134,11 @@ Or look at the [Spring Framework Example](#spring).
 
 <a name="api"/>
 ### Mapping Session API
-Explore [MappingSession.java](https://github.com/valchkou/cassandra-driver-mapping/blob/master/src/main/java/com/datastax/driver/mapping/MappingSession.java)  
-Asynchronous UnitTests [MappingSessionAsyncTest.java](https://github.com/valchkou/cassandra-driver-mapping/blob/master/src/test/java/com/datastax/driver/mapping/MappingSessionAsyncTest.java)  
-Synchronous UnitTests [MappingSessionTest.java](https://github.com/valchkou/cassandra-driver-mapping/blob/master/src/test/java/com/datastax/driver/mapping/MappingSessionTest.java)
+To explore api [MappingSession.java](https://github.com/valchkou/cassandra-driver-mapping/blob/master/src/main/java/com/datastax/driver/mapping/MappingSession.java)  
+Synchronous samples in UnitTests [MappingSessionTest.java](https://github.com/valchkou/cassandra-driver-mapping/blob/master/src/test/java/com/datastax/driver/mapping/MappingSessionTest.java)  
+Asynchronous samples in UnitTests [MappingSessionAsyncTest.java](https://github.com/valchkou/cassandra-driver-mapping/blob/master/src/test/java/com/datastax/driver/mapping/MappingSessionAsyncTest.java)
+
+More samples below:
 
 <a name="write"/>
 #### Write
