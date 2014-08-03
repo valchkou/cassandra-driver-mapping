@@ -133,88 +133,94 @@ Or look at the [Spring Framework Example](#spring).
 ```
 
 <a name="api"/>
-#### API Reference
+#### Mapping Session API
 
 <a name="write"/>
 #### Write
 
 <a name="write"/>
+- Synchronous.
 ```java
     /** Persist Entity */
-    mappingSession.save(entity);
-
-    /** Asynchronously Persist Entity */
-    ResultSetFuture f = mappingSession.saveAsync(entity);
+    save(entity);
 
     /** Persist Entity with WriteOptions*/
-    mappingSession.save(entity, writeOptions);
-
-    /** Asynchronously Persist Entity with WriteOptions */
-    ResultSetFuture f = mappingSession.saveAsync(entity, writeOptions);    
-
+    save(entity, writeOptions);
 
     /** Remove an item or items from the Set or List. */
-    mappingSession.remove(id, Entity.class, propertyName, item);
-
-    /** Asynchronously Remove an item or items from the Set or List. */
-    ResultSetFuture f = mappingSession.removeAsync(id, Entity.class, propertyName, item);
+    remove(id, Entity.class, propertyName, item);
 
     /** Append value to the Set, List or Map. Value can be a single value, a List, Set or a Map. */
-    mappingSession.append(id, Entity.class, propertyName, value);
+    append(id, Entity.class, propertyName, value);
 
     /** Append value to the Set, List or Map with WriteOptions. Value can be a single value, a List, Set or a Map. */
-    mappingSession.append(id, Entity.class, propertyName, value, writeOptions);
- 
-    /** Asynchronously Append value to the Set, List or Map. Value can be a single value, a List, Set or a Map. */
-    ResultSetFuture f = mappingSession.appendAsync(id, Entity.class, propertyName, value);
-
-    /** Asynchronously Append value to the Set, List or Map with WriteOptions. Value can be a single value, a List, Set or a Map. */
-    ResultSetFuture f = mappingSession.appendAsync(id, Entity.class, propertyName, value, writeOptions);
+    append(id, Entity.class, propertyName, value, writeOptions);
  
     /** Save Individual Value. */
-    mappingSession.updateValue(id, Entity.class, propertyName, value);
+    updateValue(id, Entity.class, propertyName, value);
 
     /** Save Individual Value with WriteOptions. */
-    mappingSession.updateValue(id, Entity.class, propertyName, value, writeOptions);
+    updateValue(id, Entity.class, propertyName, value, writeOptions);
     
-    /** Asynchronously Save Individual Value. */
-    ResultSetFuture f = mappingSession.updateValueAsync(id, Entity.class, propertyName, value);
-    
-    /** Asynchronously Save Individual Value with WriteOptions. */
-    ResultSetFuture f = mappingSession.updateValueAsync(id, Entity.class, propertyName, value, writeOptions);
-
     /** Place value at the beginning of the List. 
      *  Value can be a single value or a List. */
-    mappingSession.prepend(id, Entity.class, propertyName, value);
+    prepend(id, Entity.class, propertyName, value);
 
     /** Place value at the beginning of the List with WriteOptions. 
      *  Value can be a single value or a List. */
-    mappingSession.prepend(id, Entity.class, propertyName, value, writeOptions);
+    prepend(id, Entity.class, propertyName, value, writeOptions);
     
+    /** Replace item at the specified position in the List. */
+    replaceAt(id, Entity.class, propertyName, item, index);
+    
+    /** Replace item at the specified position in the List with WriteOptions. */
+    replaceAt(id, Entity.class, propertyName, item, index, writeOptions);
+    
+```
+- Asynchronous.  
+All async methods run bu datastax session.executeasync(). ResultSetFuture is returned.
+```java
+
+    /** Asynchronously Persist Entity */
+    saveAsync(entity);
+
+    /** Asynchronously Persist Entity with WriteOptions */
+    saveAsync(entity, writeOptions);    
+
+    /** Asynchronously Remove an item or items from the Set or List. */
+    removeAsync(id, Entity.class, propertyName, item);
+
+    /** Asynchronously Append value to the Set, List or Map. Value can be a single value, a List, Set or a Map. */
+    appendAsync(id, Entity.class, propertyName, value);
+
+    /** Asynchronously Append value to the Set, List or Map with WriteOptions. Value can be a single value, a List, Set or a Map. */
+    appendAsync(id, Entity.class, propertyName, value, writeOptions);
+ 
+    /** Asynchronously Save Individual Value. */
+    updateValueAsync(id, Entity.class, propertyName, value);
+    
+    /** Asynchronously Save Individual Value with WriteOptions. */
+    updateValueAsync(id, Entity.class, propertyName, value, writeOptions);
+
     /** Asynchronously Place value at the beginning of the List. 
      *  Value can be a single value or a List. */
-    ResultSetFuture f = mappingSession.prependAsync(id, Entity.class, propertyName, value);
+    prependAsync(id, Entity.class, propertyName, value);
 
     /** Asynchronously Place value at the beginning of the List with WriteOptions. 
      *  Value can be a single value or a List. */
-    ResultSetFuture f = mappingSession.prependAsync(id, Entity.class, propertyName, value, writeOptions);
+    prependAsync(id, Entity.class, propertyName, value, writeOptions);
   
-    /** Replace item at the specified position in the List. */
-    mappingSession.replaceAt(id, Entity.class, propertyName, item, index);
-    
-    /** Replace item at the specified position in the List with WriteOptions. */
-    mappingSession.replaceAt(id, Entity.class, propertyName, item, index, writeOptions);
-    
     /** Asynchronously Replace item at the specified position in the List. */
-    ResultSetFuture f = mappingSession.replaceAtAsync(id, Entity.class, propertyName, item, index);
+    replaceAtAsync(id, Entity.class, propertyName, item, index);
 
     /** Asynchronously Replace item at the specified position in the List with WriteOptions. */
-    ResultSetFuture f = mappingSession.replaceAtAsync(id, Entity.class, propertyName, item, index, writeOptions);
+    replaceAtAsync(id, Entity.class, propertyName, item, index, writeOptions);
 ```
-
 <a name="write_opt"/>
 - Write Options.   
-Save/Upate methods accept "WriteOptions" argument. See how to use it below.
+Save/Upate methods accept "WriteOptions" argument.   
+Supported write options are: ConsistencyLevel, RetryPolicy, Timestamp, TTL.  
+Examples:
 ```java
 	import com.datastax.driver.mapping.option.WriteOptions;
 	import com.datastax.driver.core.policies.DefaultRetryPolicy;
@@ -228,13 +234,13 @@ Save/Upate methods accept "WriteOptions" argument. See how to use it below.
 		.setRetryPolicy(DefaultRetryPolicy.INSTANCE);
 		
 	Entity entity = new Entity();
-	mappingSession.save(entity, options);
+	entity = mappingSession.save(entity, options);
 ```
 ```java
 	import com.datastax.driver.mapping.option.WriteOptions;
 	...
 	Entity entity = new Entity();
-	mappingSession.saveValue(entity, new WriteOptions().setTtl(300));
+	ResultSetFuture f = mappingSession.saveValueAsync(entity, new WriteOptions().setTtl(300));
 ```
 
 <a name="write_col"/>
