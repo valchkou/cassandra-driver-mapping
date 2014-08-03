@@ -181,7 +181,7 @@ Synchronous UnitTests [MappingSessionTest.java](https://github.com/valchkou/cass
     
 ```
 - Asynchronous.  
-All async methods run bu datastax session.executeasync(). ResultSetFuture is returned.
+All async methods run by datastax session.executeasync() and Datastax ResultSetFuture is returned.
 ```java
 
     /** Asynchronously Persist Entity */
