@@ -23,7 +23,7 @@ Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.c
 	* [Write](#write)  
 		- [Write API](#write)
 		- [Write Options](#write_opt)
-	 	- [Collections Samples](#write_col)
+	 	- [More Collections Samples](#write_col)
 	* [Read](#read)  
 		- [Read API](#read)
 		- [Read Options](#read_opt)
@@ -134,6 +134,7 @@ Or look at the [Spring Framework Example](#spring).
 
 <a name="api"/>
 ### Mapping Session API
+Explore [MappingSession.java](https://github.com/valchkou/cassandra-driver-mapping/blob/master/src/main/java/com/datastax/driver/mapping/MappingSession.java).
 
 <a name="write"/>
 #### Write
