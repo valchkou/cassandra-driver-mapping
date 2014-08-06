@@ -27,6 +27,7 @@ import static org.junit.Assert.assertNotNull;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ColumnMetadata;
+import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
 import com.datastax.driver.mapping.EntityTypeParser;
@@ -34,6 +35,7 @@ import com.datastax.driver.mapping.entity.EntityWithCompositeKey;
 import com.datastax.driver.mapping.entity.EntityWithIndexes;
 import com.datastax.driver.mapping.entity.EntityWithIndexesV2;
 import com.datastax.driver.mapping.entity.EntityWithProperties;
+import com.datastax.driver.mapping.entity.EntityWithTimeUUID;
 import com.datastax.driver.mapping.meta.EntityTypeMetadata;
 import com.datastax.driver.mapping.schemasync.SchemaSync;
 
@@ -154,7 +156,7 @@ public class SchemaSyncTest {
 		TableMetadata tableMetadata = cluster.getMetadata().getKeyspace(keyspace).getTable(entityMetadata.getTableName());
 		assertNotNull(tableMetadata);
 		assertEquals("test_entity_composites", tableMetadata.getName());
-		assertEquals(6, tableMetadata.getColumns().size());
+		assertEquals(8, tableMetadata.getColumns().size());
 		
 		ColumnMetadata columnMetadata = tableMetadata.getColumn("timestamp");
 		assertNotNull(columnMetadata);	
@@ -182,5 +184,28 @@ public class SchemaSyncTest {
 	public void testCreateWithProperties() {
 		EntityTypeParser.getEntityMetadata(EntityWithProperties.class).markUnSynced();
 		SchemaSync.sync(keyspace, session, EntityWithProperties.class);
-	}		
+	}
+	
+    @Test
+    public void testCreateWithTimeUUID() {
+        EntityTypeParser.remove(EntityWithTimeUUID.class);
+        SchemaSync.sync(keyspace, session, EntityWithTimeUUID.class);
+        
+        EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(EntityWithTimeUUID.class);
+        TableMetadata tableMetadata = cluster.getMetadata().getKeyspace(keyspace).getTable(entityMetadata.getTableName());
+        assertNotNull(tableMetadata);
+        assertEquals("test_entity_timeuuid", tableMetadata.getName());
+        assertEquals(3, tableMetadata.getColumns().size());
+        
+        ColumnMetadata columnMetadata = tableMetadata.getColumn("name");
+        assertNotNull(columnMetadata);  
+        assertEquals(DataType.text(), columnMetadata.getType());
+        
+        columnMetadata = tableMetadata.getColumn("convId");
+        assertNotNull(columnMetadata);  
+        assertEquals(DataType.timeuuid(), columnMetadata.getType());
+            
+        columnMetadata = tableMetadata.getColumn("msgId");
+        assertNotNull(columnMetadata);  
+        assertEquals(DataType.timeuuid(), columnMetadata.getType());    }	
 }

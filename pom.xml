@@ -47,6 +47,12 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+		    <groupId>com.eaio.uuid</groupId>
+		    <artifactId>uuid</artifactId>
+		    <version>3.2</version>
+		    <scope>test</scope>
+		</dependency>
   </dependencies>
 
 	<build>

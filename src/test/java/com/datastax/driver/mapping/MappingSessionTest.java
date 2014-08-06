@@ -315,6 +315,8 @@ public class MappingSessionTest {
 		SimpleKey partition = new SimpleKey();
 		partition.setName("name");
 		partition.setRank(10);
+		partition.setT1(java.util.UUID.fromString(new com.eaio.uuid.UUID().toString()));
+		partition.setT2(java.util.UUID.fromString(new com.eaio.uuid.UUID().toString()));		
 		
 		CompositeKey key = new CompositeKey();
 		key.setKey(partition);
@@ -345,6 +347,8 @@ public class MappingSessionTest {
 		SimpleKey key = new SimpleKey();
 		key.setName("name");
 		key.setRank(10);
+		key.setT1(java.util.UUID.fromString(new com.eaio.uuid.UUID().toString()));
+		key.setT2(java.util.UUID.fromString(new com.eaio.uuid.UUID().toString()));
 		
 		Date created = new Date();
 		

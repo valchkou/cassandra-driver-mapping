@@ -73,7 +73,7 @@ public class EntityTypeParserTest {
 		EntityTypeMetadata meta = EntityTypeParser.getEntityMetadata(EntityWithKey.class);
 		assertEquals("test_entity", meta.getTableName());
 		assertEquals(0, meta.getIndexes().size());
-		assertEquals(4, meta.getFields().size());
+		assertEquals(6, meta.getFields().size());
 		
 		PrimaryKeyMetadata pkm = meta.getPrimaryKeyMetadata();
 		assertNotNull(pkm);
@@ -87,7 +87,7 @@ public class EntityTypeParserTest {
 		EntityTypeMetadata meta = EntityTypeParser.getEntityMetadata(EntityWithCompositeKey.class);
 		assertEquals("test_entity_composites", meta.getTableName());
 		assertEquals(0, meta.getIndexes().size());
-		assertEquals(6, meta.getFields().size());
+		assertEquals(8, meta.getFields().size());
 		
 		PrimaryKeyMetadata pkm = meta.getPrimaryKeyMetadata();
 		assertNotNull(pkm);
@@ -114,18 +114,20 @@ public class EntityTypeParserTest {
 		
 		EntityTypeMetadata meta = EntityTypeParser.getEntityMetadata(EntityWithCompositeKey.class);
 		List<String> cols = meta.getPkColumns();
-		assertEquals(4, cols.size());
+		assertEquals(6, cols.size());
 		assertEquals("name",    cols.get(0));
 		assertEquals("rank",    cols.get(1));
-		assertEquals("created", cols.get(2));
-		assertEquals("email",   cols.get(3));
+        assertEquals("t1",      cols.get(2));
+        assertEquals("t2",      cols.get(3));		
+		assertEquals("created", cols.get(4));
+		assertEquals("email",   cols.get(5));
 		
 		List<Object> vals = meta.getIdValues(id);
-		assertEquals(4, vals.size());
+		assertEquals(6, vals.size());
 		assertEquals("name", vals.get(0));
 		assertEquals(10, vals.get(1));
-		assertEquals(date, vals.get(2));
-		assertEquals("email", vals.get(3));
+		assertEquals(date, vals.get(4));
+		assertEquals("email", vals.get(5));
 	}
 	
 	@Test
@@ -136,12 +138,14 @@ public class EntityTypeParserTest {
 		
 		EntityTypeMetadata meta = EntityTypeParser.getEntityMetadata(EntityWithKey.class);
 		List<String> cols = meta.getPkColumns();
-		assertEquals(2, cols.size());
+		assertEquals(4, cols.size());
 		assertEquals("name",    cols.get(0));
 		assertEquals("rank",    cols.get(1));
+		assertEquals("t1",      cols.get(2));
+		assertEquals("t2",      cols.get(3));
 		
 		List<Object> vals = meta.getIdValues(sk);
-		assertEquals(2, vals.size());
+		assertEquals(4, vals.size());
 		assertEquals("name", vals.get(0));
 		assertEquals(10, vals.get(1));
 	}	
@@ -164,7 +168,7 @@ public class EntityTypeParserTest {
 		EntityTypeMetadata meta = EntityTypeParser.getEntityMetadata(EntityWithProperties.class);
 		assertEquals("test_entity_properties", meta.getTableName());
 		assertEquals(0, meta.getIndexes().size());
-		assertEquals(4, meta.getFields().size());
+		assertEquals(6, meta.getFields().size());
 		
 		List<String> props = meta.getProperties();
 		assertNotNull(props);
