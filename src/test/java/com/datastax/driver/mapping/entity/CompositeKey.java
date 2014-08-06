@@ -17,7 +17,6 @@ package com.datastax.driver.mapping.entity;
 
 import java.util.Date;
 
-import javax.persistence.Embeddable;
 import javax.persistence.EmbeddedId;
 
 
