@@ -516,7 +516,7 @@ Many thank to magic gnomes under the hood making all these work.
 ### Various Mappings
 
 	IMPORTANT!!!  
-	- Each persistant field mast have publlic Getter/Setter.
+	- Each persistant field MUST have publlic Getter/Setter.
 	- If entity or field is not annotated it will provide its name as default.    
 	- Id field is required and must be annotated with @Id or @EmbeddedId.
 	- Index name must be unique within the keyspace.  
