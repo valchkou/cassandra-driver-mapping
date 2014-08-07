@@ -41,25 +41,27 @@ public final class SchemaSync {
     	EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
     	if (entityMetadata.isSynced()) return;
 
-    	String table = entityMetadata.getTableName();
-    	
-    	session.execute("USE "+keyspace);
-    	Cluster cluster = session.getCluster();
-    	KeyspaceMetadata keyspaceMetadata = cluster.getMetadata().getKeyspace(keyspace);
-    	TableMetadata tableMetadata = keyspaceMetadata.getTable(table);
-    	
-    	List<RegularStatement> statements;
-    	if (tableMetadata == null) {
-    		statements = createTableStatements(keyspace, entityMetadata);
-    	} else {
-    		statements = alterTableStatements(keyspace, session, entityMetadata);
-    	}
+    	List<RegularStatement> statements = buildSyncStatements(keyspace, session, entityMetadata);
     	
     	for (RegularStatement stmt: statements) {
     		session.execute(stmt);
     	}
     	
     	entityMetadata.markSynced();
+    }
+
+    public static String getScript(String keyspace, Session session, Class<?> clazz) {
+        StringBuilder sb = new StringBuilder();
+        EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
+
+        List<RegularStatement> statements = buildSyncStatements(keyspace, session, entityMetadata);
+        
+        for (RegularStatement stmt: statements) {
+            sb.append(stmt.getQueryString());
+            sb.append("\n");
+        }
+        
+        return sb.toString();
     }
     
     public static void sync(String keyspace, Session session, Class<?>[] classes) {
@@ -118,7 +120,23 @@ public final class SchemaSync {
     	return statements;
 	}
     
-
+    private static List<RegularStatement> buildSyncStatements(String keyspace, Session session, EntityTypeMetadata entityMetadata) {
+        String table = entityMetadata.getTableName();
+        
+        session.execute("USE "+keyspace);
+        Cluster cluster = session.getCluster();
+        KeyspaceMetadata keyspaceMetadata = cluster.getMetadata().getKeyspace(keyspace);
+        TableMetadata tableMetadata = keyspaceMetadata.getTable(table);
+        
+        List<RegularStatement> statements;
+        if (tableMetadata == null) {
+            statements = createTableStatements(keyspace, entityMetadata);
+        } else {
+            statements = alterTableStatements(keyspace, session, entityMetadata);
+        }
+        return statements;
+    }
+    
     /**
      * Compare TableMetadata against Entity metadata and generate alter statements if necessary.
      * <p>
