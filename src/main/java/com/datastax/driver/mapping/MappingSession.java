@@ -58,6 +58,10 @@ public class MappingSession {
     protected String              keyspace;
     protected boolean             doNotSync;
 
+    public MappingSession() {
+        super();
+    }
+    
     /**
      * Constructor
      * 
@@ -676,5 +680,21 @@ public class MappingSession {
         if (!entityMetadata.isSynced()) {
             SchemaSync.sync(keyspace, session, clazz);
         }
+    }
+
+    public Session getSession() {
+        return session;
+    }
+
+    public void setSession(Session session) {
+        this.session = session;
+    }
+
+    public String getKeyspace() {
+        return keyspace;
+    }
+
+    public void setKeyspace(String keyspace) {
+        this.keyspace = keyspace;
     }
 }
