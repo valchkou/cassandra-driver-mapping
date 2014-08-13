@@ -1,14 +1,13 @@
 cassandra-driver-mapping
 ========================
   
-Entity Mapping Add-on for the DataStax Java Driver (Driver) for Cassandra (C*).  
+Entity Mapping Add-on for the [DataStax Java Driver (Driver)](http://www.datastax.com/documentation/developer/java-driver/2.0/java-driver/whatsNew2.html) for [Cassandra (C*)](http://www.datastax.com/documentation/cassandra/2.0/cassandra/gettingStartedCassandraIntro.html).  
 This Add-on allows you to generate schema automatically and persist JPA annotated entities in C*.
 
 Add-on is not replacement for the Driver but lightweight utility for it.  
 You still can utilize full power of the Driver API and Datastax documentation.     
-Mapping Add-on relies on Driver version 2.XXX and JPA 2.1.    
-
-Read more about [Datastax Java Driver, Cassandra and CQL3](http://www.datastax.com/documentation/gettingstarted/index.html).
+Mapping Add-on relies on JPA 2.1 and [Driver 2.x](http://www.datastax.com/documentation/developer/java-driver/2.0/java-driver/whatsNew2.html).
+It means support for C* 2,  Binary Protocol and [CQL3](http://www.datastax.com/documentation/cql/3.1/cql/cql_reference/cqlReferenceTOC.html). 
 
 [More Usage Samples in Unit Tests]
 (https://github.com/valchkou/cassandra-driver-mapping/blob/master/src/test/java/com/datastax/driver/mapping/)
