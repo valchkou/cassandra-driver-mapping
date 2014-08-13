@@ -18,6 +18,7 @@ It means support for Cassandra 2,  Binary Protocol and [CQL3](http://www.datasta
 	* [Maven Dependency](#jump_maven)
 	* [Init Mapping Session](#jump_init)
 	* [Save, Get, Delete](#jump_save)
+- [Spring Framework Example](https://github.com/valchkou/SpringFrameworkCassandraSample)
 - [Mapping Session API](#api)
 	* [Write](#write)  
 		- [Write API](#write)
@@ -48,7 +49,6 @@ It means support for Cassandra 2,  Binary Protocol and [CQL3](http://www.datasta
 	* [Prepared Statement Cache](#pscache)  
 	* [How Entity get synchronized](#sync)  
 	* [Entity Metadata and Data Types](#metadata)  
-- [Spring Framework Example](https://github.com/valchkou/SpringFrameworkCassandraSample)  
 
 <a name="features"/>
 ### Features
