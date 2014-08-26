@@ -12,13 +12,15 @@ It means support for Cassandra 2,  Binary Protocol and [CQL3](http://www.datasta
 [More Usage Samples in Unit Tests]
 (https://github.com/valchkou/cassandra-driver-mapping/blob/master/src/test/java/com/datastax/driver/mapping/)
 
+[Spring Framework Example]
+(https://github.com/valchkou/SpringFrameworkCassandraSample)
+
 ### Table of Contents  
 - [Features](#features)  
 - [Jump Start](#start)
 	* [Maven Dependency](#jump_maven)
 	* [Init Mapping Session](#jump_init)
 	* [Save, Get, Delete](#jump_save)
-	* [Spring Framework Example](https://github.com/valchkou/SpringFrameworkCassandraSample)
 - [Mapping Session API](#api)
 	* [Write](#write)  
 		- [Write API](#write)
