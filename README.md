@@ -978,6 +978,20 @@ it will run SchemaSync.sync. You can use sync API directly as:
 	SchemaSync.drop(keyspace, session, Entity.class);
 ```
 
+```java
+// get CQL script which will be generated and run
+import com.datastax.driver.mapping.schemasync.SchemaSync;
+...
+String script = SchemaSync.getScript(keyspace_name, datastax_session,  Entity.class);
+```
+
+```java
+// get CQL script which will be generated and run
+import com.datastax.driver.mapping.schemasync.SchemaSync;
+...
+String script = SchemaSync.getScript(keyspace_name, datastax_session,  Entity.class);
+```
+
 You don't need to use this API unless you have reasons.   
 Such as unittests or if you want to gain few milliseconds on the first use  
 you may want to invoke the synchronization on the application start up instead. 
@@ -990,6 +1004,7 @@ Not Alterable
    - add/delete/rename primary key columns. (C* restriction)  
    - change column data type to incompatible one, such as string to number. (C* restriction)  
    - change property name which is not annotated as @Column. This will be understood as a new property. 
+   - Table Properties (@TableProperties). There is no consistent way to compare with existing properties.
    	
 Alterable
    - add new property.
