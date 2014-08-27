@@ -1032,7 +1032,7 @@ Entity Metadata can be easily accessed anywhere in your code as:
 	List<EntityFieldMetaData> fields = emeta.getFields();
 ```	
 Datastax driver has mapping of datastax types to java. But not all types are mapped as 1-to-1.  
-[CQL3 data types to Java types](http://www.datastax.com/documentation/developer/java-driver/1.0/webhelp/index.html#java-driver/reference/javaClass2Cql3Datatypes_r.html)  
+[CQL3 data types to Java types](http://www.datastax.com/documentation/developer/java-driver/2.1/java-driver/reference/javaClass2Cql3Datatypes_r.html)  
 In order the mapping to work the module defines backward mapping for the types.  
 
 Java type | CQL3 data type
