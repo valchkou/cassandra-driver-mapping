@@ -58,10 +58,8 @@ It means support for Cassandra 2,  Binary Protocol and [CQL3](http://www.datasta
 The features provided by the module include:
 
 - Object Mapper
-  	* Get entity from Cassandra.
-  	* Save entity to Cassandra.     (Synchronous and Asynchronous).
+  	* Get, Save, Delete entity.     (Synchronous and Asynchronous).
   	* Update individual value.      (Synchronous and Asynchronous).
-	* Delete entity from Cassandra. (Synchronous and Asynchronous).
 	* Batch Save/Delete.            (Synchronous and Asynchronous).
 	* Run and Map custom Queries and ResultSets.
 	* Versioning and Optimistic Concurrency control.
