@@ -339,7 +339,7 @@ public class EntityTypeParser {
 	/** check if the method is getter method for the property*/
 	private static boolean isGetterFor(Method method, String property) {
 		String name = method.getName().toLowerCase();
-		if(!(name.startsWith("get"+property.toLowerCase()) || name.startsWith("is"+property.toLowerCase()))) return false;
+		if(!(name.equals("get"+property.toLowerCase()) || name.equals("is"+property.toLowerCase()))) return false;
 		if(method.getParameterTypes().length != 0)   return false;  
 		if(void.class.equals(method.getReturnType())) return false;
 		return true;
@@ -347,9 +347,8 @@ public class EntityTypeParser {
 
 	/** check if the method is setter method for the property*/
 	private static boolean isSetterFor(Method method, String property) {
-		 if(!method.getName().toLowerCase().startsWith("set"+property.toLowerCase())) return false;
+		 if(!method.getName().toLowerCase().equals("set"+property.toLowerCase())) return false;
 		 if(method.getParameterTypes().length != 1)   return false;  
-//		 if(!void.class.equals(method.getReturnType())) return false;
 		 return true;
 	}
 	
