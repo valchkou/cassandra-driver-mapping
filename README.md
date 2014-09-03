@@ -85,7 +85,7 @@ Install in your application from Maven Central using the following dependency:
     <dependency>
       <groupId>com.valchkou.datastax</groupId>
       <artifactId>cassandra-driver-mapping</artifactId>
-      <version>2.1.0-rc1</version>
+      <version>2.1.0</version>
     </dependency>
 ```
 All new changes and bugfixes are released within the latest version as soon as coded.
