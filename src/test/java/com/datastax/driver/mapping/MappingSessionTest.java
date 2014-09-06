@@ -15,58 +15,20 @@
  */
 package com.datastax.driver.mapping;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.UUID;
-
-import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
-
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.*;
 import com.datastax.driver.core.policies.DefaultRetryPolicy;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.mapping.EntityTypeParser;
-import com.datastax.driver.mapping.MappingSession;
-import com.datastax.driver.mapping.entity.Any;
-import com.datastax.driver.mapping.entity.CompositeKey;
-import com.datastax.driver.mapping.entity.EntityMixedCase;
-import com.datastax.driver.mapping.entity.EntityWithCollections;
-import com.datastax.driver.mapping.entity.EntityWithCollectionsOverride;
-import com.datastax.driver.mapping.entity.EntityWithCompositeKey;
-import com.datastax.driver.mapping.entity.EntityWithEnum;
-import com.datastax.driver.mapping.entity.EntityWithIndexes;
-import com.datastax.driver.mapping.entity.EntityWithKey;
-import com.datastax.driver.mapping.entity.EntityWithTtl;
-import com.datastax.driver.mapping.entity.EntityWithVersion;
-import com.datastax.driver.mapping.entity.Month;
-import com.datastax.driver.mapping.entity.Simple;
-import com.datastax.driver.mapping.entity.SimpleKey;
+import com.datastax.driver.mapping.entity.*;
 import com.datastax.driver.mapping.meta.EntityFieldMetaData;
 import com.datastax.driver.mapping.meta.EntityTypeMetadata;
 import com.datastax.driver.mapping.option.WriteOptions;
+import org.junit.*;
+
+import java.math.BigDecimal;
+import java.util.*;
+
+import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
+import static org.junit.Assert.*;
 
 public class MappingSessionTest {
 
@@ -862,5 +824,21 @@ public class MappingSessionTest {
 		assertEquals(obj.getName(),a.getName());
 		
 		target.delete(obj);
-	}	
+	}
+
+    @Test
+    public void ableToGetCounterField() throws Exception {
+        // setup
+        target.maybeSync(EntityWithCounter.class);
+        String query = "UPDATE EntityWithCounter SET counterValue = counterValue + 1 WHERE source = 'testSource'";
+        session.execute(query);
+        session.execute(query);
+
+        // call sut
+        EntityWithCounter entityWithCounter = target.get(EntityWithCounter.class, "testSource");
+
+        // check results
+        assertEquals("testSource", entityWithCounter.getSource());
+        assertEquals(2, entityWithCounter.getCounterValue());
+    }
 }
