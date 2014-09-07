@@ -409,7 +409,7 @@ public class MappingBuilder {
 				value = row.getInt(field.getColumnName());
 				break;
 			case COUNTER:
-				value = row.getInt(field.getColumnName());
+				value = row.getLong(field.getColumnName());
 				break;				
 			case DOUBLE:
 				value = row.getDouble(field.getColumnName());
