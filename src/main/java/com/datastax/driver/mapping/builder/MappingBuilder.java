@@ -78,7 +78,7 @@ public class MappingBuilder {
 	public static PreparedStatement getOrPrepareStatement(final Session session, final BuiltStatement stmt, final String key) {
 		PreparedStatement ps = null;
 		try {
-			ps = statementCache.get(key, new Callable<PreparedStatement>() {
+			ps = statementCache.get(getCacheKey(key, session), new Callable<PreparedStatement>() {
 				@Override
 				public PreparedStatement call() throws Exception {
 					return session.prepare(stmt);
@@ -308,7 +308,7 @@ public class MappingBuilder {
 		// get prepared statement
 		PreparedStatement ps = null;
 		try {
-			ps = statementCache.get(table, new Callable<PreparedStatement>() {
+			ps = statementCache.get(getCacheKey(table, session), new Callable<PreparedStatement>() {
 				@Override
 				public PreparedStatement call() throws Exception {
 					Select stmt = buildSelectAll(table, pkCols, options, keyspace);
@@ -645,4 +645,13 @@ public class MappingBuilder {
 		return prepareUpdate(id, emeta, update, session);
 	}	
 
+	/**
+	 * Append default keyspace in necessary to the table name 
+	 */
+	private static String getCacheKey(final String key, final Session session) {
+        if (key.contains(".")) {
+            return key;
+        }
+        return session.getLoggedKeyspace()+"."+key;
+	}
 }
