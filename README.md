@@ -6,8 +6,7 @@ This Add-on allows you to generate schema automatically and persist JPA annotate
 
 Add-on is not replacement for the Driver but lightweight utility for it.  
 You still can utilize full power of the Driver API and Datastax documentation.     
-Mapping Add-on relies on JPA 2.1 and [Driver 2.1.0](http://www.datastax.com/documentation/developer/java-driver/2.1/common/drivers/introduction/introArchOverview_c.html).  
-It means support for Cassandra 2,  Binary Protocol and [CQL3](http://www.datastax.com/documentation/cql/3.1/cql/cql_reference/cqlReferenceTOC.html). 
+Mapping Add-on relies on JPA 2.1 and [Driver 2.1.0](http://www.datastax.com/documentation/developer/java-driver/2.1/common/drivers/introduction/introArchOverview_c.html)(which means support for Cassandra 2,  Binary Protocol and [CQL3](http://www.datastax.com/documentation/cql/3.1/cql/cql_reference/cqlReferenceTOC.html).) 
 
 [More Usage Samples in Unit Tests]
 (https://github.com/valchkou/cassandra-driver-mapping/blob/master/src/test/java/com/datastax/driver/mapping/)
