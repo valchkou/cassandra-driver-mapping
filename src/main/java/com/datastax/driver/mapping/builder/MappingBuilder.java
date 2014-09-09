@@ -646,7 +646,7 @@ public class MappingBuilder {
 	}	
 
 	/**
-	 * Append default keyspace in necessary to the table name 
+	 * Append default keyspace if necessary to the table name 
 	 */
 	private static String getCacheKey(final String key, final Session session) {
         if (key.contains(".")) {
