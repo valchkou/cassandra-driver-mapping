@@ -39,7 +39,7 @@ public final class SchemaSync {
     public static synchronized void sync(String keyspace, Session session, Class<?> clazz) {
     	
     	EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
-    	if (entityMetadata.isSynced()) return;
+    	if (entityMetadata.isSynced(keyspace)) return;
 
     	List<RegularStatement> statements = buildSyncStatements(keyspace, session, entityMetadata);
     	
@@ -47,7 +47,7 @@ public final class SchemaSync {
     		session.execute(stmt);
     	}
     	
-    	entityMetadata.markSynced();
+    	entityMetadata.markSynced(keyspace);
     }
 
     public static String getScript(String keyspace, Session session, Class<?> clazz) {
@@ -78,7 +78,7 @@ public final class SchemaSync {
     
     public static synchronized void drop(String keyspace, Session session, Class<?> clazz) {
     	EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
-    	entityMetadata.markUnSynced();
+    	entityMetadata.markUnSynced(keyspace);
     	String table = entityMetadata.getTableName();
     	
     	Cluster cluster = session.getCluster();

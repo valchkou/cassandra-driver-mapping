@@ -677,7 +677,7 @@ public class MappingSession {
             return; // forced to skip sync
 
         EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
-        if (!entityMetadata.isSynced()) {
+        if (!entityMetadata.isSynced(keyspace)) {
             SchemaSync.sync(keyspace, session, clazz);
         }
     }

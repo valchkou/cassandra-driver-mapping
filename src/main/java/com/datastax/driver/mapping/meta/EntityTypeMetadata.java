@@ -40,8 +40,8 @@ public class EntityTypeMetadata {
 	private List<String> properties = new ArrayList<String>();
 	// default time to leave
 	private int ttl = -100;
-	// true if synchronized with Cassandrass
-	private boolean synced = false;
+	// true if synchronized with Cassandra
+	private List<String> syncedKeyspaces = new ArrayList<String>();
 
 	public EntityTypeMetadata(Class<?> entityClass) {
 		this(entityClass, entityClass.getSimpleName());
@@ -100,16 +100,16 @@ public class EntityTypeMetadata {
 		indexes.put(column.toLowerCase(), name.toLowerCase());
 	}
 	
-	public boolean isSynced() {
-		return synced;
+	public boolean isSynced(String keyspace) {
+		return syncedKeyspaces.contains(keyspace);
 	}
 
-	public void markSynced() {
-		this.synced = true;
+	public void markSynced(String keyspace) {
+		syncedKeyspaces.add(keyspace);
 	}
 
-	public void markUnSynced() {
-		this.synced = false;
+	public void markUnSynced(String keyspace) {
+	    syncedKeyspaces.remove(keyspace);
 	}
 
 	public PrimaryKeyMetadata getPrimaryKeyMetadata() {

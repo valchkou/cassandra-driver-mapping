@@ -121,7 +121,7 @@ public class SchemaSyncTest {
 	
 	@Test
 	public void testCreate() {
-		EntityTypeParser.getEntityMetadata(EntityWithIndexes.class).markUnSynced();
+		EntityTypeParser.getEntityMetadata(EntityWithIndexes.class).markUnSynced(keyspace);
 		SchemaSync.sync(keyspace, session, EntityWithIndexes.class);
 		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(EntityWithIndexes.class);
 		TableMetadata tableMetadata = cluster.getMetadata().getKeyspace(keyspace).getTable(entityMetadata.getTableName());
@@ -149,7 +149,7 @@ public class SchemaSyncTest {
 	
 	@Test
 	public void testCreateWithCompositeKey() {
-		EntityTypeParser.getEntityMetadata(EntityWithCompositeKey.class).markUnSynced();
+		EntityTypeParser.getEntityMetadata(EntityWithCompositeKey.class).markUnSynced(keyspace);
 		SchemaSync.sync(keyspace, session, EntityWithCompositeKey.class);
 		
 		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(EntityWithCompositeKey.class);
@@ -182,7 +182,7 @@ public class SchemaSyncTest {
 	
 	@Test
 	public void testCreateWithProperties() {
-		EntityTypeParser.getEntityMetadata(EntityWithProperties.class).markUnSynced();
+		EntityTypeParser.getEntityMetadata(EntityWithProperties.class).markUnSynced(keyspace);
 		SchemaSync.sync(keyspace, session, EntityWithProperties.class);
 	}
 	
