@@ -2,7 +2,11 @@ cassandra-driver-mapping
 ========================
   
 Entity Mapper Add-on for the [DataStax Java Driver (Driver)](http://www.datastax.com/documentation/developer/java-driver/2.0/java-driver/whatsNew2.html) for [Cassandra (C*)](http://www.datastax.com/documentation/cassandra/2.0/cassandra/gettingStartedCassandraIntro.html).  
-This Add-on allows you to generate schema automatically and persist JPA annotated entities in C*.
+This Add-on allows you to synchronize schema automatically and persist JPA annotated entities in C*.
+
+No mapping files, no scripts, no configuration files.  
+No need to create Tables and Indexes for your Entity manually.  
+Entity definition will be automatically [synchronized with C*](#sync) .
 
 Add-on is not replacement for the Driver but lightweight Object Mapper on top of it.  
 You still can utilize full power of the Driver API and Datastax documentation.     
@@ -69,10 +73,6 @@ The features provided by the module include:
   	* Automatically Alter table and indexes if entity definition has changed.
   	* Drop table.
   	* Generate Script.
-
-No mapping files, no scripts, no configuration files.   
-You don't have to worry about creating the Table and Indexes for your Entity manually.  
-All is built-in and taken care of. Entity definition will be automatically [synchronized with C*](#sync).  
 
 <a name="start"/>
 ### Jump Start
