@@ -1082,12 +1082,12 @@ Or override individual type:
 <a name="map2map"/>
 ### My Mapper vs Datastax Mapper
 
-First of all I have no intent to compete with datastax and I will not.   
-I would prefer the Datatstax had all the features and support them at their cost.
+First of all I have no intent to compete with Datastax and I will not.   
+I would prefer the Datatstax had all the features and support them at its own cost.
 
-I was waiting for datastax to release their mapper for 6 month in hope to start using theirs instead of mine.  
-But the mapper Datastax released appeared to be very basic and does not cover good number of features use cases I need for my own. I continue use and support mine.  
-So what is common and what is not between Mine and Datastax mappers.
+I was waiting for datastax to release their mapper for few month in hope to start using theirs instead of mine.
+When it was released I realized it's does not cover good number of features and use cases I need for my own.   
+I continue use and support mine.  So what is common and what is not between Mine and Datastax mappers.
 
 #### Common:
 
