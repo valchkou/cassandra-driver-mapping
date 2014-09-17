@@ -41,11 +41,17 @@ public class CreateTable extends RegularStatement {
 	
 		StringBuilder columns = new StringBuilder();
 		for (EntityFieldMetaData fd: entityMetadata.getFields()) {
+		    columns.append(fd.getColumnName());
+		    columns.append(" ");
 			if (fd.isGenericType()) {
-				columns.append(fd.getColumnName()+" "+fd.getGenericDef()+", ");
+				columns.append(fd.getGenericDef());
 			} else {
-				columns.append(fd.getColumnName()+" "+fd.getDataType().toString()+", ");
-			}	
+				columns.append(fd.getDataType().toString());
+			} 	
+			if (fd.isStatic()) {
+			    columns.append(" static");
+			}
+			columns.append(", ");
 		}
 
 		String pk = entityMetadata.getPkDefinition();

@@ -35,6 +35,7 @@ import javax.persistence.Version;
 
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.mapping.annotation.CollectionType;
+import com.datastax.driver.mapping.annotation.Static;
 import com.datastax.driver.mapping.annotation.TableProperties;
 import com.datastax.driver.mapping.annotation.TableProperty;
 import com.datastax.driver.mapping.annotation.Ttl;
@@ -222,6 +223,10 @@ public class EntityTypeParser {
 					    }
 					    
 				    	setCollections(f, fd);
+				    	
+				    	if (f.getAnnotation(Static.class) != null) {
+				    	    fd.setStatic(true);
+				    	}
 				    	result.addField(fd);					    	
 						break; // exit inner loop on filed's methods and go to the next field
 					}

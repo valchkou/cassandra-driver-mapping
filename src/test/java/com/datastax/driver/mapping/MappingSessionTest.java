@@ -841,4 +841,35 @@ public class MappingSessionTest {
         assertEquals("testSource", entityWithCounter.getSource());
         assertEquals(2, entityWithCounter.getCounterValue());
     }
+    
+    @Test
+    public void entityWithStaticTest() throws Exception {
+        target.maybeSync(EntityWithStaticField.class);
+        
+        ClusteringKey k1 = new ClusteringKey();
+        k1.setUser("test");
+        k1.setExpense_id(1);
+        EntityWithStaticField e1 = new EntityWithStaticField();
+        e1.setKey(k1);
+        e1.setBalance(100);
+        e1.setPaid(false);
+        target.save(e1);
+
+        ClusteringKey k2 = new ClusteringKey();
+        k2.setUser("test");
+        k2.setExpense_id(2);
+        EntityWithStaticField e2 = new EntityWithStaticField();
+        e2.setKey(k2);
+        e2.setBalance(0);
+        e2.setPaid(true);
+        target.save(e2); 
+        
+        e1 = target.get(EntityWithStaticField.class, k1);
+        e2 = target.get(EntityWithStaticField.class, k2);
+        
+        assertEquals(0, e1.getBalance());
+        assertEquals(e1.getBalance(), e2.getBalance());
+        assertNotSame(e1.getPaid(), e2.getPaid());
+    }
+
 }

@@ -37,6 +37,7 @@ public class EntityFieldMetaData {
 	private String columnName;
 	private boolean isPrimary;
 	private boolean isPartition;
+	private boolean isStatic;
 	
 	public EntityFieldMetaData(Field field, DataType.Name dataType, Method getter, Method setter, String columnName) {
 		this.field = field;
@@ -152,5 +153,13 @@ public class EntityFieldMetaData {
 	
 	public boolean hasCollectionType() {
 		return collectionType != null;
-	}	
+	}
+
+    public boolean isStatic() {
+        return isStatic;
+    }
+
+    public void setStatic(boolean isStatic) {
+        this.isStatic = isStatic;
+    }	
 }
