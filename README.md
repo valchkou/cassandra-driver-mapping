@@ -2,11 +2,22 @@ cassandra-driver-mapping
 ========================
   
 Entity Mapper Add-on for the [DataStax Java Driver (Driver)](http://www.datastax.com/documentation/developer/java-driver/2.0/java-driver/whatsNew2.html) for [Cassandra (C*)](http://www.datastax.com/documentation/cassandra/2.0/cassandra/gettingStartedCassandraIntro.html).  
-This Add-on allows you to generate schema automatically and persist JPA annotated entities in C*.
+This Add-on allows you to synchronize schema automatically and persist JPA annotated entities in C*.
+
+No mapping files, no scripts, no configuration files.  
+No need to create Tables and Indexes for your Entity manually.  
+Entity definition will be automatically [synchronized with C*](#sync) .
 
 Add-on is not replacement for the Driver but lightweight Object Mapper on top of it.  
 You still can utilize full power of the Driver API and Datastax documentation.     
 Mapping Add-on relies on JPA 2.1 and [Driver 2.1.0](http://www.datastax.com/documentation/developer/java-driver/2.1/common/drivers/introduction/introArchOverview_c.html) (which means support for Cassandra 2,  Binary Protocol and [CQL3](http://www.datastax.com/documentation/cql/3.1/cql/cql_reference/cqlReferenceTOC.html)) 
+
+	IMPORTANT!!!
+Starting ver 2.1.0 Datastax released simple [Object Mapping API.](http://www.datastax.com/documentation/developer/java-driver/2.1/java-driver/reference/objectMappingApi.html)  
+If you are curious which one to start with you must read [My Mapper vs Datastax Mapper](#map2map).  
+If after reading you still don’t have opinion which one to go with you better stick to Datastax Mapper.  
+And if you feel the pain using it please come back and try out mine.
+
 
 [More Usage Samples in Unit Tests]
 (https://github.com/valchkou/cassandra-driver-mapping/blob/master/src/test/java/com/datastax/driver/mapping/)
@@ -50,6 +61,7 @@ Mapping Add-on relies on JPA 2.1 and [Driver 2.1.0](http://www.datastax.com/docu
 	* [Prepared Statement Cache](#pscache)  
 	* [How Entity get synchronized](#sync)  
 	* [Entity Metadata and Data Types](#metadata)  
+- [My Mapper vs Datastax Mapper](#map2map)
 
 <a name="features"/>
 ### Features
@@ -69,10 +81,6 @@ The features provided by the module include:
   	* Automatically Alter table and indexes if entity definition has changed.
   	* Drop table.
   	* Generate Script.
-
-No mapping files, no scripts, no configuration files.   
-You don't have to worry about creating the Table and Indexes for your Entity manually.  
-All is built-in and taken care of. Entity definition will be automatically [synchronized with C*](#sync).  
 
 <a name="start"/>
 ### Jump Start
@@ -1070,3 +1078,115 @@ Or override individual type:
 	...
 	EntityTypeParser.overrideDataTypeMapping(javaClass, DataType.Name)
 ```
+
+<a name="map2map"/>
+### My Mapper vs Datastax Mapper
+
+First of all I have no intent to compete with Datastax and I will not.   
+I would prefer the Datatstax had all the features and support them at its own cost.
+
+I was waiting for datastax to release their mapper for few month in hope to start using theirs instead of mine.
+When it was released I realized it's does not cover good number of features and use cases I need for my own.   
+I continue use and support mine.  So what is common and what is not between Mine and Datastax mappers.
+
+#### Common:
+
+##### Same concept of instantiating mapping proxy:  
+create datastax session and pass it into the mapper instance.
+
+
+##### Available on maven central.  
+Their Maven artifact magically matches mine. But be aware it’s not the same!  
+GroupId is different, Be sure you use correct one.
+```
+MINE:
+<dependency>
+    <groupId>com.valchkou.datastax</groupId>
+    <artifactId>cassandra-driver-mapping</artifactId>
+    <version>2.1.0</version>
+</dependency>
+```
+```
+DATASTAX:
+<dependency>
+    <groupId>com.datastax.cassandra</groupId>
+    <artifactId>cassandra-driver-mapping</artifactId>
+    <version>2.1.0</version>
+</dependency>
+```
+
+##### Both Baked on Datastax Java Driver.   
+Underlying conversation mechanisms with Cassandra are the same.
+
+##### Annotation driven:  
+Both annotation driven and do not require configuration or mapping files.
+
+
+#### Different:
+
+
+##### Datastax [documentation on their Mapper](http://www.datastax.com/documentation/developer/java-driver/2.1/java-driver/reference/objectMappingApi.html) sucks.
+
+
+##### Mapper Instance
+Datastax mapper needs to be instantiated for each entity. If you have 20 entities you will create 20 mappers.
+```
+Mapper<Account> mapper = new MappingManager(session).mapper(Account.class);
+```
+
+My mapper is not bound to an entity. You can have just one or 20 – it’s up to you.
+```
+MappingSession mapper = new MappingSession("keyspace_name", session);
+```
+
+##### Annotations
+Datastax  mapper does not use JPA annotations. All are datastax custom annotations.  
+
+My mapper goes with JPA standard as far as it’s possible. And only if there is no JPA alternative I introduce custom one.
+
+##### Composite Primary Key
+Datastax PK fields are all declared within entity class:
+```
+@Table(keyspace = "ks", name = "test_table")
+public static class TestTable {
+	@PartitionKey(0)
+	private int pk1;
+
+	@PartitionKey(1)
+	private int pk2;
+
+	@ClusteringColumn(0)
+	private int cc1;
+
+	@ClusteringColumn(1)
+	private int cc2;
+}
+```
+My mapper PK is more of JPA/Hibernate style with @Id and @EmbeddedId. [Sample here](#mapping_partition)
+
+##### Support for [collection operations](http://www.datastax.com/documentation/cql/3.1/cql/cql_using/use_collections_c.html)
+This feature is provided by Java Driver, CQL3 and Cassandra. But not by Datastax Mapper.
+
+Supported by My Mapper: [Samples here](#write_col)
+
+##### Optimistic concurrency 
+Datstax mapper does not support optimistic concurrency.  
+My module supports it with [@Version annotation](#lock)
+
+##### Custom Queries.
+Datastax proposes [Accessor](http://www.datastax.com/documentation/developer/java-driver/2.1/common/drivers/reference/accessorAnnotatedInterfaces.html) class which will hold all the custom queries for the given Entity.  
+
+My mapper can eat your custom Queries and ResultSets and convert them into entities with no extra wrappers and handlers.
+[Sample here](#queries_mapping)
+
+##### Any-to-Any mapping
+This feature is not exists in Datastax Mapper.
+Basically you can map any ResultSet from [any table on any Entity with My Mapper](#queries_gnomes).
+
+##### Schema Synchronizer
+This feature is missing in datastax mapper.  
+You will have to manually create tables, indexes and manually alter schema if any changed down the road.
+I am surprised Datastax missed it. This is MUST-HAVE feature for modern ORM.
+
+Frankly speaking auto synch is mainly why I started this project. I got sick of preparing and running scripts whenever I was adding property or entity. I came up with SchemaSync and the next logical step was the mapper. I applied my best efforts to make it simple and straightforward. Finally I am glad I shared my project so people start using it, reporting bugs and requesting new features. 
+
