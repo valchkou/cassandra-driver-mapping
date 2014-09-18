@@ -53,6 +53,7 @@ And if you feel the pain using it please come back and try out mine.
 	* [Mixed Case for Column Names](#mapping_mixed)
 	* [Collections](#mapping_collections)
 	* [TTL](#mapping_ttl)
+	* [Static columns](#mapping_static)
 - [Optimistic Lock](#lock)
 	* [Lightweight transactions](#lock_transactions)
 	* [@Version](#lock_version)
@@ -829,6 +830,41 @@ You can override default TTL at at time when you save entity as:
 ```java
 mappingSession.save(entity, new WriteOptions().setTtl(600)); // expires in 10 minutes
 ```
+
+<a name="mapping_static"/>
+#### Static columns
+[what is it?](http://www.datastax.com/dev/blog/cql-in-2-0-6)
+
+```java
+import com.datastax.driver.mapping.annotation.Static;
+...
+
+@Table (name="mytable")
+public class Entity {
+    @EmbeddedId
+    private ClusteringKey key;
+    
+    @Static
+    private long balance;
+    ...
+}
+```
+```java
+import com.datastax.driver.mapping.annotation.Static;
+...
+
+public class ClusteringKey {
+    
+    private String user;
+    private int expense_id; 
+    ...
+}
+```
+
+CQL3 Statement
+```
+   CREATE TABLE IF NOT EXISTS ks.mytable (user text, expense_id int, balance bigint static,  PRIMARY KEY(user, expense_id))
+``` 
 
 <a name="lock"/>
 ### Optimistic Lock
