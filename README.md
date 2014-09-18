@@ -10,7 +10,7 @@ Entity definition will be automatically [synchronized with C*](#sync) .
 
 Add-on is not replacement for the Driver but lightweight Object Mapper on top of it.  
 You still can utilize full power of the Driver API and Datastax documentation.     
-Mapping Add-on relies on JPA 2.1 and [Driver 2.1.0](http://www.datastax.com/documentation/developer/java-driver/2.1/common/drivers/introduction/introArchOverview_c.html) (which means support for Cassandra 2,  Binary Protocol and [CQL3](http://www.datastax.com/documentation/cql/3.1/cql/cql_reference/cqlReferenceTOC.html)) 
+Mapping Add-on relies on JPA 2.1 and [Driver 2.1](http://www.datastax.com/documentation/developer/java-driver/2.1/common/drivers/introduction/introArchOverview_c.html) (which means support for Cassandra 2,  Binary Protocol and [CQL3](http://www.datastax.com/documentation/cql/3.1/cql/cql_reference/cqlReferenceTOC.html)) 
 
 	IMPORTANT!!!
 Starting ver 2.1.0 Datastax released simple [Object Mapping API.](http://www.datastax.com/documentation/developer/java-driver/2.1/java-driver/reference/objectMappingApi.html)  
@@ -92,7 +92,7 @@ Install in your application from Maven Central using the following dependency:
     <dependency>
       <groupId>com.valchkou.datastax</groupId>
       <artifactId>cassandra-driver-mapping</artifactId>
-      <version>2.1.0</version>
+      <version>2.1.1</version>
     </dependency>
 ```
 All new changes and bugfixes are released within the latest version as soon as coded.
@@ -1103,7 +1103,6 @@ MINE:
 <dependency>
     <groupId>com.valchkou.datastax</groupId>
     <artifactId>cassandra-driver-mapping</artifactId>
-    <version>2.1.0</version>
 </dependency>
 ```
 ```
@@ -1111,7 +1110,6 @@ DATASTAX:
 <dependency>
     <groupId>com.datastax.cassandra</groupId>
     <artifactId>cassandra-driver-mapping</artifactId>
-    <version>2.1.0</version>
 </dependency>
 ```
 
