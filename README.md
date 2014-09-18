@@ -850,11 +850,7 @@ public class Entity {
 }
 ```
 ```java
-import com.datastax.driver.mapping.annotation.Static;
-...
-
 public class ClusteringKey {
-    
     private String user;
     private int expense_id; 
     ...
@@ -865,6 +861,7 @@ CQL3 Statement
 ```
    CREATE TABLE IF NOT EXISTS ks.mytable (user text, expense_id int, balance bigint static,  PRIMARY KEY(user, expense_id))
 ``` 
+
 
 <a name="lock"/>
 ### Optimistic Lock
