@@ -813,6 +813,8 @@ public class MappingSessionTest {
 		obj.setName("myName");
 		obj.setAge(55);
 		obj.setId(uuid);
+		obj.setRandom(20);
+		obj.setVersion(1);
 		
 		target.save(obj);
 		

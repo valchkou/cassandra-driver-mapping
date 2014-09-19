@@ -6,6 +6,7 @@ public class Any {
 	private String name;
 	private Date timestamp;
 	private int age;
+	private String rundom;
 	
 	public String getName() {
 		return name;
@@ -25,5 +26,11 @@ public class Any {
 	public void setAge(int age) {
 		this.age = age;
 	}
+    public String getRundom() {
+        return rundom;
+    }
+    public void setRundom(String rundom) {
+        this.rundom = rundom;
+    }
 
 }

@@ -460,7 +460,7 @@ public class MappingBuilder {
 				break;
 			}
 		} catch (Exception ex) {
-			log.info(ex.toString());
+			// swallow any mapping discrepancies. 
 		}
 		return value;
 	}
