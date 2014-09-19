@@ -58,7 +58,7 @@ public class EntityTypeParserTest {
 		EntityTypeMetadata meta = EntityTypeParser.getEntityMetadata(Simple.class);
 		assertEquals("Simple", meta.getTableName());
 		assertEquals(0, meta.getIndexes().size());
-		assertEquals(5, meta.getFields().size());
+		assertEquals(6, meta.getFields().size());
 		
 		PrimaryKeyMetadata pkm = meta.getPrimaryKeyMetadata();
 		assertNotNull(pkm);
