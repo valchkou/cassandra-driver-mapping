@@ -86,11 +86,12 @@ public final class SchemaSync {
     	TableMetadata tableMetadata = keyspaceMetadata.getTable(table);
     	
     	if (tableMetadata != null) {
-    		
+    	    session.execute("USE "+keyspace);
+    	    
     		// drop indexes
     		for (ColumnMetadata columnMetadata: tableMetadata.getColumns()) {
     			if (columnMetadata.getIndex() != null) {
-    				session.execute(new DropIndex(columnMetadata.getName(), columnMetadata.getIndex().getName()));
+    				session.execute(new DropIndex(keyspace, columnMetadata.getIndex().getName()));
     			}
     		}
     		
