@@ -86,8 +86,9 @@ public class EntityFieldMetaData {
 			if (field.getType().isEnum()) {
 				Object eval = Enum.valueOf((Class<Enum>)field.getType(), (String)value);
 				setter.invoke(entity, new Object[]{eval});
+			} else {
+			    setter.invoke(entity, new Object[]{value});
 			}
-			setter.invoke(entity, new Object[]{value});
 		} catch (Exception e) {
 			log.info("Can't set value for obj:"+entity+", method:"+setter.getName());
 		}
