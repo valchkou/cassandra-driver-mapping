@@ -106,7 +106,7 @@
     <connection>scm:git:git://github.com/valchkou/cassandra-driver-mapping.git</connection>
     <developerConnection>scm:git:git@github.com:valchkou/cassandra-driver-mapping.git</developerConnection>
     <url>https://github.com/valchkou/cassandra-driver-mapping</url>
-    <tag>cassandra-driver-mapping-2.1.1</tag>
+    <tag>cassandra-driver-mapping-2.1.2</tag>
   </scm>
 
   <developers>
