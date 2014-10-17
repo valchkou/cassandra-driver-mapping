@@ -18,6 +18,7 @@ package com.datastax.driver.mapping.schemasync;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 
+import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.mapping.meta.EntityFieldMetaData;
 import com.datastax.driver.mapping.meta.EntityTypeMetadata;
@@ -98,6 +99,12 @@ public class CreateTable extends RegularStatement {
 		// TODO Auto-generated method stub
 		return false;
 	}
+
+    @Override
+    public ByteBuffer[] getValues(ProtocolVersion arg0) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 	
 
 }

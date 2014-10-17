@@ -16,6 +16,8 @@
 package com.datastax.driver.mapping.schemasync;
 
 import java.nio.ByteBuffer;
+
+import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.RegularStatement;
 
 public class AlterTable extends RegularStatement {
@@ -108,6 +110,12 @@ public class AlterTable extends RegularStatement {
 	public boolean hasValues() {
 		// TODO Auto-generated method stub
 		return false;
-	}	
+	}
+
+    @Override
+    public ByteBuffer[] getValues(ProtocolVersion arg0) {
+        // TODO Auto-generated method stub
+        return null;
+    }	
 
 }

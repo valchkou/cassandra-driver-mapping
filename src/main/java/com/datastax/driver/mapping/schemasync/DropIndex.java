@@ -17,6 +17,7 @@ package com.datastax.driver.mapping.schemasync;
 
 import java.nio.ByteBuffer;
 
+import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.RegularStatement;
 
 public class DropIndex extends RegularStatement {
@@ -58,4 +59,10 @@ public class DropIndex extends RegularStatement {
 		// TODO Auto-generated method stub
 		return false;
 	}
+
+    @Override
+    public ByteBuffer[] getValues(ProtocolVersion arg0) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

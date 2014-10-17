@@ -15,7 +15,7 @@
  */
 package com.datastax.driver.mapping.meta;
 
-import java.lang.reflect.Field;
+import java.lang.reflect.Field; 
 import java.lang.reflect.Method;
 import java.util.logging.Logger;
 
