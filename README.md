@@ -825,8 +825,9 @@ public class Entity {
    ...
 }
 ```
-This is default TTL for the entity and will be set whenever entity of this type saved.
-You can override default TTL at at time when you save entity as:
+This is TTL for the entity will be applied whenever entity of this type is saved.
+NOTE: @Ttl does not set table property: 'default_time_to_live'. You can set default with [@TableProperty](#mapping_properties)   
+Also you can override @TTL or default_time_to_live at the time you save entity as:
 ```java
 mappingSession.save(entity, new WriteOptions().setTtl(600)); // expires in 10 minutes
 ```
