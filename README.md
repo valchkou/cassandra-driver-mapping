@@ -361,6 +361,13 @@ mappingSession.deleteValue(id, Entity.class, "pets");
 
     /** Convert custom ResultSet into Collection of Entities */
     List<Entity> list = mappingSession.getFromResultSet(Entity.class, resultSet);
+
+    /** Convert Row of ResultSet into Entity instance. */
+    Entity e =  mappingSession.getFromRow(Entity.class, row);
+    
+    /** Convert Rows of ResultSet into Collection of Entities. */
+    List<Entity> list = mappingSession.getFromRows(Entity.class, rows);
+    
 ```
 <a name="read_opt"/>
 - Supported Read Options: ConsistencyLevel, RetryPolicy:
