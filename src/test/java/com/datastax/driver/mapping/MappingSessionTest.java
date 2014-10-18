@@ -873,5 +873,80 @@ public class MappingSessionTest {
         assertEquals(e1.getBalance(), e2.getBalance());
         assertNotSame(e1.getPaid(), e2.getPaid());
     }
+    
+    @Test
+    public void getFromResultSetTest() throws Exception {
+        Simple obj1 = new Simple();
+        obj1.setTimestamp(new Date());
+        obj1.setName("myName");
+        obj1.setAge(55);
+        obj1.setId(UUID.randomUUID());
+        obj1.setRandom(20);
+        obj1.setVersion(1);
+        target.save(obj1);
+        
+        Simple obj2 = new Simple();
+        obj2.setTimestamp(new Date());
+        obj2.setName("hisName");
+        obj2.setAge(55);
+        obj2.setId(UUID.randomUUID());
+        obj2.setRandom(20);
+        obj2.setVersion(1);
+        target.save(obj2);
+        
+        ResultSet rs = session.execute("SELECT * FROM simple");  
+        List<Simple> result = target.getFromResultSet(Simple.class, rs);
+        assertEquals(2,result.size());
+        
+        target.delete(obj1);
+        target.delete(obj2);
+    }    
+    
+    @Test
+    public void getFromRowTest() throws Exception {
+        Simple obj1 = buildSimpleEntity();
+        target.save(obj1);
+        
+        Simple obj2 = buildSimpleEntity();
+        target.save(obj2);
+        
+        ResultSet rs = session.execute("SELECT * FROM simple");  
+        Iterator<Row> it = rs.iterator();
+        while (it.hasNext()) {
+            Simple obj = target.getFromRow(Simple.class, it.next());
+            assertNotNull(obj);
+        }
+        
+        target.delete(obj1);
+        target.delete(obj2);
+    }     
+
+    @Test
+    public void getFromRowsTest() throws Exception {
+        Simple obj1 = buildSimpleEntity();
+        target.save(obj1);
+        
+        Simple obj2 = buildSimpleEntity();
+        target.save(obj2);
+        
+        ResultSet rs = session.execute("SELECT * FROM simple");  
+        List<Row> rows = rs.all();
+        List<Simple> result = target.getFromRows(Simple.class, rows); 
+        assertEquals(2,result.size());
+        
+        target.delete(obj1);
+        target.delete(obj2);
+    }     
+    
+    private Simple buildSimpleEntity() {
+        Simple obj = new Simple();
+        obj.setTimestamp(new Date());
+        obj.setName("myName");
+        obj.setAge(55);
+        obj.setId(UUID.randomUUID());
+        obj.setRandom(20);
+        obj.setVersion(1);
+        return obj;
+    }
 
 }

@@ -16,6 +16,7 @@
 package com.datastax.driver.mapping;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -156,6 +157,30 @@ public class MappingSession {
         return MappingBuilder.getFromResultSet(clazz, rs);
     }
 
+    /**
+     * Convert Row of ResultSet into Entity instance. 
+     * No Cassandra invocations are performed.
+     * 
+     * @param class Entity.class
+     * @param Row of ResultSet
+     * @return Entity instance
+     */
+    public <T> T getFromRow(Class<T> clazz, Row row) {
+        return MappingBuilder.getFromRow(clazz, row);
+    }
+    
+    /**
+     * Convert Row of ResultSet into Entity instance. 
+     * No Cassandra invocations are performed.
+     * 
+     * @param class Entity.class
+     * @param Row of ResultSet
+     * @return List<Entity>
+     */
+    public <T> List<T> getFromRows(Class<T> clazz, Collection<Row> rows) {
+        return MappingBuilder.getFromRows(clazz, rows);
+    }
+    
     /**
      * Delete Entity
      * 
