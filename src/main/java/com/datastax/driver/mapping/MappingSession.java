@@ -267,7 +267,7 @@ public class MappingSession {
         EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(entity.getClass());
         if (entityMetadata.hasVersion()) {
             Row row = rs.one();
-            if (!(row != null && row.getBool("[applied]"))) {
+            if (!(row != null && rs.wasApplied())) {
                 return null;
             }
         }
