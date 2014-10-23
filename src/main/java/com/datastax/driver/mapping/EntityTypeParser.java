@@ -198,7 +198,7 @@ public class EntityTypeParser {
 					// before add a field we need to make sure both getter and setter are defined
 					if (isGetterFor(m, f.getName())) {
 						getter = m;
-					} else if (isSetterFor(m, f.getName())) {
+					} else if (isSetterFor(m, f)) {
 						setter = m;
 					}
 					if (setter!=null && getter != null) {
@@ -351,9 +351,10 @@ public class EntityTypeParser {
 	}	
 
 	/** check if the method is setter method for the property*/
-	private static boolean isSetterFor(Method method, String property) {
-		 if(!method.getName().toLowerCase().equals("set"+property.toLowerCase())) return false;
-		 if(method.getParameterTypes().length != 1)   return false;  
+	private static boolean isSetterFor(Method method, Field field) {
+		 if(!method.getName().toLowerCase().equals("set"+field.getName().toLowerCase())) return false;
+		 if(method.getParameterTypes().length != 1)   return false;
+		 if(method.getParameterTypes()[0] != field.getType()) return false;
 		 return true;
 	}
 	
