@@ -778,6 +778,30 @@ public class MappingSessionTest {
 		loaded = target.get(EntityWithEnum.class, uuid);
 		assertNull(loaded);
 	}
+	
+	@Test
+	public void saveEntityWithStringEnumTest() throws Exception {
+		UUID uuid = UUID.randomUUID();
+		EntityWithStringEnum obj = new EntityWithStringEnum();
+		obj.setId(uuid);
+		obj.setPage(Page.GITHUB);
+		
+		EntityWithStringEnum loaded = target.get(EntityWithStringEnum.class, uuid);
+		assertNull(loaded);
+		
+		target.save(obj);
+		loaded = target.get(EntityWithStringEnum.class, uuid);
+		assertEquals(obj, loaded);
+		
+		obj.setPage(Page.CASSANDRA);
+		target.save(obj);
+		loaded = target.get(EntityWithStringEnum.class, uuid);
+		assertEquals(obj, loaded);
+		
+		target.delete(loaded);
+		loaded = target.get(EntityWithStringEnum.class, uuid);
+		assertNull(loaded);
+	}
 
 	@Test
 	public void updateIndividualPropertyTest() throws Exception {
@@ -802,6 +826,16 @@ public class MappingSessionTest {
 		target.updateValue(uuid, EntityWithEnum.class, "month", Month.MAY);
 		EntityWithEnum eloaded = target.get(EntityWithEnum.class, uuid);
 		assertEquals(Month.MAY, eloaded.getMonth());
+		
+		//String-Enum
+		EntityWithStringEnum seobj = new EntityWithStringEnum();
+		seobj.setId(uuid);
+		seobj.setPage(Page.DATASTAX);	
+		target.save(seobj);
+		
+		target.updateValue(uuid, EntityWithStringEnum.class, "page", Page.CASSANDRA.toString());
+		EntityWithStringEnum seloaded = target.get(EntityWithStringEnum.class, uuid);
+		assertEquals(Page.CASSANDRA, Page.getPage(seloaded.getPage()));
 	}
 	
 	@Test
