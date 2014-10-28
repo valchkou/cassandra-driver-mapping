@@ -55,8 +55,10 @@ import com.datastax.driver.mapping.entity.EntityWithCompositeKey;
 import com.datastax.driver.mapping.entity.EntityWithEnum;
 import com.datastax.driver.mapping.entity.EntityWithIndexes;
 import com.datastax.driver.mapping.entity.EntityWithKey;
+import com.datastax.driver.mapping.entity.EntityWithStringEnum;
 import com.datastax.driver.mapping.entity.EntityWithTtl;
 import com.datastax.driver.mapping.entity.Month;
+import com.datastax.driver.mapping.entity.Page;
 import com.datastax.driver.mapping.entity.Simple;
 import com.datastax.driver.mapping.entity.SimpleKey;
 import com.datastax.driver.mapping.option.WriteOptions;
@@ -813,6 +815,36 @@ public class MappingSessionAsyncTest {
 		loaded = target.get(EntityWithEnum.class, uuid);
 		assertNull(loaded);
 	}
+	
+	@Test
+	public void saveEntityWithStringEnumTest() throws Exception {
+		UUID uuid = UUID.randomUUID();
+		EntityWithStringEnum obj = new EntityWithStringEnum();
+		obj.setId(uuid);
+		obj.setPage(Page.GITHUB);
+		
+		EntityWithStringEnum loaded = target.get(EntityWithStringEnum.class, uuid);
+		assertNull(loaded);
+		
+		ResultSetFuture f = target.saveAsync(obj);
+		f.getUninterruptibly();
+		
+		loaded = target.get(EntityWithStringEnum.class, uuid);
+		assertEquals(obj, loaded);
+		
+		obj.setPage(Page.CASSANDRA);
+		f = target.saveAsync(obj);
+		f.getUninterruptibly();
+		
+		loaded = target.get(EntityWithStringEnum.class, uuid);
+		assertEquals(obj, loaded);
+		
+		f = target.deleteAsync(loaded);
+		f.getUninterruptibly();
+		
+		loaded = target.get(EntityWithStringEnum.class, uuid);
+		assertNull(loaded);
+	}
 
 	@Test
 	public void updateIndividualPropertyTest() throws Exception {
@@ -834,16 +866,17 @@ public class MappingSessionAsyncTest {
 		assertEquals(25, loaded.getAge());
 		assertEquals("yourName", loaded.getName());
 		
-		EntityWithEnum eobj = new EntityWithEnum();
-		eobj.setId(uuid);
-		eobj.setMonth(Month.JUNE);	
-		f = target.saveAsync(eobj);
+		//String-Enum
+		EntityWithStringEnum seobj = new EntityWithStringEnum();
+		seobj.setId(uuid);
+		seobj.setPage(Page.DATASTAX);	
+		f = target.saveAsync(seobj);
 		f.getUninterruptibly();
 		
-		f = target.updateValueAsync(uuid, EntityWithEnum.class, "month", Month.MAY);
+		f = target.updateValueAsync(uuid, EntityWithStringEnum.class, "page", Page.CASSANDRA.toString());
 		f.getUninterruptibly();
-		EntityWithEnum eloaded = target.get(EntityWithEnum.class, uuid);
-		assertEquals(Month.MAY, eloaded.getMonth());
+		EntityWithStringEnum eloaded = target.get(EntityWithStringEnum.class, uuid);
+		assertEquals(Page.CASSANDRA, Page.getPage(eloaded.getPage()));
 	}
 	
 }
