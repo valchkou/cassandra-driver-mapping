@@ -145,6 +145,13 @@ public class MappingBuilder {
             if (pkCols.contains(colName)) {
                 int idx = pkCols.indexOf(colName);
                 colVal = pkVals.get(idx);
+                if (colVal == null) {
+                    if (f.getDataType() == DataType.Name.TIMEUUID){
+                        colVal = QueryBuilder.fcall("now");
+                    } else if(f.getDataType() == DataType.Name.UUID) {
+                        colVal = QueryBuilder.fcall("uuid");
+                    }
+                }
             } else {
                 colVal = f.getValue(entity);
             }
@@ -592,22 +599,35 @@ public class MappingBuilder {
         } else if (fmeta.getType() == List.class) {
             update.with(QueryBuilder.discard(fmeta.getColumnName(), item));
         }
-
         return prepareUpdate(id, emeta, update, session);
     }
 
     public static BoundStatement prepareUpdateValue(Object id, Class<?> clazz, String propertyName, Object value, WriteOptions options, String keyspace, Session session) {
         EntityTypeMetadata emeta = EntityTypeParser.getEntityMetadata(clazz);
-        EntityFieldMetaData fmeta = emeta.getFieldMetadata(propertyName);
         Update update = QueryBuilder.update(keyspace, emeta.getTableName());
-        if (value.getClass().isEnum()) {
-            value = ((Enum<?>) value).name();
-        }
-        update.with(set(fmeta.getColumnName(), value));
+        setValueToUpdateStatement(emeta, update, propertyName, value);
         applyOptions(options, update, null);
         return prepareUpdate(id, emeta, update, session);
     }
 
+    public static BoundStatement prepareUpdateValues(Object id, Class<?> clazz, String[] propertyNames, Object[] values, WriteOptions options, String keyspace, Session session) {
+        EntityTypeMetadata emeta = EntityTypeParser.getEntityMetadata(clazz);
+        Update update = QueryBuilder.update(keyspace, emeta.getTableName());
+        for (int i=0; i<propertyNames.length; i++) {  
+            setValueToUpdateStatement(emeta, update, propertyNames[i], values[i]);
+        }
+        applyOptions(options, update, null);
+        return prepareUpdate(id, emeta, update, session);
+    }
+    
+    public static void setValueToUpdateStatement(EntityTypeMetadata emeta, Update update, String propertyName, Object value) {
+        EntityFieldMetaData fmeta = emeta.getFieldMetadata(propertyName);
+        if (value.getClass().isEnum()) {
+            value = ((Enum<?>) value).name();
+        }
+        update.with(set(fmeta.getColumnName(), value));
+    }
+    
     public static BoundStatement prepareAppendItemToCollection(Object id, Class<?> clazz, String propertyName, Object item, WriteOptions options, String keyspace, Session session) {
         EntityTypeMetadata emeta = EntityTypeParser.getEntityMetadata(clazz);
         EntityFieldMetaData fmeta = emeta.getFieldMetadata(propertyName);

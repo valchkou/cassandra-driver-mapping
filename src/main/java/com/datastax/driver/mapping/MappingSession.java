@@ -414,6 +414,32 @@ public class MappingSession {
     }
 
     /**
+     * Update values.
+     * 
+     * @param id Primary Key
+     * @param class Entity.class
+     * @param propertyNames Array of properties to update
+     * @param value array of values to update
+     */
+    public void updateValues(Object id, Class<?> clazz, String[] propertyNames, Object[] values) {
+        updateValues(id, clazz, propertyNames, values, null);
+    } 
+ 
+    /**
+     * Update values with options.
+     * 
+     * @param id Primary Key
+     * @param class Entity.class
+     * @param propertyNames Array of properties to update
+     * @param value array of values to update
+     */
+    public void updateValues(Object id, Class<?> clazz, String[] propertyNames, Object[] values, WriteOptions options) {
+        maybeSync(clazz);
+        BoundStatement bs = MappingBuilder.prepareUpdateValues(id, clazz, propertyNames, values, options, keyspace, session);
+        execute(bs);
+    }
+    
+    /**
      * Asynchronously Replace existing value with a new one.
      * 
      * @param id Primary Key
@@ -457,6 +483,32 @@ public class MappingSession {
         return executeAsync(bs);
     }
 
+    /**
+     * Update values.
+     * 
+     * @param id Primary Key
+     * @param class Entity.class
+     * @param propertyNames Array of properties to update
+     * @param value array of values to update
+     */
+    public ResultSetFuture updateValuesAsync(Object id, Class<?> clazz, String[] propertyNames, Object[] values) {
+        return updateValuesAsync(id, clazz, propertyNames, values, null);
+    } 
+ 
+    /**
+     * Update values with options.
+     * 
+     * @param id Primary Key
+     * @param class Entity.class
+     * @param propertyNames Array of properties to update
+     * @param value array of values to update
+     */
+    public ResultSetFuture updateValuesAsync(Object id, Class<?> clazz, String[] propertyNames, Object[] values, WriteOptions options) {
+        maybeSync(clazz);
+        BoundStatement bs = MappingBuilder.prepareUpdateValues(id, clazz, propertyNames, values, options, keyspace, session);
+        return executeAsync(bs);
+    }
+    
     /**
      * Place item or items at the beginning of the List.
      * 

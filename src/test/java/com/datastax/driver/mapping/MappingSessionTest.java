@@ -983,4 +983,36 @@ public class MappingSessionTest {
         return obj;
     }
 
+    @Test
+    public void updateSelectedPropertiesTest() throws Exception {
+        UUID uuid = UUID.randomUUID();
+        Simple obj = new Simple();
+        obj.setName("myName");
+        obj.setAge(55);
+        obj.setId(uuid);
+        target.save(obj);
+        
+        String[] props = {"name", "age"};
+        Object[] vals = {"yourName", 25};
+        target.updateValues(uuid, Simple.class, props, vals);
+        Simple loaded =  target.get(Simple.class, uuid);
+        assertEquals(25, loaded.getAge());
+        assertEquals("yourName", loaded.getName());
+    }    
+    
+    @Test
+    public void autoSetUUIDTest() throws Exception {
+        Simple obj = new Simple();
+        obj.setName("myName");
+        obj.setAge(55);
+        target.save(obj);
+    }
+    
+    @Test
+    public void autoSetTimeUUIDTest() throws Exception {
+        EntityWithTimeUUID obj = new EntityWithTimeUUID();
+        obj.setName("myName");
+        obj.setKey(new TimeUUIDKey());
+        target.save(obj);
+    }
 }

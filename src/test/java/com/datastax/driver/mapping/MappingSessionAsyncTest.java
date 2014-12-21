@@ -859,7 +859,7 @@ public class MappingSessionAsyncTest {
 		f = target.updateValueAsync(uuid, Simple.class, "name", "yourName");
 		f.getUninterruptibly();
 		
-		target.updateValueAsync(uuid, Simple.class, "age", 25);
+		f = target.updateValueAsync(uuid, Simple.class, "age", 25);
 		f.getUninterruptibly();
 		
 		Simple loaded =  target.get(Simple.class, uuid);
@@ -878,5 +878,26 @@ public class MappingSessionAsyncTest {
 		EntityWithStringEnum eloaded = target.get(EntityWithStringEnum.class, uuid);
 		assertEquals(Page.CASSANDRA, Page.getPage(eloaded.getPage()));
 	}
+	
+    @Test
+    public void updateSelectedPropertiesTest() throws Exception {
+        UUID uuid = UUID.randomUUID();
+        Simple obj = new Simple();
+        obj.setName("myName");
+        obj.setAge(55);
+        obj.setId(uuid);
+        ResultSetFuture f = target.saveAsync(obj);
+        f.getUninterruptibly();
+        
+        String[] props = {"name", "age"};
+        Object[] vals = {"yourName", 25};
+        
+        f = target.updateValuesAsync(uuid, Simple.class, props, vals);
+        f.getUninterruptibly();
+        Simple loaded =  target.get(Simple.class, uuid);
+        assertEquals(25, loaded.getAge());
+        assertEquals("yourName", loaded.getName());
+        
+    }	
 	
 }
