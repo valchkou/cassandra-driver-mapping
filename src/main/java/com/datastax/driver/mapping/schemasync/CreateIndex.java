@@ -56,26 +56,16 @@ public class CreateIndex extends RegularStatement {
 		return null;
 	}
 
-
 	@Override
 	public String getKeyspace() {
 		return keyspace;
 	}
-
-
-	@Override
-	public ByteBuffer[] getValues(int protocolVersion) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 
 	@Override
 	public boolean hasValues() {
 		// TODO Auto-generated method stub
 		return false;
 	}
-
 
     @Override
     public ByteBuffer[] getValues(ProtocolVersion arg0) {

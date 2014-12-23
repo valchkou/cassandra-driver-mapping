@@ -49,12 +49,6 @@ public class DropIndex extends RegularStatement {
 	}
 
 	@Override
-	public ByteBuffer[] getValues(int protocolVersion) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public boolean hasValues() {
 		// TODO Auto-generated method stub
 		return false;

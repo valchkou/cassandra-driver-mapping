@@ -52,23 +52,20 @@ public class DropTable extends RegularStatement {
 		return keyspace;
 	}
 
-	@Override
-	public ByteBuffer[] getValues(int protocolVersion) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean hasValues() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
     @Override
     public ByteBuffer[] getValues(ProtocolVersion arg0) {
         // TODO Auto-generated method stub
         return null;
     }
+
+	/* (non-Javadoc)
+	 * @see com.datastax.driver.core.RegularStatement#hasValues()
+	 */
+	@Override
+	public boolean hasValues() {
+		// TODO Auto-generated method stub
+		return false;
+	}
 	
 
 }

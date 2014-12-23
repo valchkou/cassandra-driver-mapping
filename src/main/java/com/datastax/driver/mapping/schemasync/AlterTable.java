@@ -101,12 +101,6 @@ public class AlterTable extends RegularStatement {
     }
 
 	@Override
-	public ByteBuffer[] getValues(int arg0) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public boolean hasValues() {
 		// TODO Auto-generated method stub
 		return false;
