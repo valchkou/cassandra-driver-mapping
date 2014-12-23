@@ -38,6 +38,7 @@ public class EntityFieldMetaData {
 	private boolean isPrimary;
 	private boolean isPartition;
 	private boolean isStatic;
+	private boolean autoGenerate;
 	
 	public EntityFieldMetaData(Field field, DataType.Name dataType, Method getter, Method setter, String columnName) {
 		this.field = field;
@@ -162,5 +163,13 @@ public class EntityFieldMetaData {
 
     public void setStatic(boolean isStatic) {
         this.isStatic = isStatic;
+    }
+
+    public boolean isAutoGenerate() {
+        return autoGenerate;
+    }
+
+    public void setAutoGenerate(boolean autoGenerate) {
+        this.autoGenerate = autoGenerate;
     }	
 }

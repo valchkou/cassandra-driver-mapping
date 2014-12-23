@@ -18,11 +18,12 @@ package com.datastax.driver.mapping.entity;
 import java.util.Date;
 import java.util.UUID;
 
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
 public class Simple {
 	
-	@Id
+	@Id @GeneratedValue
 	private UUID id;
 	private String name;
 	private Date timestamp;

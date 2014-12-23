@@ -1,13 +1,18 @@
 package com.datastax.driver.mapping.entity;
 
 import java.util.UUID;
+
 import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
 
 
 public class TimeUUIDKey {
+    
+    @GeneratedValue
     @Column(columnDefinition="timeuuid")
     private UUID convId;
 
+    @GeneratedValue
     @Column(columnDefinition="timeuuid")
     private UUID msgId;
 
