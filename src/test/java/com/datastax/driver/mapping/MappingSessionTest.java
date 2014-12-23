@@ -890,6 +890,7 @@ public class MappingSessionTest {
         e1.setBalance(100);
         e1.setPaid(false);
         target.save(e1);
+        sleep(1000);
 
         ClusteringKey k2 = new ClusteringKey();
         k2.setUser("test");
@@ -995,6 +996,7 @@ public class MappingSessionTest {
         String[] props = {"name", "age"};
         Object[] vals = {"yourName", 25};
         target.updateValues(uuid, Simple.class, props, vals);
+        sleep(100);
         Simple loaded =  target.get(Simple.class, uuid);
         assertEquals(25, loaded.getAge());
         assertEquals("yourName", loaded.getName());
