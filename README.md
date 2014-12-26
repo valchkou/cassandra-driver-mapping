@@ -54,6 +54,7 @@ And if you feel the pain using it please come back and try out mine.
 	* [Collections](#mapping_collections)
 	* [TTL](#mapping_ttl)
 	* [Static columns](#mapping_static)
+- [id, uuid and timeuuid](#uuid) 
 - [Optimistic Lock](#lock)
 	* [Lightweight transactions](#lock_transactions)
 	* [@Version](#lock_version)
@@ -870,6 +871,68 @@ CQL3 Statement
    CREATE TABLE IF NOT EXISTS ks.mytable (user text, expense_id int, balance bigint static,  PRIMARY KEY(user, expense_id))
 ``` 
 
+<a name="uuid"/>
+### id, uuid and timeuuid
+uuid and timeuuid are often used in Primary Key.
+This section describes few important features working with uuid type.
+
+- Declare uuid and timeuuid properties.
+```java
+    private UUID someUuid;
+    
+    @Column(columnDefinition="timeuuid")
+    private UUID someTimeuuid;    
+```
+- Autogenerate uuid & timeuuid
+This approach delegates generate and set uuid and timeuui property to C* itself.
+All you need is annotate an id property with JPA annotation @GeneratedValue. 
+```java
+    @GeneratedValue
+    private UUID someUuid;
+    
+    @GeneratedValue
+    @Column(columnDefinition="timeuuid")
+    private UUID someTimeuuid;    
+```
+If uuid or timeuuid are NULL on insert the Mapping Module will build CQL with uuid() or now() functions respectively.
+The drowback of this approach that CQL does not return generated id back.
+It means when you do obj = save(obj) the obj will not have its uuid set though it will be set in C*.
+This approach works fine for write-and-forget. But in case you need to know id you have to set it manually.
+
+- Manually Set uuid and timeuuid.
+Generate uuid is fairly simple in java
+```
+private UUID id = UUID.randomUUID();
+```
+Timeuuid is more tricky. Java SDK doesn't know how to generate UUID of type 1 which is timeuuid.
+You can follow this simple steps to utilize timeuuid in your java project.
+Add dependency on 3rd party lib
+```
+<dependency>
+    <groupId>com.eaio.uuid</groupId>
+    <artifactId>uuid</artifactId>
+    <version>3.2</version>
+</dependency>
+```
+Generate timeuuid
+```java
+UUID id = java.util.UUID.fromString(new com.eaio.uuid.UUID().toString());
+```
+
+This is sample hot to convert timeuuid to date
+```java
+import java.util.Date;
+import java.util.UUID;
+
+public class DateUtil {
+    private static final long NUM_100NS_INTERVALS_SINCE_UUID_EPOCH = 0x01b21dd213814000L;
+
+    public static Date timeUUID2Date(UUID uuid) {
+        long time = (uuid.timestamp() - NUM_100NS_INTERVALS_SINCE_UUID_EPOCH) / 10000;
+        return new Date(time);
+    }
+}
+```
 
 <a name="lock"/>
 ### Optimistic Lock
