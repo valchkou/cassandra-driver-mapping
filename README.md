@@ -872,9 +872,9 @@ CQL3 Statement
 ``` 
 
 <a name="uuid"/>
-### id, uuid and timeuuid
-uuid and timeuuid are often used in Primary Key.
-This section describes few important features working with uuid type.
+### id, uuid and timeuuid.
+uuid and timeuuid are often used in Primary Key.  
+This section describes few important features working with uuid type.  
 
 - Declare uuid and timeuuid properties.
 ```java
@@ -883,8 +883,8 @@ This section describes few important features working with uuid type.
     @Column(columnDefinition="timeuuid")
     private UUID someTimeuuid;    
 ```
-- Autogenerate uuid & timeuuid
-This approach delegates generate and set uuid and timeuui property to C* itself.
+- Autogenerate uuid & timeuuid.  
+This approach delegates generate and set uuid and timeuui property to C* itself.  
 All you need is annotate an id property with JPA annotation @GeneratedValue. 
 ```java
     @GeneratedValue
@@ -894,18 +894,18 @@ All you need is annotate an id property with JPA annotation @GeneratedValue.
     @Column(columnDefinition="timeuuid")
     private UUID someTimeuuid;    
 ```
-If uuid or timeuuid are NULL on insert the Mapping Module will build CQL with uuid() or now() functions respectively.
-The drowback of this approach that CQL does not return generated id back.
-It means when you do obj = save(obj) the obj will not have its uuid set though it will be set in C*.
-This approach works fine for write-and-forget. But in case you need to know id you have to set it manually.
+If uuid or timeuuid are NULL on insert the Mapping Module will build CQL with uuid() or now() functions respectively.  
+The drowback of this approach that CQL does not return generated id back.  
+It means when you do obj = save(obj) the obj will not have its uuid set though it will be set in C*.  
+This approach works fine for write-and-forget. But in case you need to know id you have to set it manually.  
 
-- Manually Set uuid and timeuuid.
+- Manually Set uuid and timeuuid.    
 Generate uuid is fairly simple in java
 ```
 private UUID id = UUID.randomUUID();
 ```
-Timeuuid is more tricky. Java SDK doesn't know how to generate UUID of type 1 which is timeuuid.
-You can follow this simple steps to utilize timeuuid in your java project.
+Timeuuid is more tricky. Java SDK doesn't know how to generate UUID of type 1 which is timeuuid.  
+You can follow this simple steps to utilize timeuuid in your java project.  
 Add dependency on 3rd party lib
 ```
 <dependency>
@@ -918,8 +918,7 @@ Generate timeuuid
 ```java
 UUID id = java.util.UUID.fromString(new com.eaio.uuid.UUID().toString());
 ```
-
-This is sample hot to convert timeuuid to date
+This is sample to convert timeuuid to date
 ```java
 import java.util.Date;
 import java.util.UUID;
