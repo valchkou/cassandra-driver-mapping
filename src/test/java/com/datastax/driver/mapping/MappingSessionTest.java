@@ -416,6 +416,7 @@ public class MappingSessionTest {
 		assertEquals(3, loaded.getTrades().size());
 		
 		target.replaceAt(id, EntityWithCollections.class, "trades", 3, 0);
+		sleep(100);
 		loaded = target.get(EntityWithCollections.class, id);
 		assertEquals(new Integer(3), loaded.getTrades().get(0));
 		assertEquals(3, loaded.getTrades().size());
@@ -992,7 +993,7 @@ public class MappingSessionTest {
         obj.setAge(55);
         obj.setId(uuid);
         target.save(obj);
-        
+        sleep(100);
         String[] props = {"name", "age"};
         Object[] vals = {"yourName", 25};
         target.updateValues(uuid, Simple.class, props, vals);
