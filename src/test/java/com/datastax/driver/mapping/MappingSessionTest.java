@@ -1017,4 +1017,21 @@ public class MappingSessionTest {
         obj.setKey(new TimeUUIDKey());
         target.save(obj);
     }
+
+    @Test
+    public void whenAnFieldAddedToTable_thenPreparedSelectShouldReturnTheField() throws Exception {
+        // setup
+        UUID userId = UUID.randomUUID();
+        UserWithAge user = new UserWithAge(userId, "user1", 100);
+        assertNotNull(target.save(user));
+        target.doNotSync = true;
+
+        // call sut
+        target.get(UserWithoutAge.class, userId);
+        UserWithAge withAge = target.get(UserWithAge.class, userId);
+
+        // check results
+        assertEquals(100, withAge.getAge());
+        assertEquals(userId, withAge.getId());
+    }
 }

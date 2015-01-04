@@ -15,37 +15,8 @@
  */
 package com.datastax.driver.mapping.builder;
 
-import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.ttl;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.timestamp;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.set;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
-
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.querybuilder.BuiltStatement;
-import com.datastax.driver.core.querybuilder.Delete;
-import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
-import com.datastax.driver.core.querybuilder.Update;
+import com.datastax.driver.core.*;
+import com.datastax.driver.core.querybuilder.*;
 import com.datastax.driver.mapping.EntityTypeParser;
 import com.datastax.driver.mapping.meta.EntityFieldMetaData;
 import com.datastax.driver.mapping.meta.EntityTypeMetadata;
@@ -54,6 +25,14 @@ import com.datastax.driver.mapping.option.ReadOptions;
 import com.datastax.driver.mapping.option.WriteOptions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+
+import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
+
+import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
 
 /**
  * Utility class to build and prepare statements. Should not be used directly.
@@ -305,23 +284,24 @@ public class MappingBuilder {
      */
     public static <T> BoundStatement prepareSelect(Class<T> clazz, Object id, final ReadOptions options, final String keyspace, final Session session) {
         EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
+        final List<EntityFieldMetaData> fields = entityMetadata.getFields();
         final List<String> pkCols = entityMetadata.getPkColumns();
         final String table = entityMetadata.getTableName();
 
         // get prepared statement
-        PreparedStatement ps = null;
+        PreparedStatement ps;
         try {
-            ps = statementCache.get(getCacheKey(table, session), new Callable<PreparedStatement>() {
+            ps = statementCache.get(getSelectCacheKey(table, session, fields), new Callable<PreparedStatement>() {
                 @Override
                 public PreparedStatement call() throws Exception {
-                    Select stmt = buildSelectAll(table, pkCols, options, keyspace);
+                    Select stmt = buildSelectAll(table, pkCols, options, keyspace, fields);
                     return session.prepare(stmt);
                 }
             });
         } catch (ExecutionException e) {
             // if the error caused by prepare the client will get it as is,
             // otherwise process will not blow and statement will not be cached.
-            Select stmt = buildSelectAll(table, pkCols, options, keyspace);
+            Select stmt = buildSelectAll(table, pkCols, options, keyspace, fields);
             ps = session.prepare(stmt);
         }
 
@@ -331,12 +311,44 @@ public class MappingBuilder {
         return bs;
     }
 
+    private static String getSelectCacheKey(String table, Session session, List<EntityFieldMetaData> fields) {
+        StringBuilder sb = new StringBuilder();
+        for (EntityFieldMetaData property : fields) {
+            sb.append(property.getColumnName());
+            sb.append('|');
+        }
+        return getCacheKey(table + sb.toString(), session);
+    }
+
     protected static Select buildSelectAll(String table, List<String> pkCols, ReadOptions options, String keyspace) {
         Select select = select().all().from(keyspace, table);
+        appendWhere(select, pkCols);
+        appendOptions(select, options);
+        return select;
+    }
+
+    private static Select buildSelectAll(String table, List<String> pkCols, ReadOptions options, String keyspace, List<EntityFieldMetaData> fields) {
+        Select select = makeSelectEachField(table, keyspace, fields);
+        appendWhere(select, pkCols);
+        appendOptions(select, options);
+        return select;
+    }
+
+    private static Select makeSelectEachField(String table, String keyspace, List<EntityFieldMetaData> fields) {
+        Select.Selection select = select();
+        for (EntityFieldMetaData field : fields) {
+            select = select.column(field.getColumnName());
+        }
+        return select.from(keyspace, table);
+    }
+
+    private static void appendWhere(Select select, List<String> pkCols) {
         for (String col : pkCols) {
             select.where(eq(col, QueryBuilder.bindMarker()));
         }
+    }
 
+    private static void appendOptions(Select select, ReadOptions options) {
         if (options != null) {
             if (options.getConsistencyLevel() != null) {
                 select.setConsistencyLevel(options.getConsistencyLevel());
@@ -346,7 +358,6 @@ public class MappingBuilder {
                 select.setRetryPolicy(options.getRetryPolicy());
             }
         }
-        return select;
     }
 
     public static <E> BuiltStatement buildDelete(E entity, String keyspace) {
@@ -695,4 +706,6 @@ public class MappingBuilder {
         }
         return session.getLoggedKeyspace() + "." + key;
     }
+
+
 }
