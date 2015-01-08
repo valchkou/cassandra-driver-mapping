@@ -169,7 +169,7 @@ public class MappingBuilder {
                 insert.setConsistencyLevel(options.getConsistencyLevel());
             }
 
-            if (options.getConsistencyLevel() != null) {
+            if (options.getRetryPolicy() != null) {
                 insert.setRetryPolicy(options.getRetryPolicy());
             }
         }
