@@ -43,6 +43,7 @@ import com.datastax.driver.mapping.annotation.Ttl;
 import com.datastax.driver.mapping.meta.EntityFieldMetaData;
 import com.datastax.driver.mapping.meta.EntityTypeMetadata;
 import com.datastax.driver.mapping.meta.PrimaryKeyMetadata;
+import com.google.common.primitives.Primitives;
 
 /**
  * This class parses persistent Entity.class and creates EntityTypeMetadata
@@ -377,7 +378,7 @@ public class EntityTypeParser {
             return false;
         if (method.getParameterTypes().length != 1)
             return false;
-        if (method.getParameterTypes()[0] != field.getType())
+        if (Primitives.wrap(method.getParameterTypes()[0]) != Primitives.wrap(field.getType()))
             return false;
         return true;
     }

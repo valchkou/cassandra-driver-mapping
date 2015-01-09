@@ -1035,4 +1035,21 @@ public class MappingSessionTest {
         assertEquals(100, withAge.getAge());
         assertEquals(userId, withAge.getId());
     }
+    
+    @Test
+    public void autoBoxedSettersGettersTest() throws Exception {
+        UUID id = UUID.randomUUID();
+        EntityAutoBoxed e = new EntityAutoBoxed();
+        e.setId(id);
+        e.setAge(10);
+        e.setBalance(100.896);
+        e.setIsGood(true);
+        target.save(e);
+
+        e = target.get(EntityAutoBoxed.class, id);
+
+        assertEquals(Integer.valueOf(10), e.getAge());
+        assertEquals(true, e.getIsGood());
+        assertEquals(Double.valueOf(100.896), Double.valueOf(e.getBalance()));
+    }
 }
