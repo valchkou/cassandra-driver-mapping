@@ -54,7 +54,7 @@ And if you feel the pain using it please come back and try out mine.
 	* [Collections](#mapping_collections)
 	* [TTL](#mapping_ttl)
 	* [Static columns](#mapping_static)
-- [id, uuid and timeuuid](#uuid) 
+- [ID, UUID and TimeUUID](#uuid) 
 - [Optimistic Lock](#lock)
 	* [Lightweight transactions](#lock_transactions)
 	* [@Version](#lock_version)
@@ -872,7 +872,7 @@ CQL3 Statement
 ``` 
 
 <a name="uuid"/>
-### id, uuid and timeuuid.
+### ID, UUID and TimeUUID.
 uuid and timeuuid are often used in Primary Key.  
 This section describes few important features working with uuid type.  
 
@@ -904,30 +904,25 @@ Generate uuid is fairly simple in java
 ```
 private UUID id = UUID.randomUUID();
 ```
-Timeuuid is more tricky. Java SDK doesn't know how to generate UUID of type 1 which is timeuuid.  
-You can follow this simple steps to utilize timeuuid in your java project.  
-Add dependency on 3rd party lib
-```
-<dependency>
-    <groupId>com.eaio.uuid</groupId>
-    <artifactId>uuid</artifactId>
-    <version>3.2</version>
-</dependency>
+For Timeuuid the datastax driver provides utility class UUIDs.  
 ```
 Generate timeuuid
 ```java
-UUID id = java.util.UUID.fromString(new com.eaio.uuid.UUID().toString());
+import com.datastax.driver.core.utils.UUIDs;
+import java.util.UUID;
+
+UUID id = UUIDs.timeBased();
 ```
-This is sample to convert timeuuid to date
+Convert timeuuid to date
 ```java
 import java.util.Date;
 import java.util.UUID;
+import com.datastax.driver.core.utils.UUIDs;
 
 public class DateUtil {
-    private static final long NUM_100NS_INTERVALS_SINCE_UUID_EPOCH = 0x01b21dd213814000L;
 
     public static Date timeUUID2Date(UUID uuid) {
-        long time = (uuid.timestamp() - NUM_100NS_INTERVALS_SINCE_UUID_EPOCH) / 10000;
+        long time = UUIDs.unixTimestamp(uuid);
         return new Date(time);
     }
 }
