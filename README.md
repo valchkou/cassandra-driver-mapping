@@ -899,14 +899,12 @@ The drowback of this approach that CQL does not return generated id back.
 It means when you do obj = save(obj) the obj will not have its uuid set though it will be set in C*.  
 This approach works fine for write-and-forget. But in case you need to know id you have to set it manually.  
 
-- Manually Set uuid and timeuuid.    
-Generate uuid is fairly simple in java
+- uuid.    
+```java
+UUID id = UUID.randomUUID();
 ```
-private UUID id = UUID.randomUUID();
-```
-For Timeuuid the datastax driver provides utility class UUIDs.  
-```
-Generate timeuuid
+
+- timeuuid
 ```java
 import com.datastax.driver.core.utils.UUIDs;
 import java.util.UUID;
@@ -920,7 +918,6 @@ import java.util.UUID;
 import com.datastax.driver.core.utils.UUIDs;
 
 public class DateUtil {
-
     public static Date timeUUID2Date(UUID uuid) {
         long time = UUIDs.unixTimestamp(uuid);
         return new Date(time);
