@@ -393,6 +393,7 @@ public class MappingBuilder {
                 value = field.getCollectionType().newInstance();
             }
 
+            Class<?> cls = field.getType();
             DataType.Name dataType = field.getDataType();
             switch (dataType) {
                 case INET:
@@ -411,7 +412,11 @@ public class MappingBuilder {
                     value = row.getString(field.getColumnName());
                     break;
                 case TIMESTAMP:
-                    value = row.getDate(field.getColumnName());
+                	if (cls == Date.class) {
+                		value = row.getDate(field.getColumnName());
+                	} else {
+                		value = (row.getDate(field.getColumnName())).getTime();
+                	}
                     break;
                 case UUID:
                     value = row.getUUID(field.getColumnName());

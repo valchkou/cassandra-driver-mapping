@@ -40,6 +40,9 @@ public class EntityWithIndexes {
 	
 	@Column(name="counter") // override default name
 	private long count;
+
+	@Column(columnDefinition="TIMESTAMP") // override default name
+	private long longstamp;
 	
 	private String name;
 	
@@ -82,13 +85,21 @@ public class EntityWithIndexes {
 	public void setRef(UUID ref) {
 		this.ref = ref;
 	}
+	public long getLongstamp() {
+		return longstamp;
+	}
+	public void setLongstamp(long longstamp) {
+		this.longstamp = longstamp;
+	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + (int) (count ^ (count >>> 32));
 		result = prime * result + ((email == null) ? 0 : email.hashCode());
+		result = prime * result + (int) (longstamp ^ (longstamp >>> 32));
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((ref == null) ? 0 : ref.hashCode());
 		result = prime * result
 				+ ((timeStamp == null) ? 0 : timeStamp.hashCode());
 		result = prime * result + ((uuid == null) ? 0 : uuid.hashCode());
@@ -110,10 +121,17 @@ public class EntityWithIndexes {
 				return false;
 		} else if (!email.equals(other.email))
 			return false;
+		if (longstamp != other.longstamp)
+			return false;
 		if (name == null) {
 			if (other.name != null)
 				return false;
 		} else if (!name.equals(other.name))
+			return false;
+		if (ref == null) {
+			if (other.ref != null)
+				return false;
+		} else if (!ref.equals(other.ref))
 			return false;
 		if (timeStamp == null) {
 			if (other.timeStamp != null)

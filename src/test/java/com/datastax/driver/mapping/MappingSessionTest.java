@@ -76,6 +76,7 @@ public class MappingSessionTest {
 		obj.setName("test");
 		obj.setTimeStamp(new Date());
 		obj.setUuid(uuid);
+		obj.setLongstamp((new Date()).getTime());
 		
 		EntityWithIndexes loaded = target.get(EntityWithIndexes.class, uuid);
 		assertNull(loaded);
