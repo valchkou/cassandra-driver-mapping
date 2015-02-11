@@ -911,7 +911,7 @@ import java.util.UUID;
 
 UUID id = UUIDs.timeBased();
 ```
-Convert timeuuid to date
+- Convert timeuuid to date
 ```java
 import java.util.Date;
 import java.util.UUID;
