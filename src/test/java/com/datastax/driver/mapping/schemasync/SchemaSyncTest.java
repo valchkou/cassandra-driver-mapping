@@ -127,7 +127,7 @@ public class SchemaSyncTest {
 		TableMetadata tableMetadata = cluster.getMetadata().getKeyspace(keyspace).getTable(entityMetadata.getTableName());
 		assertNotNull(tableMetadata);
 		assertEquals("test_entity_index", tableMetadata.getName());
-		assertEquals(5, tableMetadata.getColumns().size());
+		assertEquals(6, tableMetadata.getColumns().size());
 		
 		ColumnMetadata columnMetadata = tableMetadata.getColumn("uuid");
 		assertNull(columnMetadata.getIndex());
