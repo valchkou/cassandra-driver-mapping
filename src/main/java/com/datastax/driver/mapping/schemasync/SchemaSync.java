@@ -187,7 +187,7 @@ public final class SchemaSync {
     				statements.add(new CreateIndex(keyspace, table, column, entityMetadata.getIndex(column)));
     			} else if (fieldIndex == null) {
     				statements.add(new DropIndex(column, columnMetadata.getIndex().getName()));
-    			} else if (!fieldIndex.equals(colIndex)) {
+    			} else if (!"".equals(fieldIndex) && !fieldIndex.equals(colIndex)) {
     				statements.add(new DropIndex(column, columnMetadata.getIndex().getName()));
     				statements.add(new CreateIndex(keyspace, table, column, entityMetadata.getIndex(column)));
     			}

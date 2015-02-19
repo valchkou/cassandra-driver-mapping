@@ -148,6 +148,14 @@ public class SchemaSyncTest {
 	}
 	
 	@Test
+	public void testReSync() {
+		SchemaSync.sync(keyspace, session, EntityWithIndexes.class);
+		EntityTypeParser.removeAll();
+		SchemaSync.sync(keyspace, session, EntityWithIndexes.class);
+		
+	}
+	
+	@Test
 	public void testCreateWithCompositeKey() {
 		EntityTypeParser.getEntityMetadata(EntityWithCompositeKey.class).markUnSynced(keyspace);
 		SchemaSync.sync(keyspace, session, EntityWithCompositeKey.class);
