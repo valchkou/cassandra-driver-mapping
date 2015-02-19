@@ -134,7 +134,7 @@ public class SchemaSyncTest {
 		
 		columnMetadata = tableMetadata.getColumn("email");
 		assertNotNull(columnMetadata.getIndex());
-		assertEquals("test_entity_email_idx", columnMetadata.getIndex().getName());
+		assertEquals("test_entity_index_email_idx", columnMetadata.getIndex().getName());
 		
 		columnMetadata = tableMetadata.getColumn("timestamp");
 		assertNotNull(columnMetadata.getIndex());
