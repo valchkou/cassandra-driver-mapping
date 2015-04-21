@@ -152,7 +152,8 @@ SyncOptions can be set for all or specific entities as shown below:
 	/** Turn synchronization with C* off except specific Entity: */
 	SyncOptions syncOptions = SyncOptions.withOptions().doNotSync().doSync(Entity1.class);
 
-	/** Do not add or delete columns for all Entities.   
+	/** 
+	 *  Do not add or drop columns for Entities.   
 	 *  This will not affect initial synchronization when Table is created for the first time. 
 	 */
 	SyncOptions syncOptions = SyncOptions.withOptions().add(SyncOptionTypes.DoNotAddColumns);
