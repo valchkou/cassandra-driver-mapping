@@ -138,7 +138,8 @@ Or look at the [Spring Framework Example](https://github.com/valchkou/SpringFram
 
 <a name="jump_sync"/>
 - To Sync or not to Sync.  
-Synchronization is a cool feature but you can completely or partially disable it using SyncOptions.
+
+Synchronization is a cool feature but you can completely or partially disable it using SyncOptions.  
 Supported SyncOptions are: DoNotSync, DoNotAddColumns, DoNotDropColumns.  
 SyncOptions can be set for all or specific entities as shown below:
 ```java
@@ -151,7 +152,9 @@ SyncOptions can be set for all or specific entities as shown below:
 	/** Turn synchronization with C* off except specific Entity: */
 	SyncOptions syncOptions = SyncOptions.withOptions().doNotSync().doSync(Entity1.class);
 
-	/** Do not add or delete columns for all Entities. This will not affect initial synchronization when Table is created for the first time */
+	/** Do not add or delete columns for all Entities.   
+	 *  This will not affect initial synchronization when Table is created for the first time. 
+	 */
 	SyncOptions syncOptions = SyncOptions.withOptions().add(SyncOptionTypes.DoNotAddColumns);
 	
 	SyncOptions syncOptions = SyncOptions.withOptions().add(SyncOptionTypes.DoNotAddColumns).add(SyncOptionTypes.DoNotDropColumns);
