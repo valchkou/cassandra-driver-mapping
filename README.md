@@ -160,7 +160,7 @@ SyncOptions can be set for all or specific entities as shown below:
 	SyncOptions syncOptions = SyncOptions.withOptions().add(SyncOptionTypes.DoNotAddColumns).add(SyncOptionTypes.DoNotDropColumns);
 	SyncOptions syncOptions = SyncOptions.withOptions().add(Entity1.class, SyncOptionTypes.DoNotDropColumns);
 ```
-Pass SyncOptions into the MappingSession */
+Pass SyncOptions into the MappingSession
 ```java
 	/** Constractor */
 	MappingSession mappingSession = new MappingSession("keyspace_name", session, syncOptions);
@@ -1207,21 +1207,14 @@ Or override individual type:
 ### My Mapper vs Datastax Mapper
 
 Both mappers built on top of Datastax Java Driver and introduce Object Mapper layer for simplicity.
-There are few common features and differences. You can read about them below.
+There are few common features and differences. 
 
-To me the biggest difference so far is that datastax mapper does not generate schema for you automatically.
+The biggest difference is that datastax mapper does not generate schema for you automatically.
 You will have to manually create tables, indexes and manually alter schema if you make any changed down the road.
-I am surprised Datastax missed it. This is MUST-HAVE feature for modern ORM.
-
-Frankly speaking auto synch is mainly why I started my project. I got sick of preparing and running scripts whenever I was adding property or entity. I came up with SchemaSync and the next logical step was the mapper. I applied my best efforts to make it simple and straightforward. 
 
 Autosync is not only difference. There are few more:
 
 #### Different:
-
-
-##### Datastax [documentation on their Mapper](http://www.datastax.com/documentation/developer/java-driver/2.1/java-driver/reference/objectMappingApi.html) is very shallow.
-
 
 ##### Mapper Instance
 Datastax mapper needs to be instantiated for each entity class. If you have 20 entity classes you will create 20 mappers.
@@ -1233,7 +1226,6 @@ My mapper is not bound to an entity. You can have just one or 20 – it’s up t
 ```
 MappingSession mapper = new MappingSession("keyspace_name", session);
 ```
-
 
 ##### Composite Primary Key
 Datastax PK fields are all declared within entity class:
@@ -1274,7 +1266,7 @@ My mapper can eat your custom Queries and ResultSets and convert them into any e
 
 
 ##### Any-to-Any mapping
-This feature is not exists in Datastax Mapper.
+This feature does not exists in Datastax Mapper.
 Basically you can map any ResultSet from [any table on any Entity with My Mapper](#queries_gnomes).
 
 
@@ -1291,7 +1283,7 @@ create datastax session and pass it into the mapper instance.
 
 
 ##### Available on maven central.  
-Their Maven artifact magically matches mine. But be aware it’s not the same!  
+Datastax Maven artifact magically matches mine. But be aware it’s not the same!  
 GroupId is different, Be sure you use correct one.
 ```
 MINE:
