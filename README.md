@@ -31,6 +31,7 @@ And if you feel the pain using it please come back and try out mine.
 	* [Maven Dependency](#jump_maven)
 	* [Init Mapping Session](#jump_init)
 	* [Save, Get, Delete](#jump_save)
+	* [To Sync or not to Sync](#jump_sync)
 - [Mapping Session API](#api)
 	* [Write](#write)  
 		- [Write API](#write)
@@ -113,13 +114,7 @@ You can instantiate as many mapping sessions as you want. It's threadsafe.
 	Session session; // initialize datastax session.
 	MappingSession mappingSession = new MappingSession("keyspace_name", session);
 ```  
-If you wish your mapping session do not synchronize your entities with C* you may turn synch off:
-```java
-	MappingSession mappingSession = new MappingSession("keyspace_name", session, true);
-	// OR
-	MappingSession mappingSession = new MappingSession("keyspace_name", session);
-	mappingSession.setDoNotSync(true);
-```  
+
 Underlying Datastax Session does all the heavylifting and is expansive.   
 Prior using MappingSession you need to open the Datastax Session and create the Keyspace using the standard Datastax Driver API. If you are not familiar with procedure please refer to [Datastax Dcumentation](http://www.datastax.com/documentation/developer/java-driver/2.0/java-driver/quick_start/qsQuickstart_c.html).  
 Or look at the [Spring Framework Example](https://github.com/valchkou/SpringFrameworkCassandraSample).
@@ -140,6 +135,36 @@ Or look at the [Spring Framework Example](https://github.com/valchkou/SpringFram
 ```java
 	mappingSession.delete(entity);	
 ```
+
+<a name="jump_sync"/>
+- To Sync or not to Sync.  
+Synchronization is a cool feature but you can completely or partially disable it using SyncOptions.
+Supported SyncOptions are: DoNotSync, DoNotAddColumns, DoNotDropColumns.  
+SyncOptions can be set for all or specific entities as shown below:
+```java
+	/** Turn synchronization with C* off: */
+	SyncOptions syncOptions = SyncOptions.withOptions().doNotSync());
+
+	/** Turn synchronization off for specific Entity */
+	SyncOptions syncOptions = SyncOptions.withOptions().doNotSync(Entity1.class);
+
+	/** Turn synchronization with C* off except specific Entity: */
+	SyncOptions syncOptions = SyncOptions.withOptions().doNotSync().doSync(Entity1.class);
+
+	/** Do not add or delete columns for all Entities. This will not affect initial synchronization when Table is created for the first time */
+	SyncOptions syncOptions = SyncOptions.withOptions().add(SyncOptionTypes.DoNotAddColumns);
+	
+	SyncOptions syncOptions = SyncOptions.withOptions().add(SyncOptionTypes.DoNotAddColumns).add(SyncOptionTypes.DoNotDropColumns);
+
+	SyncOptions syncOptions = SyncOptions.withOptions().add(Entity1.class, SyncOptionTypes.DoNotDropColumns);
+
+	/** Pass SyncOptions into the Constractor with C* off: */
+	MappingSession mappingSession = new MappingSession("keyspace_name", session, syncOptions);
+
+	/** Inject SyncOptions into the Mapper */
+	mappingSession.setSyncOptions(syncOptions);
+```  
+
 
 <a name="api"/>
 ### Mapping Session API
