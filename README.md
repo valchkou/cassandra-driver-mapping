@@ -156,15 +156,15 @@ SyncOptions can be set for all or specific entities as shown below:
 	 *  This will not affect initial synchronization when Table is created for the first time. 
 	 */
 	SyncOptions syncOptions = SyncOptions.withOptions().add(SyncOptionTypes.DoNotAddColumns);
-	
 	SyncOptions syncOptions = SyncOptions.withOptions().add(SyncOptionTypes.DoNotAddColumns).add(SyncOptionTypes.DoNotDropColumns);
-
 	SyncOptions syncOptions = SyncOptions.withOptions().add(Entity1.class, SyncOptionTypes.DoNotDropColumns);
-
-	/** Pass SyncOptions into the Constractor with C* off: */
+```
+Pass SyncOptions into the MappingSession */
+```java
+	/** Constractor */
 	MappingSession mappingSession = new MappingSession("keyspace_name", session, syncOptions);
 
-	/** Inject SyncOptions into the Mapper */
+	/** Setter */
 	mappingSession.setSyncOptions(syncOptions);
 ```  
 
