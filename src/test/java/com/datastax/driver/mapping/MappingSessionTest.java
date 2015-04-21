@@ -312,10 +312,13 @@ public class MappingSessionTest {
 	@Test
 	public void saveAndGetAndDeleteWithCompoundClusteringKeyTest() throws Exception {
 		
-		ClusteringKey key = new ClusteringKey();
-		key.setExpense_id(100);
-		key.setUser("test");
+		ClusteringKey ckey = new ClusteringKey();
+		ckey.setExpense_id(100);
+		ckey.setUser("test");
 		Date created = new Date();
+		
+		PrimaryKey key = new PrimaryKey();
+		key.setPk(ckey);
 		
 		EntityWithClusteringKey obj = new EntityWithClusteringKey();
 		obj.setKey(key);

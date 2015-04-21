@@ -185,11 +185,14 @@ public class EntityTypeMetadata {
 					sb.append(",");
 				}
 			}
-			sb.append("),");
+			sb.append(")");
 		} 
 		
 		if (primaryKeyMetadata.isCompound()) {
 			Iterator<EntityFieldMetaData> it = primaryKeyMetadata.getFields().iterator();
+			if (it.hasNext() && primaryKeyMetadata.hasPartitionKey()) {
+				sb.append(",");
+			}			
 			while (it.hasNext()) {
 				sb.append(it.next().getColumnName());
 				if (it.hasNext()) {

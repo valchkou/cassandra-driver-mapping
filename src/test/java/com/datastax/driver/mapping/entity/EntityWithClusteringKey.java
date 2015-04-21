@@ -11,15 +11,15 @@ import javax.persistence.Table;
 public class EntityWithClusteringKey {
 	
 	@EmbeddedId
-	private ClusteringKey key;
+	private PrimaryKey key;
 
 	private long timestamp;
 	private Date asof;
 	
-	public ClusteringKey getKey() {
+	public PrimaryKey getKey() {
 		return key;
 	}
-	public void setKey(ClusteringKey key) {
+	public void setKey(PrimaryKey key) {
 		this.key = key;
 	}
 	public long getTimestamp() {

@@ -18,7 +18,5 @@ package com.datastax.driver.mapping.schemasync;
 public enum SyncOptionTypes {
 	DoNotSync,           // do not Sync Entity with Cassandra  
 	DoNotAddColumns,     // Column will not be created in Cassandra 
-	DoNotDropColumns,    // Column will not be deleted in Cassandra
-	DoNotAddIndexes,     // Indexes will not be added in Cassandra
-	DoNotDropIndexes     // Indexes will not be deleted in Cassandra
+	DoNotDropColumns     // Column will not be dropped in Cassandra
 }
