@@ -37,14 +37,11 @@ public class EntityWithIndexes {
 	private UUID uuid = UUID.randomUUID();
 	private String email;
 	private Date timeStamp;
-	
-	@Column(name="counter") // override default name
-	private long count;
-
 	@Column(columnDefinition="TIMESTAMP") // override default name
 	private long longstamp;
-	
-	private String name;
+	private String name;	
+	@Column(name="counter") // override default name
+	private long count;
 	
 	@Transient
 	private UUID ref; // do not persist
@@ -99,7 +96,6 @@ public class EntityWithIndexes {
 		result = prime * result + ((email == null) ? 0 : email.hashCode());
 		result = prime * result + (int) (longstamp ^ (longstamp >>> 32));
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result + ((ref == null) ? 0 : ref.hashCode());
 		result = prime * result
 				+ ((timeStamp == null) ? 0 : timeStamp.hashCode());
 		result = prime * result + ((uuid == null) ? 0 : uuid.hashCode());
@@ -128,11 +124,6 @@ public class EntityWithIndexes {
 				return false;
 		} else if (!name.equals(other.name))
 			return false;
-		if (ref == null) {
-			if (other.ref != null)
-				return false;
-		} else if (!ref.equals(other.ref))
-			return false;
 		if (timeStamp == null) {
 			if (other.timeStamp != null)
 				return false;
@@ -145,6 +136,5 @@ public class EntityWithIndexes {
 			return false;
 		return true;
 	}
-	
 
 }

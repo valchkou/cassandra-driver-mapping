@@ -45,6 +45,7 @@ import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.policies.DefaultRetryPolicy;
+import com.datastax.driver.core.utils.UUIDs;
 import com.datastax.driver.mapping.EntityTypeParser;
 import com.datastax.driver.mapping.MappingSession;
 import com.datastax.driver.mapping.entity.CompositeKey;
@@ -278,8 +279,8 @@ public class MappingSessionAsyncTest {
 		SimpleKey partition = new SimpleKey();
 		partition.setName("name");
 		partition.setRank(10);
-		partition.setT1(java.util.UUID.fromString(new com.eaio.uuid.UUID().toString()));
-		partition.setT2(java.util.UUID.fromString(new com.eaio.uuid.UUID().toString()));		
+		partition.setT1(UUIDs.timeBased());
+		partition.setT2(UUIDs.timeBased());		
 
 		CompositeKey key = new CompositeKey();
 		key.setKey(partition);
@@ -314,8 +315,8 @@ public class MappingSessionAsyncTest {
 		SimpleKey key = new SimpleKey();
 		key.setName("name");
 		key.setRank(10);
-		key.setT1(java.util.UUID.fromString(new com.eaio.uuid.UUID().toString()));
-		key.setT2(java.util.UUID.fromString(new com.eaio.uuid.UUID().toString()));				
+		key.setT1(UUIDs.timeBased());
+		key.setT2(UUIDs.timeBased());				
 		
 		Date created = new Date();
 		

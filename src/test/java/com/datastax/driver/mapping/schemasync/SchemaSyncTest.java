@@ -106,7 +106,7 @@ public class SchemaSyncTest {
 		columnMetadata = tableMetadata.getColumn("timestamp");
 		assertNull(columnMetadata.getIndex());
 		
-		columnMetadata = tableMetadata.getColumn("counter");
+		columnMetadata = tableMetadata.getColumn("counter2");
 		assertEquals("test_entity_counter_idx", columnMetadata.getIndex().getName());	
 		
 		columnMetadata = tableMetadata.getColumn("name");
@@ -216,5 +216,63 @@ public class SchemaSyncTest {
             
         columnMetadata = tableMetadata.getColumn("msgId");
         assertNotNull(columnMetadata);  
-        assertEquals(DataType.timeuuid(), columnMetadata.getType());    }	
+        assertEquals(DataType.timeuuid(), columnMetadata.getType());    
+        
+    }	
+    
+	@Test
+	public void testDoNotSync() {
+		SyncOptions opt = SyncOptions.withOptions().doNotSync();
+		assertEquals(opt.isDoNotSync(EntityWithIndexes.class), true);  
+		assertEquals(opt.isDoNotSync(EntityWithTimeUUID.class), true);  
+		
+		opt.doSync(EntityWithIndexes.class);
+		assertEquals(opt.isDoNotSync(EntityWithIndexes.class), false);  
+		assertEquals(opt.isDoNotSync(EntityWithTimeUUID.class), true); 
+		
+		opt.doNotSync(EntityWithIndexes.class);
+		assertEquals(opt.isDoNotSync(EntityWithIndexes.class), true);  
+		assertEquals(opt.isDoNotSync(EntityWithTimeUUID.class), true); 
+	}
+	
+	@Test
+	public void testDoNotAddColumn() {
+		SyncOptions opt = SyncOptions.withOptions().add(SyncOptionTypes.DoNotAddColumns);
+		SchemaSync.drop(keyspace, session, EntityWithIndexes.class);
+		SchemaSync.sync(keyspace, session, EntityWithIndexes.class);
+		SchemaSync.sync(keyspace, session, EntityWithIndexesV2.class, opt);
+		
+		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(EntityWithIndexes.class);
+		TableMetadata tableMetadata = cluster.getMetadata().getKeyspace(keyspace).getTable(entityMetadata.getTableName());
+
+		// column counter2 should not be added
+		ColumnMetadata columnMetadata = tableMetadata.getColumn("counter2");
+		assertNull(columnMetadata);	
+		
+		// column counter should have been dropped
+		columnMetadata = tableMetadata.getColumn("counter");
+		assertNull(columnMetadata);	
+		
+	}
+	
+	@Test
+	public void testDoNotDropColumn() {	
+		
+		SyncOptions opt = SyncOptions.withOptions().add(SyncOptionTypes.DoNotDropColumns);
+		SchemaSync.drop(keyspace, session, EntityWithIndexes.class);
+		SchemaSync.sync(keyspace, session, EntityWithIndexes.class);
+		SchemaSync.sync(keyspace, session, EntityWithIndexesV2.class, opt);
+		
+		EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(EntityWithIndexes.class);
+		TableMetadata tableMetadata = cluster.getMetadata().getKeyspace(keyspace).getTable(entityMetadata.getTableName());
+
+		// column counter2 should not be added
+		ColumnMetadata columnMetadata = tableMetadata.getColumn("counter2");
+		assertNull(columnMetadata);	
+		
+		// column counter should have been dropped
+		columnMetadata = tableMetadata.getColumn("counter");
+		assertNotNull(columnMetadata);	
+	}
+	
 }

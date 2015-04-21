@@ -29,7 +29,7 @@ import javax.persistence.Table;
 @Table(name="test_entity_index", 
 	   indexes = {
 		@Index(name="test_entity_email_Idx", columnList="email" ), 
-		@Index(name="test_entity_counter_idx", columnList="counter" ) 
+		@Index(name="test_entity_counter_idx", columnList="counter2" ) 
 })
 public class EntityWithIndexesV2 {
 	
@@ -39,8 +39,9 @@ public class EntityWithIndexesV2 {
 	private Date timestamp;
 	private Map<String, String> pets;
 	
-	@Column(name="counter") // override default name
+	@Column(name="counter2") // override default name
 	private long count;
+	
 	private UUID ref; // do persist
 	
 	public UUID getUuid() {
@@ -79,5 +80,4 @@ public class EntityWithIndexesV2 {
 	public void setPets(Map<String, String> pets) {
 		this.pets = pets;
 	}
-
 }

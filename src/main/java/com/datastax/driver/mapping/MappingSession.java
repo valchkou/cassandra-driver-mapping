@@ -37,6 +37,8 @@ import com.datastax.driver.mapping.option.BatchOptions;
 import com.datastax.driver.mapping.option.ReadOptions;
 import com.datastax.driver.mapping.option.WriteOptions;
 import com.datastax.driver.mapping.schemasync.SchemaSync;
+import com.datastax.driver.mapping.schemasync.SyncOptionTypes;
+import com.datastax.driver.mapping.schemasync.SyncOptions;
 import com.google.common.cache.Cache;
 
 /**
@@ -57,7 +59,7 @@ public class MappingSession {
 
     protected Session             session;
     protected String              keyspace;
-    protected boolean             doNotSync;
+    protected SyncOptions 		  syncOptions;
 
     public MappingSession() {
         super();
@@ -70,7 +72,7 @@ public class MappingSession {
      * @param session Initialized Datastax Session
      */
     public MappingSession(String keyspace, Session session) {
-        this(keyspace, session, false);
+        this(keyspace, session, SyncOptions.withOptions());
     }
 
     /**
@@ -84,9 +86,26 @@ public class MappingSession {
     public MappingSession(String keyspace, Session session, boolean doNotSync) {
         this.session = session;
         this.keyspace = keyspace;
-        this.doNotSync = doNotSync;
+        if (doNotSync) {
+        	syncOptions = SyncOptions.withOptions().add(SyncOptionTypes.DoNotSync);
+        }       
+    	
     }
 
+    /**
+     * Constructor
+     * 
+     * @param keyspace name
+     * @param session Initialized Datastax Session
+     * @param doNotSync if set to true the mappingSession will not synchronize
+     *        entity definition with Cassandra
+     */
+    public MappingSession(String keyspace, Session session, SyncOptions options) {
+        this.session = session;
+        this.keyspace = keyspace;
+        this.syncOptions = options;
+    }    
+    
     /**
      * Get Entity by Id(Primary Key)
      * 
@@ -688,19 +707,22 @@ public class MappingSession {
         }
     }
 
-    /** @return true if sync is turned off. */
+    /**
+     * use setSyncOptions() method instead 
+     */
+    @Deprecated
     public boolean isDoNotSync() {
-        return doNotSync;
+        return syncOptions.getGlobalOptions().contains(SyncOptionTypes.DoNotSync);
     }
 
     /**
-     * Turn sync off for all entities. Entity definitions will not be synced
-     * with Cassandra within this MappingSession.
-     * 
-     * @param doNotSynch true|false
+     * use setSyncOptions() method instead 
      */
+    @Deprecated
     public void setDoNotSync(boolean doNotSynch) {
-        this.doNotSync = doNotSynch;
+    	if (doNotSynch) {
+    		syncOptions = SyncOptions.withOptions().add(SyncOptionTypes.DoNotSync);
+    	}
     }
 
     /**
@@ -750,12 +772,12 @@ public class MappingSession {
 
     /** run sync if not yet done */
     protected void maybeSync(Class<?> clazz) {
-        if (doNotSync)
-            return; // forced to skip sync
+        if (syncOptions.isDoNotSync(clazz))
+            return; // forced to skip sync for this class
 
         EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
         if (!entityMetadata.isSynced(keyspace)) {
-            SchemaSync.sync(keyspace, session, clazz);
+            SchemaSync.sync(keyspace, session, clazz, syncOptions);
         }
     }
 
@@ -774,4 +796,12 @@ public class MappingSession {
     public void setKeyspace(String keyspace) {
         this.keyspace = keyspace;
     }
+
+	public SyncOptions getSyncOptions() {
+		return syncOptions;
+	}
+
+	public void setSyncOptions(SyncOptions syncOptions) {
+		this.syncOptions = syncOptions;
+	}
 }

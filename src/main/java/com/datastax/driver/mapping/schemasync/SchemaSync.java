@@ -37,11 +37,15 @@ public final class SchemaSync {
 	private SchemaSync() {}
 	
     public static synchronized void sync(String keyspace, Session session, Class<?> clazz) {
+    	sync(keyspace, session, clazz, null);    
+    }
+    
+    public static synchronized void sync(String keyspace, Session session, Class<?> clazz, SyncOptions syncOptions) {
     	
     	EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
     	if (entityMetadata.isSynced(keyspace)) return;
 
-    	List<RegularStatement> statements = buildSyncStatements(keyspace, session, entityMetadata);
+    	List<RegularStatement> statements = buildSyncStatements(keyspace, session, entityMetadata, syncOptions);
     	
     	for (RegularStatement stmt: statements) {
     		session.execute(stmt);
@@ -50,11 +54,12 @@ public final class SchemaSync {
     	entityMetadata.markSynced(keyspace);
     }
 
-    public static String getScript(String keyspace, Session session, Class<?> clazz) {
+    
+    public static String getScript(String keyspace, Session session, Class<?> clazz, SyncOptions syncOptions) {
         StringBuilder sb = new StringBuilder();
         EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
 
-        List<RegularStatement> statements = buildSyncStatements(keyspace, session, entityMetadata);
+        List<RegularStatement> statements = buildSyncStatements(keyspace, session, entityMetadata, syncOptions);
         
         for (RegularStatement stmt: statements) {
             sb.append(stmt.getQueryString());
@@ -63,10 +68,14 @@ public final class SchemaSync {
         
         return sb.toString();
     }
-    
-    public static void sync(String keyspace, Session session, Class<?>[] classes) {
+
+    public static String getScript(String keyspace, Session session, Class<?> clazz) {        
+        return getScript(keyspace, session, clazz, null);
+    }
+
+    public static void sync(String keyspace, Session session, Class<?>[] classes, SyncOptions syncOptions) {
     	for (Class<?> clazz: classes) {
-    		sync(keyspace, session, clazz);
+    		sync(keyspace, session, clazz, syncOptions);
     	}
     } 	
 
@@ -101,6 +110,33 @@ public final class SchemaSync {
 	}
     
     /**
+     * Generate alter, drop or create statements for the given Entity
+     *  
+     * @param keyspace
+     * @param session
+     * @param entityMetadata
+     * @param syncOptions
+     * @return RegularStatements
+     */
+    public static List<RegularStatement> buildSyncStatements(String keyspace, Session session, EntityTypeMetadata entityMetadata, SyncOptions syncOptions) {
+        String table = entityMetadata.getTableName();
+        
+        session.execute("USE "+keyspace);
+        Cluster cluster = session.getCluster();
+        KeyspaceMetadata keyspaceMetadata = cluster.getMetadata().getKeyspace(keyspace);
+        TableMetadata tableMetadata = keyspaceMetadata.getTable(table);
+        
+        List<RegularStatement> statements = new ArrayList<RegularStatement>();
+        
+        if (tableMetadata == null) {
+            statements = createTableStatements(keyspace, entityMetadata);
+        } else {
+            statements = alterTableStatements(keyspace, session, entityMetadata, syncOptions);
+        }
+        return statements;
+    }    
+    
+    /**
      * Built create statements on the provided class for table and indexes.
      * <p>
      * Statement will contain one CREATE TABLE and many or zero CREATE INDEX statements
@@ -121,23 +157,6 @@ public final class SchemaSync {
     	return statements;
 	}
     
-    private static List<RegularStatement> buildSyncStatements(String keyspace, Session session, EntityTypeMetadata entityMetadata) {
-        String table = entityMetadata.getTableName();
-        
-        session.execute("USE "+keyspace);
-        Cluster cluster = session.getCluster();
-        KeyspaceMetadata keyspaceMetadata = cluster.getMetadata().getKeyspace(keyspace);
-        TableMetadata tableMetadata = keyspaceMetadata.getTable(table);
-        
-        List<RegularStatement> statements;
-        if (tableMetadata == null) {
-            statements = createTableStatements(keyspace, entityMetadata);
-        } else {
-            statements = alterTableStatements(keyspace, session, entityMetadata);
-        }
-        return statements;
-    }
-    
     /**
      * Compare TableMetadata against Entity metadata and generate alter statements if necessary.
      * <p>
@@ -146,8 +165,15 @@ public final class SchemaSync {
      * @param class the class to generate statements for or indexed
      * @return a new {@code List<RegularStatement>}.
      */
-    private static <T> List<RegularStatement> alterTableStatements(String keyspace, Session session, EntityTypeMetadata entityMetadata) {
-    
+    private static <T> List<RegularStatement> alterTableStatements(String keyspace, Session session, EntityTypeMetadata entityMetadata, SyncOptions syncOptions) {
+    	
+    	boolean doNotAddCols  = false;
+    	boolean doDropCols  = true;
+    	if (syncOptions != null ) {
+    		List<SyncOptionTypes> opts = syncOptions.getOptions(entityMetadata.getEntityClass());
+    		doNotAddCols  = opts.contains(SyncOptionTypes.DoNotAddColumns);
+    		doDropCols  = !opts.contains(SyncOptionTypes.DoNotDropColumns);
+    	}
     	List<RegularStatement> statements = new ArrayList<RegularStatement>();
     	
     	// get EntityTypeMetadata
@@ -175,24 +201,30 @@ public final class SchemaSync {
     		}
     		
     		if (columnMetadata == null) {
-    			// if column not exists in TableMetadata then add column
+    			if (doNotAddCols) continue;
+    			// if column not exists in Cassandra then build add column Statement 
     			String colType = fieldType;
     			if (field.isGenericType()) {
     				colType = field.getGenericDef();
     			}
     			AlterTable statement = new AlterTable.Builder().addColumn(keyspace, table, column, colType);
     			statements.add(statement);
+    			if (fieldIndex != null) {
+    				statements.add(new DropIndex(column, fieldIndex));
+    				statements.add(new CreateIndex(keyspace, table, column, fieldIndex));    				
+    			}
     		} else if (colIndex!=null || fieldIndex!=null) {
     			if (colIndex == null) {
-    				statements.add(new CreateIndex(keyspace, table, column, entityMetadata.getIndex(column)));
+    				statements.add(new CreateIndex(keyspace, table, column, fieldIndex));
     			} else if (fieldIndex == null) {
-    				statements.add(new DropIndex(column, columnMetadata.getIndex().getName()));
+    				statements.add(new DropIndex(column, colIndex));
     			} else if (!"".equals(fieldIndex) && !fieldIndex.equals(colIndex)) {
-    				statements.add(new DropIndex(column, columnMetadata.getIndex().getName()));
-    				statements.add(new CreateIndex(keyspace, table, column, entityMetadata.getIndex(column)));
+    				statements.add(new DropIndex(column, colIndex));
+    				statements.add(new CreateIndex(keyspace, table, column, fieldIndex));
     			}
     			
     		} else if (!fieldType.equals(columnMetadata.getType().getName().name())) {
+    			// type has changed for the column
     			
     			// can't change datatype for clustered columns
     			if (tableMetadata.getClusteringColumns().contains(columnMetadata)) {
@@ -220,20 +252,22 @@ public final class SchemaSync {
     	}
     	
     	// column is in Cassandra but not in entity anymore
-		for (ColumnMetadata colmeta: tableMetadata.getColumns()) {
-			colmeta.getName();
-			boolean exists = false;
-			for (EntityFieldMetaData field: entityMetadata.getFields()) {
-				if (colmeta.getName().equalsIgnoreCase(field.getColumnName())) {
-					exists = true;
-					break;
+    	if (doDropCols) {
+			for (ColumnMetadata colmeta: tableMetadata.getColumns()) {
+				colmeta.getName();
+				boolean exists = false;
+				for (EntityFieldMetaData field: entityMetadata.getFields()) {
+					if (colmeta.getName().equalsIgnoreCase(field.getColumnName())) {
+						exists = true;
+						break;
+					}
 				}
-			}
-			if (!exists) {
-				AlterTable statement = new AlterTable.Builder().dropColumn(keyspace, table, colmeta.getName());
-    			statements.add(statement);
-			}
-		}	
+				if (!exists) {
+					AlterTable statement = new AlterTable.Builder().dropColumn(keyspace, table, colmeta.getName());
+	    			statements.add(statement);
+				}
+			}	
+    	}
     	
     	return statements;
     }    

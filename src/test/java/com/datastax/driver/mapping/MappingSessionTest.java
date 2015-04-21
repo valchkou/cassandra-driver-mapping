@@ -18,10 +18,14 @@ package com.datastax.driver.mapping;
 import com.datastax.driver.core.*;
 import com.datastax.driver.core.policies.DefaultRetryPolicy;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.utils.UUIDs;
 import com.datastax.driver.mapping.entity.*;
 import com.datastax.driver.mapping.meta.EntityFieldMetaData;
 import com.datastax.driver.mapping.meta.EntityTypeMetadata;
 import com.datastax.driver.mapping.option.WriteOptions;
+import com.datastax.driver.mapping.schemasync.SyncOptionTypes;
+import com.datastax.driver.mapping.schemasync.SyncOptions;
+
 import org.junit.*;
 
 import java.math.BigDecimal;
@@ -278,8 +282,8 @@ public class MappingSessionTest {
 		SimpleKey partition = new SimpleKey();
 		partition.setName("name");
 		partition.setRank(10);
-		partition.setT1(java.util.UUID.fromString(new com.eaio.uuid.UUID().toString()));
-		partition.setT2(java.util.UUID.fromString(new com.eaio.uuid.UUID().toString()));		
+		partition.setT1(UUIDs.timeBased());
+		partition.setT2(UUIDs.timeBased());		
 		
 		CompositeKey key = new CompositeKey();
 		key.setKey(partition);
@@ -304,14 +308,39 @@ public class MappingSessionTest {
 		loaded = target.get(EntityWithCompositeKey.class, key);
 		assertNull(loaded);
 	}
-	
+
+	@Test
+	public void saveAndGetAndDeleteWithCompoundClusteringKeyTest() throws Exception {
+		
+		ClusteringKey key = new ClusteringKey();
+		key.setExpense_id(100);
+		key.setUser("test");
+		Date created = new Date();
+		
+		EntityWithClusteringKey obj = new EntityWithClusteringKey();
+		obj.setKey(key);
+		obj.setTimestamp(1000); 
+		obj.setAsof(created);
+		
+		EntityWithClusteringKey loaded = target.get(EntityWithClusteringKey.class, key);
+		assertNull(loaded);
+		
+		target.save(obj);
+		loaded = target.get(EntityWithClusteringKey.class, key);
+		assertEquals(obj, loaded);
+		
+		target.delete(loaded);
+		loaded = target.get(EntityWithClusteringKey.class, key);
+		assertNull(loaded);
+	}
+
 	@Test
 	public void saveAndGetAndDeleteWithSimpleCompositeKeyTest() throws Exception {
 		SimpleKey key = new SimpleKey();
 		key.setName("name");
 		key.setRank(10);
-		key.setT1(java.util.UUID.fromString(new com.eaio.uuid.UUID().toString()));
-		key.setT2(java.util.UUID.fromString(new com.eaio.uuid.UUID().toString()));
+		key.setT1(UUIDs.timeBased());
+		key.setT2(UUIDs.timeBased());
 		
 		Date created = new Date();
 		
@@ -1026,7 +1055,7 @@ public class MappingSessionTest {
         UUID userId = UUID.randomUUID();
         UserWithAge user = new UserWithAge(userId, "user1", 100);
         assertNotNull(target.save(user));
-        target.doNotSync = true;
+        target.setSyncOptions(SyncOptions.withOptions().add(SyncOptionTypes.DoNotSync));
 
         // call sut
         target.get(UserWithoutAge.class, userId);
@@ -1048,7 +1077,10 @@ public class MappingSessionTest {
         target.save(e);
 
         e = target.get(EntityAutoBoxed.class, id);
-
+        e = target.get(EntityAutoBoxed.class, id);
+        e = target.get(EntityAutoBoxed.class, id);
+        e = target.get(EntityAutoBoxed.class, id);
+        
         assertEquals(Integer.valueOf(10), e.getAge());
         assertEquals(true, e.getIsGood());
         assertEquals(Double.valueOf(100.896), Double.valueOf(e.getBalance()));
