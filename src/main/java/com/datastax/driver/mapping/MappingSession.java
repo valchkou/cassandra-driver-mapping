@@ -59,11 +59,9 @@ public class MappingSession {
 
     protected Session             session;
     protected String              keyspace;
-    protected SyncOptions 		  syncOptions;
+    protected SyncOptions 		  syncOptions = SyncOptions.withOptions();;
 
-    public MappingSession() {
-        super();
-    }
+    public MappingSession() {}
     
     /**
      * Constructor
@@ -72,7 +70,8 @@ public class MappingSession {
      * @param session Initialized Datastax Session
      */
     public MappingSession(String keyspace, Session session) {
-        this(keyspace, session, SyncOptions.withOptions());
+        this.session = session;
+        this.keyspace = keyspace;
     }
 
     /**
@@ -83,11 +82,11 @@ public class MappingSession {
      * @param doNotSync if set to true the mappingSession will not synchronize
      *        entity definition with Cassandra
      */
+    @Deprecated
     public MappingSession(String keyspace, Session session, boolean doNotSync) {
-        this.session = session;
-        this.keyspace = keyspace;
+        this(keyspace, session);
         if (doNotSync) {
-        	syncOptions = SyncOptions.withOptions().add(SyncOptionTypes.DoNotSync);
+        	syncOptions = syncOptions.add(SyncOptionTypes.DoNotSync);
         }       
     	
     }
@@ -101,9 +100,10 @@ public class MappingSession {
      *        entity definition with Cassandra
      */
     public MappingSession(String keyspace, Session session, SyncOptions options) {
-        this.session = session;
-        this.keyspace = keyspace;
-        this.syncOptions = options;
+    	this(keyspace, session);
+        if (options != null) {
+        	this.syncOptions = options;
+        }
     }    
     
     /**

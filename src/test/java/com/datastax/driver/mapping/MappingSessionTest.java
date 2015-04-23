@@ -70,6 +70,32 @@ public class MappingSessionTest {
 		session.execute("DROP KEYSPACE IF EXISTS "+ keyspace);
 		EntityTypeParser.removeAll();
 	}
+
+	@Test
+	public void defaultConstructorTest() throws Exception {
+		UUID uuid = UUID.randomUUID();
+		EntityWithIndexes obj = new EntityWithIndexes();
+		obj.setCount(100);
+		obj.setEmail("email@at");
+		obj.setName("test");
+		obj.setTimeStamp(new Date());
+		obj.setUuid(uuid);
+		obj.setLongstamp((new Date()).getTime());
+		
+		MappingSession m = new MappingSession();
+		m.setKeyspace(keyspace);
+		m.setSession(session);
+		EntityWithIndexes loaded = m.get(EntityWithIndexes.class, uuid);
+		assertNull(loaded);
+		
+		m.save(obj);
+		loaded = m.get(EntityWithIndexes.class, uuid);
+		assertEquals(obj, loaded);
+		
+		m.delete(loaded);
+		loaded = m.get(EntityWithIndexes.class, uuid);
+		assertNull(loaded);
+	}
 	
 	@Test
 	public void saveAndGetAndDeleteTest() throws Exception {
@@ -96,7 +122,7 @@ public class MappingSessionTest {
 
 	@Test
 	public void doNotSyncTest() throws Exception {
-		MappingSession msession = new MappingSession(keyspace, session, true);
+		MappingSession msession = new MappingSession(keyspace, session, SyncOptions.withOptions().doNotSync());
 		try {
 			msession.get(Simple.class, UUID.randomUUID());
 		} catch (Exception e) {
