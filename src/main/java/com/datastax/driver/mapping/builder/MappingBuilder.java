@@ -413,9 +413,9 @@ public class MappingBuilder {
                     break;
                 case TIMESTAMP:
                 	if (cls == Date.class) {
-                		value = row.getDate(field.getColumnName());
+                		value = row.getTimestamp(field.getColumnName());
                 	} else {
-                		value = (row.getDate(field.getColumnName())).getTime();
+                		value = (row.getTimestamp(field.getColumnName())).getTime();
                 	}
                     break;
                 case UUID:

@@ -15,6 +15,8 @@
  */
 package com.datastax.driver.mapping.schemasync;
 
+import java.util.concurrent.TimeUnit;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -28,9 +30,15 @@ import static org.junit.Assert.assertNotNull;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
+import com.datastax.driver.core.Cluster.Builder;
+import com.datastax.driver.core.policies.ConstantReconnectionPolicy;
+import com.datastax.driver.core.policies.LatencyAwarePolicy;
+import com.datastax.driver.core.policies.RoundRobinPolicy;
 import com.datastax.driver.mapping.EntityTypeParser;
+import com.datastax.driver.mapping.MappingSession;
 import com.datastax.driver.mapping.entity.EntityWithCompositeKey;
 import com.datastax.driver.mapping.entity.EntityWithIndexes;
 import com.datastax.driver.mapping.entity.EntityWithIndexesV2;
@@ -38,6 +46,8 @@ import com.datastax.driver.mapping.entity.EntityWithProperties;
 import com.datastax.driver.mapping.entity.EntityWithTimeUUID;
 import com.datastax.driver.mapping.meta.EntityTypeMetadata;
 import com.datastax.driver.mapping.schemasync.SchemaSync;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 
 
 public class SchemaSyncTest {
@@ -49,23 +59,37 @@ public class SchemaSyncTest {
 	@BeforeClass 
 	public static void init() { 
 		String node = "127.0.0.1";
-		cluster = Cluster.builder().addContactPoint(node).build();
+		Builder builder = Cluster.builder();
+		builder.addContactPoint(node);
+		builder.withLoadBalancingPolicy(LatencyAwarePolicy.builder(new RoundRobinPolicy()).build());
+		builder.withReconnectionPolicy(new ConstantReconnectionPolicy(1000L));
+		cluster = builder.build();
 		session = cluster.connect();
-	}	
-	
+		
+		Cache<String, PreparedStatement> cache = CacheBuilder
+			    .newBuilder()
+			    .expireAfterAccess(1, TimeUnit.MILLISECONDS)
+			    .maximumSize(1)
+			    .concurrencyLevel(1)
+			    .build();
+
+		MappingSession.setStatementCache(cache);		
+	}
+
 	@AfterClass 
 	public static void clean() { 
 		try {
 			session.execute("DROP KEYSPACE IF EXISTS "+ keyspace);
+			session.close();
+			cluster.close();
 		} catch (Exception e) {
 			System.out.println(e);
 		}
-		
 	}	
 	
 	@Before
 	public void setUp() {
-		session.execute("CREATE KEYSPACE IF NOT EXISTS "+ keyspace +" WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 3 }");
+		session.execute("CREATE KEYSPACE IF NOT EXISTS "+ keyspace +" WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 }");
 		session.execute("USE "+keyspace);
 		
 	}

@@ -2,14 +2,14 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.valchkou.datastax</groupId>
   <artifactId>cassandra-driver-mapping</artifactId>
-  <version>2.1.5</version>
+  <version>2.2.0-rc1</version>
   <packaging>jar</packaging>	
   <name>Entity Mapping Addon for DataStax Java Driver</name>
   <description>Entity Mapping Addon JPA 2.1 compatible  for DataStax Java Driver 2.0+ for Cassandra. </description>
   <url>https://github.com/valchkou/cassandra-driver-mapping</url>
 	<properties>
-		<java-src-version>1.6</java-src-version>
-		<java-compile-version>1.6</java-compile-version>
+		<java-src-version>1.7</java-src-version>
+		<java-compile-version>1.7</java-compile-version>
 	</properties>
   <parent>
     <groupId>org.sonatype.oss</groupId>
@@ -29,7 +29,7 @@
 		<dependency>
 		  <groupId>com.datastax.cassandra</groupId>
 		  <artifactId>cassandra-driver-core</artifactId>
-		  <version>2.1.5</version>
+		  <version>2.2.0-rc1</version>
 		</dependency>
 		
 		<!-- Test -->
@@ -100,7 +100,7 @@
     <connection>scm:git:git://github.com/valchkou/cassandra-driver-mapping.git</connection>
     <developerConnection>scm:git:git@github.com:valchkou/cassandra-driver-mapping.git</developerConnection>
     <url>https://github.com/valchkou/cassandra-driver-mapping</url>
-    <tag>cassandra-driver-mapping-2.1.4</tag>
+    <tag>cassandra-driver-mapping-2.2.0-rc1</tag>
   </scm>
 
   <developers>
