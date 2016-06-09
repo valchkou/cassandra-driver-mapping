@@ -10,7 +10,7 @@ Entity definition will be automatically [synchronized with C*](#sync) .
 
 Add-on is not replacement for the Driver but lightweight Object Mapper on top of it.  
 You still can utilize full power of the Driver API and Datastax documentation.     
-Mapping Add-on relies on JPA 2.1 and [Driver 3](http://www.datastax.com/documentation/developer/java-driver/2.1/common/drivers/introduction/introArchOverview_c.html) (which means support for Cassandra 2,  Binary Protocol and [CQL3](http://www.datastax.com/documentation/cql/3.1/cql/cql_reference/cqlReferenceTOC.html)) 
+Mapping Add-on relies on JPA 2.1 and [Driver 3](http://docs.datastax.com/en/developer/java-driver/3.0/java-driver/whatsNew2.html) (which means support for Cassandra 2,  Binary Protocol and [CQL3](http://www.datastax.com/documentation/cql/3.1/cql/cql_reference/cqlReferenceTOC.html)) 
 
 	IMPORTANT!!!
 Starting ver 2.1.0 Datastax released simple [Object Mapping API.](http://www.datastax.com/documentation/developer/java-driver/2.1/java-driver/reference/objectMappingApi.html)  
