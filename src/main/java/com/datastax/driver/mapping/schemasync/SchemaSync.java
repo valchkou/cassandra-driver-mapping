@@ -98,11 +98,11 @@ public final class SchemaSync {
     	    session.execute("USE "+keyspace);
     	    
     		// drop indexes
-    		for (ColumnMetadata columnMetadata: tableMetadata.getColumns()) {
+    		/*for (ColumnMetadata columnMetadata: tableMetadata.getColumns()) {
     			if (columnMetadata.getIndex() != null) {
     				session.execute(new DropIndex(keyspace, columnMetadata.getIndex().getName()));
     			}
-    		}
+    		}*/
     		
     		// drop table
     		session.execute(new DropTable(keyspace, entityMetadata));
@@ -191,9 +191,9 @@ public final class SchemaSync {
     		ColumnMetadata columnMetadata = tableMetadata.getColumn(column);
     		
     		String colIndex = null;
-    		if (columnMetadata!= null && columnMetadata.getIndex() != null) {
+    		/*if (columnMetadata!= null && columnMetadata.getIndex() != null) {
     			colIndex = columnMetadata.getIndex().getName();
-    		}
+    		}*/
     		
     		String fieldIndex = null;
     		if (entityMetadata.getIndex(column) != null) {
@@ -237,9 +237,9 @@ public final class SchemaSync {
     			}
     			
     			// drop index if any
-    			if (columnMetadata.getIndex() != null) {
+    			/*if (columnMetadata.getIndex() != null) {
     				statements.add(new DropIndex(column, columnMetadata.getIndex().getName()));
-    			}
+    			}*/
 
     			// alter column datatype
     			statements.add(new AlterTable.Builder().alterColumn(keyspace, table, column, fieldType));

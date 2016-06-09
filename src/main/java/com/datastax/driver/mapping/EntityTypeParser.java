@@ -20,10 +20,11 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.InetAddress;
+import java.nio.ByteBuffer;
+import java.util.*;
 
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
@@ -55,21 +56,21 @@ public class EntityTypeParser {
 
     static {
         // Mapping java types to DATASTAX driver types
-        javaTypeToDataType.put(DataType.Name.INET.asJavaClass(), DataType.Name.INET);
-        javaTypeToDataType.put(DataType.Name.BLOB.asJavaClass(), DataType.Name.BLOB);
-        javaTypeToDataType.put(DataType.Name.BOOLEAN.asJavaClass(), DataType.Name.BOOLEAN);
-        javaTypeToDataType.put(DataType.Name.TEXT.asJavaClass(), DataType.Name.TEXT);
-        javaTypeToDataType.put(DataType.Name.TIMESTAMP.asJavaClass(), DataType.Name.TIMESTAMP);
-        javaTypeToDataType.put(DataType.Name.UUID.asJavaClass(), DataType.Name.UUID);
-        javaTypeToDataType.put(DataType.Name.INT.asJavaClass(), DataType.Name.INT);
-        javaTypeToDataType.put(DataType.Name.DOUBLE.asJavaClass(), DataType.Name.DOUBLE);
-        javaTypeToDataType.put(DataType.Name.FLOAT.asJavaClass(), DataType.Name.FLOAT);
-        javaTypeToDataType.put(DataType.Name.BIGINT.asJavaClass(), DataType.Name.BIGINT);
-        javaTypeToDataType.put(DataType.Name.DECIMAL.asJavaClass(), DataType.Name.DECIMAL);
-        javaTypeToDataType.put(DataType.Name.VARINT.asJavaClass(), DataType.Name.VARINT);
-        javaTypeToDataType.put(DataType.Name.MAP.asJavaClass(), DataType.Name.MAP);
-        javaTypeToDataType.put(DataType.Name.LIST.asJavaClass(), DataType.Name.LIST);
-        javaTypeToDataType.put(DataType.Name.SET.asJavaClass(), DataType.Name.SET);
+        javaTypeToDataType.put(InetAddress.class, DataType.Name.INET);
+        javaTypeToDataType.put(ByteBuffer.class, DataType.Name.BLOB);
+        javaTypeToDataType.put(Boolean.class, DataType.Name.BOOLEAN);
+        javaTypeToDataType.put(String.class, DataType.Name.TEXT);
+        javaTypeToDataType.put(Date.class, DataType.Name.TIMESTAMP);
+        javaTypeToDataType.put(UUID.class, DataType.Name.UUID);
+        javaTypeToDataType.put(Integer.class, DataType.Name.INT);
+        javaTypeToDataType.put(Double.class, DataType.Name.DOUBLE);
+        javaTypeToDataType.put(Float.class, DataType.Name.FLOAT);
+        javaTypeToDataType.put(Long.class, DataType.Name.BIGINT);
+        javaTypeToDataType.put(BigDecimal.class, DataType.Name.DECIMAL);
+        javaTypeToDataType.put(BigInteger.class, DataType.Name.VARINT);
+        javaTypeToDataType.put(Map.class, DataType.Name.MAP);
+        javaTypeToDataType.put(List.class, DataType.Name.LIST);
+        javaTypeToDataType.put(Set.class, DataType.Name.SET);
         javaTypeToDataType.put(boolean.class, DataType.Name.BOOLEAN);
         javaTypeToDataType.put(int.class, DataType.Name.INT);
         javaTypeToDataType.put(long.class, DataType.Name.BIGINT);
