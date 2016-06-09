@@ -16,7 +16,9 @@
 package com.datastax.driver.mapping.schemasync;
 
 import java.nio.ByteBuffer;
+import java.util.Map;
 
+import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.mapping.meta.EntityTypeMetadata;
@@ -43,17 +45,12 @@ public class DropTable extends RegularStatement {
 	}
 
 	@Override
-	public ByteBuffer getRoutingKey() {
-		return null;
-	}
-
-	@Override
 	public String getKeyspace() {
 		return keyspace;
 	}
 
     @Override
-    public ByteBuffer[] getValues(ProtocolVersion arg0) {
+    public ByteBuffer[] getValues(ProtocolVersion arg0, CodecRegistry codecRegistry) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -66,6 +63,30 @@ public class DropTable extends RegularStatement {
 		// TODO Auto-generated method stub
 		return false;
 	}
-	
+
+    @Override
+    public boolean usesNamedValues() {
+    	return false;
+    }
+
+    @Override
+    public boolean hasValues(CodecRegistry codecRegistry) {
+    	return false;
+    }
+
+    @Override
+    public Map<String, ByteBuffer> getNamedValues(ProtocolVersion protocolVersion, CodecRegistry codecRegistry) {
+    	return null;
+    }
+
+    @Override
+    public String getQueryString(CodecRegistry codecRegistry) {
+    	return null;
+    }
+
+    @Override
+    public ByteBuffer getRoutingKey(ProtocolVersion protocolVersion, CodecRegistry codecRegistry) {
+    	return null;
+    }
 
 }
