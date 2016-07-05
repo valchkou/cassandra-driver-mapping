@@ -15,8 +15,10 @@
  */
 package com.datastax.driver.mapping.meta;
 
-import java.lang.reflect.Field; 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.logging.Logger;
 
 import com.datastax.driver.core.DataType;
@@ -27,78 +29,86 @@ import com.datastax.driver.core.DataType.Name;
  */
 public class EntityFieldMetaData {
 	private static final Logger log = Logger.getLogger(EntityFieldMetaData.class.getName());
-	private Field field;
-	private Method getter;
-	private Method setter;
+	private final Field field;
+	private final Method getter;
+	private final Method setter;
 	private String genericDef;
 	private Class<?> collectionType;
 
-	private Name dataType;
-	private String columnName;
+	private final Name dataType;
+	private final String columnName;
 	private boolean isPrimary;
 	private boolean isPartition;
 	private boolean isStatic;
 	private boolean autoGenerate;
-	
-	public EntityFieldMetaData(Field field, DataType.Name dataType, Method getter, Method setter, String columnName) {
+
+	public EntityFieldMetaData(final Field field, final DataType.Name dataType, final Method getter, final Method setter, final String columnName) {
 		this.field = field;
 		this.getter = getter;
 		this.setter = setter;
 		this.dataType = dataType;
 		this.columnName = columnName;
 	}
-	
+
 	public Class<?> getType() {
 		return field.getType();
 	}
-	
+
+	public Type[] getTypeParameters() {
+		Type genericType = field.getGenericType();
+		if (!(genericType instanceof ParameterizedType)) {
+			return null;
+		}
+		return ((ParameterizedType) genericType).getActualTypeArguments();
+	}
+
 	public DataType.Name getDataType() {
 		return dataType;
 	}
-	
+
 	public String getName() {
 		return field.getName();
 	}
-	
+
 	/**
 	 * get the value from given object using reflection on public getter method
 	 * @param entity - object instance the value will be retrieved from
-	 */	
-	public <E> Object getValue(E entity) {
+	 */
+	public <E> Object getValue(final E entity) {
 		try {
-			Object ret = getter.invoke(entity, new Object[]{});
+			Object ret = getter.invoke(entity, new Object[] {});
 			if (field.getType().isEnum()) {
-				return ((Enum<?>)ret).name();
+				return ((Enum<?>) ret).name();
 			}
-			return ret;			
+			return ret;
 		} catch (Exception e) {
-			log.info("Can't get value for obj:"+entity+", method:"+getter.getName());
+			log.info("Can't get value for obj:" + entity + ", method:" + getter.getName());
 		}
 		return null;
 	}
-	
+
 	/**
 	 * set the value on given object using reflection on public setter method
 	 * @param entity - object instance the value will be set to
 	 * @param value
 	 */
-	public <E> void setValue(E entity, Object value) {
+	public <E> void setValue(final E entity, final Object value) {
 		try {
 			if (field.getType().isEnum()) {
-				Object eval = Enum.valueOf((Class<Enum>)field.getType(), (String)value);
-				setter.invoke(entity, new Object[]{eval});
+				Object eval = Enum.valueOf((Class<Enum>) field.getType(), (String) value);
+				setter.invoke(entity, new Object[] { eval });
 			} else {
-			    setter.invoke(entity, new Object[]{value});
+				setter.invoke(entity, new Object[] { value });
 			}
 		} catch (Exception e) {
-			log.info("Can't set value for obj:"+entity+", method:"+setter.getName());
+			log.info("Can't set value for obj:" + entity + ", method:" + setter.getName());
 		}
 	}
 
 	/**
 	 * String representation of generic modifier on the field
-	 * 
-	 * @return 
+	 *
+	 * @return
 	 */
 	public String getGenericDef() {
 		return genericDef;
@@ -109,13 +119,13 @@ public class EntityFieldMetaData {
 	 * samples: list<text>, set<float>, map<bigint>
 	 * @param genericDef
 	 */
-	public void setGenericDef(String genericDef) {
+	public void setGenericDef(final String genericDef) {
 		this.genericDef = genericDef;
 	}
-	
+
 	/**
 	 * indicates if the field has generic modifier
-	 * 
+	 *
 	 */
 	public boolean isGenericType() {
 		return genericDef != null;
@@ -133,7 +143,7 @@ public class EntityFieldMetaData {
 		return isPrimary;
 	}
 
-	public void setPrimary(boolean isPrimary) {
+	public void setPrimary(final boolean isPrimary) {
 		this.isPrimary = isPrimary;
 	}
 
@@ -141,7 +151,7 @@ public class EntityFieldMetaData {
 		return isPartition;
 	}
 
-	public void setPartition(boolean isPartition) {
+	public void setPartition(final boolean isPartition) {
 		this.isPartition = isPartition;
 	}
 
@@ -149,27 +159,27 @@ public class EntityFieldMetaData {
 		return collectionType;
 	}
 
-	public void setCollectionType(Class<?> collectionType) {
+	public void setCollectionType(final Class<?> collectionType) {
 		this.collectionType = collectionType;
 	}
-	
+
 	public boolean hasCollectionType() {
 		return collectionType != null;
 	}
 
-    public boolean isStatic() {
-        return isStatic;
-    }
+	public boolean isStatic() {
+		return isStatic;
+	}
 
-    public void setStatic(boolean isStatic) {
-        this.isStatic = isStatic;
-    }
+	public void setStatic(final boolean isStatic) {
+		this.isStatic = isStatic;
+	}
 
-    public boolean isAutoGenerate() {
-        return autoGenerate;
-    }
+	public boolean isAutoGenerate() {
+		return autoGenerate;
+	}
 
-    public void setAutoGenerate(boolean autoGenerate) {
-        this.autoGenerate = autoGenerate;
-    }	
+	public void setAutoGenerate(final boolean autoGenerate) {
+		this.autoGenerate = autoGenerate;
+	}
 }
