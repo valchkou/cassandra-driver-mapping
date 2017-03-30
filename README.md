@@ -1,3 +1,11 @@
+========================
+NOTICE:
+UPGRADE TO LATEST DRIVER IS IN PROGRESS
+========================
+New version will have major refactoring and improvements.
+Please be patient and stay tuned.
+
+
 cassandra-driver-mapping
 ========================
   
