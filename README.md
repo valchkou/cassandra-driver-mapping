@@ -94,6 +94,7 @@ Module versioning policy matches underlying datastax driver core versioning.
 - Init Mapping Session.  
 MappingSession is cheap to instantiate and it is not replacement for the Datastax Session.   
 You can instantiate as many mapping sessions as you want. It's threadsafe.  
+
 ```java
 	import com.datastax.driver.core.Session;
 	import com.datastax.driver.mapping.MappingSession;
