@@ -54,7 +54,7 @@ Mapping Add-on relies on JPA 2.1 and Driver 3+
 	* [Lightweight transactions](#lock_transactions)
 	* [@Version](#lock_version)
 
-<a name="features"/>
+<a name="features"/>  
 ### Features
 
 The features provided by the module include:
@@ -73,7 +73,7 @@ The features provided by the module include:
   	* Drop table.
   	* Generate Script.
 
-<a name="start"/> 
+<a name="start"/>  
 ### Jump Start
 
 <a name="jump_maven"/>
