@@ -79,8 +79,10 @@ The features provided by the module include:
 ### Jump Start
 
 <a name="jump_maven"/>
-- Maven Dependency.  
+
+- Maven Dependency.    
 Install in your application from Maven Central using the following dependency:
+
 ```xml
     <dependency>
       <groupId>com.valchkou.datastax</groupId>
@@ -88,6 +90,7 @@ Install in your application from Maven Central using the following dependency:
       <version>3.0.0</version>
     </dependency>
 ```
+
 All new changes and bugfixes are released within the latest version as soon as coded.
 Module versioning policy matches underlying datastax driver core versioning.
 
