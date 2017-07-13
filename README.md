@@ -737,8 +737,6 @@ CQL3 Statement
 
 #### Table Properties  
 
-This feature is not JPA standard! [ Read more about C* Table properties ] (http://www.datastax.com/documentation/cql/3.1/cql/cql_reference/cql_storage_options_c.html)
-
 ```java
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -800,10 +798,8 @@ CQL3 Statement
 <a name="mapping_datatype"/>
 
 #### Override Column Type, TIMEUUID.
-
-Datastax defines [data type mapping from Java to C*] (http://www.datastax.com/documentation/developer/java-driver/2.0/java-driver/reference/javaClass2Cql3Datatypes_r.html).  
-This addon defines opposite way mapping. [You can explore daults here](#metadata).    
-But in case you don't like defaults you are able to override the type on the column level.   
+    
+In case you don't like defaults you are able to override the type on the column level.   
 For example you want to leverage "time UUID" for timeseries data instead of "random UUID".  
 ```java
 import javax.persistence.Id;
@@ -831,7 +827,7 @@ CQL3 Statement
 
 #### Mixed Case for Column Names 
 
-[C* converts all names to lowercase](http://www.datastax.com/documentation/cql/3.1/cql/cql_reference/ucase-lcase_r.html). This is default and recommended approach.  
+Cassandra converts all names to lowercase. This is default and recommended approach.  
 But in case you need enforce the case you will need to wrap you names in double quotes. 
 ```java
 import javax.persistence.Id;
@@ -899,7 +895,6 @@ CQL3 Statement
 ```
    CREATE TABLE IF NOT EXISTS ks.entity (id uuid, cats list<text>, dogs set<timestamp>, pets map<text, varint>,  PRIMARY KEY(id))
 ```     
-For more info on collections please refer [Datastax Using Collection] (http://www.datastax.com/documentation/cql/3.1/cql/cql_using/use_collections_c.html)
 
 <a name="mapping_ttl"/>
 
@@ -924,8 +919,6 @@ mappingSession.save(entity, new WriteOptions().setTtl(600)); // expires in 10 mi
 <a name="mapping_static"/>
 
 #### Static columns
-
-[what is it?](http://www.datastax.com/dev/blog/cql-in-2-0-6)
 
 ```java
 import com.datastax.driver.mapping.annotation.Static;
@@ -1017,7 +1010,7 @@ public class DateUtil {
 Cassandra does not have built-in locking. But it supports conditional writes with Lightweight Transactions.
  
 Mapping Add-on enables optimistic locking using annotation @Version which utilizes Lightweight Transactions feature.  
-The property must be of "long" data type. Whenever you save entity the version get incremented and as result of operation updated entity is retirned. On attempt to save not-the-latest one the "null" will be returned and no error will be thrown.
+The property must be of "long" data type. Whenever you save entity the version gets incremented and as result of operation the updated entity is returned. On attempt to save not-the-latest one the "null" will be returned and no error will be thrown.
 
 ```java
 	
