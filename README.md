@@ -1025,6 +1025,7 @@ C* supports conditional UPDATE/INSERT using IF/IF NOT EXISTS keywords. When "IF"
 - @Version  
 Mapping Add-on enables optimistic locking using annotation @Version.  
 The property must be of "long" data type. Whenever you save entity the version get incremented and as result of operation updated entity is retirned. If you try to save not-the-latest one then "null" will be returned instead and no error will be thrown.
+
 ```java
 	
 	import javax.persistence.Id;
@@ -1068,4 +1069,3 @@ The property must be of "long" data type. Whenever you save entity the version g
 		saved = mappingSession.save(obj1);
 		assertNull(saved);
 	}		
-```
