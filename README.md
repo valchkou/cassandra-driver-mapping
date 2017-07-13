@@ -75,6 +75,7 @@ The features provided by the module include:
   	* Generate Script.
 
 <a name="start"/>  
+
 ### Jump Start
 
 <a name="jump_maven"/>
@@ -110,13 +111,14 @@ Prior using MappingSession you need to open the Datastax Session and create the 
 Or look at the [Spring Framework Example](https://github.com/valchkou/SpringFrameworkCassandraSample).
 
 <a name="jump_save"/>
-- Save.
+
+- Save.  
 ```java
 	Entity entity = new Entity();
 	mappingSession.save(entity);
 ```
 
-- Get.
+- Get.  
 ```java
 	Entity entity = mappingSession.get(Entity.class, id);
 ```
