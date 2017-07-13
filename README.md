@@ -1009,22 +1009,12 @@ public class DateUtil {
 
 <a name="lock"/>
 
-### Optimistic Lock
+### Optimistic Lock & @Version
 
-C* does not support locking. But it provides ability for [Optimistic Concurrency Control] (http://en.wikipedia.org/wiki/Optimistic_concurrency_control).  
-While running, transactions use data resources without acquiring locks on those resources. Before committing, each transaction verifies that no other transaction has modified the data it has read. If the check reveals conflicting modifications, the committing transaction rolls back and can be restarted.  
-This section explains how you can achieve this with C* and Mapping Add-on
-
-
-<a name="lock_transactions"/>
-- Lightweight Transactions  
-I don't know why they call it Lightweight Transactions. Those transactions are much heavier than normal C* transactions. Read more about [Datastax Lightweight Transactions.] (http://www.datastax.com/documentation/cassandra/2.0/cassandra/dml/dml_ltwt_transaction_c.html)  
-C* supports conditional UPDATE/INSERT using IF/IF NOT EXISTS keywords. When "IF" condition is not met write doesn't happen. The boolean flag "[applied]" is returned.
-
-<a name="lock_version"/>
-- @Version  
-Mapping Add-on enables optimistic locking using annotation @Version.  
-The property must be of "long" data type. Whenever you save entity the version get incremented and as result of operation updated entity is retirned. If you try to save not-the-latest one then "null" will be returned instead and no error will be thrown.
+Cassandra does not have built-in locking. But it supports conditional writes with Lightweight Transactions.
+ 
+Mapping Add-on enables optimistic locking using annotation @Version which utilizes Lightweight Transactions feature.  
+The property must be of "long" data type. Whenever you save entity the version get incremented and as result of operation updated entity is retirned. On attempt to save not-the-latest one the "null" will be returned and no error will be thrown.
 
 ```java
 	
