@@ -6,18 +6,16 @@ This Add-on allows you to synchronize schema automatically and persist JPA annot
 
 No mapping files, no scripts, no configuration files.  
 No need to create Tables and Indexes for your Entity manually.  
-Entity definition will be automatically [synchronized with Cassandra](#sync) .
+Entity definition will be automatically synchronized with Cassandra.
 
 Add-on is not replacement for the Driver but lightweight Object Mapper on top of it.  
 You still can utilize full power of the Driver API and Datastax documentation.     
 Mapping Add-on relies on JPA 2.1 and Driver 3+
 
 
-[More Usage Samples in Unit Tests]
-(https://github.com/valchkou/cassandra-driver-mapping/blob/master/src/test/java/com/datastax/driver/mapping/)
+[More Usage Samples in Unit Tests](https://github.com/valchkou/cassandra-driver-mapping/blob/master/src/test/java/com/datastax/driver/mapping/)
 
-[Spring Framework Example]
-(https://github.com/valchkou/SpringFrameworkCassandraSample)
+[Spring Framework Example](https://github.com/valchkou/SpringFrameworkCassandraSample)
 
 ### Table of Contents  
 - [Features](#features)  
@@ -109,8 +107,17 @@ You can instantiate as many mapping sessions as you want. It's threadsafe.
 ```  
 
 Underlying Datastax Session does all the heavylifting and is expansive.   
-Prior using MappingSession you need to open the Datastax Session and create the Keyspace using the standard Datastax Driver API. If you are not familiar with procedure please refer to [Datastax Dcumentation](http://www.datastax.com/documentation/developer/java-driver/2.0/java-driver/quick_start/qsQuickstart_c.html).  
+Prior using MappingSession you need to open the Datastax Session and create the Keyspace using the standard Datastax Driver API. If you are not familiar with procedure please refer to [Datastax Dcumentation](http://docs.datastax.com/en/developer/java-driver/3.3/manual/). 
 Or look at the [Spring Framework Example](https://github.com/valchkou/SpringFrameworkCassandraSample).
+Quick Overview  
+```java
+Cluster cluster = Cluster.builder()
+        .withClusterName("myCluster")
+        .addContactPoint("127.0.0.1")
+        .build();
+	
+Session session = cluster.connect();	
+```
 
 <a name="jump_save"/>
 
