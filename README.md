@@ -94,30 +94,28 @@ Module versioning policy matches underlying datastax driver core versioning.
 <a name="jump_init"/>
 
 - Init Mapping Session.   
-MappingSession is cheap to instantiate and it is not replacement for the Datastax Session.   
-You can instantiate as many mapping sessions as you want. It's threadsafe.  
+MappingSession is your interface to mapper. You can instantiate as many mapping sessions as you want. It's threadsafe.  
 
 ```java
 	import com.datastax.driver.core.Session;
+	import com.datastax.driver.core.Cluster;
 	import com.datastax.driver.mapping.MappingSession;
 	...
     	
-	Session session; // initialize datastax session.
+	// initialize standard datastax session.
+	Cluster cluster = Cluster.builder()
+        .withClusterName("myCluster").addContactPoint("127.0.0.1").build();
+	
+	// initialize standard datastax session.
+	Session session = cluster.connect();
+		
+	// initialize mapping.
 	MappingSession mappingSession = new MappingSession("keyspace_name", session);
 ```  
-
+MappingSession is very lightweight.
 Underlying Datastax Session does all the heavylifting and is expansive.   
-Prior using MappingSession you need to open the Datastax Session and create the Keyspace using the standard Datastax Driver API. If you are not familiar with procedure please refer to [Datastax Dcumentation](http://docs.datastax.com/en/developer/java-driver/3.3/manual/). 
+For more info about Datastax Session please refer to [Datastax Dcumentation](http://docs.datastax.com/en/developer/java-driver/3.3/manual/). 
 Or look at the [Spring Framework Example](https://github.com/valchkou/SpringFrameworkCassandraSample).
-Quick Overview  
-```java
-Cluster cluster = Cluster.builder()
-        .withClusterName("myCluster")
-        .addContactPoint("127.0.0.1")
-        .build();
-	
-Session session = cluster.connect();	
-```
 
 <a name="jump_save"/>
 
