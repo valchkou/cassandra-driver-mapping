@@ -181,8 +181,8 @@ More samples below:
 
 #### Write
 
-<a name="write"/>
-- Synchronous.
+
+- Synchronous.  
 ```java
     /** Persist Entity */
     save(entity);
