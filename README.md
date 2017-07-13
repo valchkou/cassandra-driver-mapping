@@ -178,6 +178,7 @@ Asynchronous samples are in UnitTests [MappingSessionAsyncTest.java](https://git
 More samples below:
 
 <a name="write"/>
+
 #### Write
 
 <a name="write"/>
@@ -220,7 +221,8 @@ More samples below:
     
 ```
 - Asynchronous.  
-All async methods run by datastax session.executeasync() and Datastax ResultSetFuture is returned.
+All async methods run by datastax session.executeasync() and Datastax ResultSetFuture is returned.  
+
 ```java
 
     /** Asynchronously Persist Entity */
@@ -259,10 +261,13 @@ All async methods run by datastax session.executeasync() and Datastax ResultSetF
     replaceAtAsync(id, Entity.class, propertyName, item, index, writeOptions);
 ```
 <a name="write_opt"/>
-- Write Options.   
+
+- Write Options. 
+
 Save/Upate methods accept "WriteOptions" argument.   
 Supported write options are: ConsistencyLevel, RetryPolicy, Timestamp, TTL.  
 Examples:
+
 ```java
 	import com.datastax.driver.mapping.option.WriteOptions;
 	import com.datastax.driver.core.policies.DefaultRetryPolicy;
@@ -286,12 +291,16 @@ Examples:
 ```
 
 <a name="write_col"/>
-- Collections Samples.  
+
+- Collections Samples. 
+
 You can work with your collection properties as you would normally work with other entity properties.  
 In addition C* provides optimized operations on collections. Those operations do not require to load and save the whole entity. C* allows us directly manipulate collections.   
 
 <a name="collections_list"/>
+
 - List operations
+
 ```java
 // append item to list
 mappingSession.append(id, Entity.class, "cats", "Black Cat");
@@ -325,7 +334,9 @@ mappingSession.deleteValue(id, Entity.class, "cats");
 ```
 
 <a name="collections_set"/>
+
 - Set operations
+
 ```java
 // append item
 mappingSession.append(id, Entity.class, "dogs", "Black Dog");
@@ -353,7 +364,9 @@ mappingSession.deleteValue(id, Entity.class, "dogs");
 ```
 
 <a name="collections_map"/>
+
 - Map operations
+
 ```java
 /** append item */
 Map<String, BigInteger> pets = new HashMap<String, BigInteger>();
@@ -372,6 +385,7 @@ mappingSession.deleteValue(id, Entity.class, "pets");
 ```
 
 <a name="read"/>
+
 #### Read
 
 ```java
@@ -399,7 +413,9 @@ mappingSession.deleteValue(id, Entity.class, "pets");
     
 ```
 <a name="read_opt"/>
+
 - Supported Read Options: ConsistencyLevel, RetryPolicy:
+
 ```java
 	import com.datastax.driver.mapping.option.ReadOptions;
 	import com.datastax.driver.core.policies.DefaultRetryPolicy;
@@ -414,11 +430,13 @@ mappingSession.deleteValue(id, Entity.class, "pets");
 ```
 
 <a name="queries_mapping"/>
+
 - Custom Queries.  
 This section describes how to use your Custom Queries with the Mapping Module.  
 There are two ways to run and map Custom Query    
 
 1) run using mapping session
+
 ```java
 import com.datastax.driver.mapping.MappingSession;
 ...
@@ -426,6 +444,7 @@ List<Entity> result = mappingSession.getByQuery(Entity.class, query);
 ```
 
 2) run using DataStax session and map the ResultSet
+
 ```java
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.ResultSet;
@@ -436,7 +455,7 @@ List<Entity> result = mappingSession.getFromResultSet(Entity.class, rs);
 ```
 Section below describes how you can build Custom Queries.
 
-- CQL String
+- CQL String  
 ```java
 	import com.datastax.driver.mapping.MappingSession;
 	... 
@@ -452,6 +471,7 @@ Section below describes how you can build Custom Queries.
 Datastax Driver shipped with a tool to build CQL statement.  
 You can build your query with Datastax QueryBuilder and map ResultSet on Entity.  
 QueryBuilder ensures you build correct CQL.
+
 ```java
 				
 	import com.datastax.driver.core.Statement;
@@ -468,7 +488,7 @@ QueryBuilder ensures you build correct CQL.
 
 - QueryBuilder with EntityMetadata (Even Better)  
 In early stages you may often change table and column names.  
-To avoid changing queries each time you rename something you can employ entity metadata.
+To avoid changing queries each time you rename something you can employ entity metadata.  
 ```java
 	import com.datastax.driver.core.Statement;
 	import com.datastax.driver.core.querybuilder.QueryBuilder;
@@ -492,10 +512,13 @@ To avoid changing queries each time you rename something you can employ entity m
 ```
 
 <a name="queries_gnomes"/>
+
 - Any-to-Any and Magic Gnomes  
+
 This is the coolest feature of the module. Your Entity doesn't have to match the table.  
 You can populate any entity from any query (Any-to-Any).  
-Consider example: 
+Consider example:  
+
 ```java
 	public class AnyObject {
 		private String name;
@@ -504,6 +527,7 @@ Consider example:
 	}
 ```
 You can populate this object from any ResultSet which contains 'name' and 'age' columns.  
+
 ```java
 	ResultSet rs = session.execute("SELECT name, age, birth_date, salary FROM person");	
 	List<AnyObject> result = mappingSession.getFromResultSet(AnyObject.class, rs);
@@ -516,7 +540,9 @@ Many thank to magic gnomes under the hood making all these work.
 
 
 <a name="delete"/>
+
 #### Delete
+
 ```java
     /** Delete Entity  */
     delete(entity);
@@ -539,7 +565,9 @@ Many thank to magic gnomes under the hood making all these work.
 ```
 
 <a name="batch"/>
+
 ### Batch
+
 ```java
 	mappingSession.withBatch()
 		.save(entityA)
@@ -557,6 +585,7 @@ Many thank to magic gnomes under the hood making all these work.
 ```
 
 <a name="mapping"/>
+
 ### Various Mappings
 
 	IMPORTANT!!!  
@@ -567,8 +596,10 @@ Many thank to magic gnomes under the hood making all these work.
 	- C* supports only single-column-index.
 
 
-<a name="mapping_basic"/>	  	  
+<a name="mapping_basic"/>
+
 #### Basic Mapping
+
 ```java
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -592,13 +623,17 @@ public class Entity {
 	// public getters/setters ...
 }
 ```
+
 CQL3 Statement
+
 ```
    CREATE TABLE IF NOT EXISTS ks.mytable (id bigint, myname text, age int, PRIMARY KEY(id))
 ```     
 
-<a name="mapping_index"/>	
+<a name="mapping_index"/>
+
 #### Mapping Indexes
+
 ```java
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -630,7 +665,9 @@ CQL3 Statement
 ```   
 
 <a name="mapping_composite"/>
+
 #### Compound Primary Key
+
 ```java
 public class CompositeKey {
 	private String name;
@@ -652,12 +689,15 @@ public class Entity {
 }
 ```
 CQL3 Statement
+
 ```
    CREATE TABLE IF NOT EXISTS ks.entity (name text,  rank int, email text,  PRIMARY KEY(name, rank))
 ```     
 
 <a name="mapping_partition"/>
+
 #### Composite Partition Key
+
 ```java
 public class PartitionKey {
 	private String firstName;
@@ -691,8 +731,11 @@ CQL3 Statement
 ```     
 
 <a name="mapping_properties"/>
+
 #### Table Properties  
+
 This feature is not JPA standard! [ Read more about C* Table properties ] (http://www.datastax.com/documentation/cql/3.1/cql/cql_reference/cql_storage_options_c.html)
+
 ```java
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -752,7 +795,9 @@ CQL3 Statement
    CREATE TABLE IF NOT EXISTS ks.entity (name text,  rank int, email text,  PRIMARY KEY(name, rank)) WITH CLUSTERING ORDER BY (rank DESC)
 ```
 <a name="mapping_datatype"/>
+
 #### Override Column Type, TIMEUUID.
+
 Datastax defines [data type mapping from Java to C*] (http://www.datastax.com/documentation/developer/java-driver/2.0/java-driver/reference/javaClass2Cql3Datatypes_r.html).  
 This addon defines opposite way mapping. [You can explore daults here](#metadata).    
 But in case you don't like defaults you are able to override the type on the column level.   
@@ -780,7 +825,9 @@ CQL3 Statement
 ```     
 	
 <a name="mapping_mixed"/>
-#### Mixed Case for Column Names  
+
+#### Mixed Case for Column Names 
+
 [C* converts all names to lowercase](http://www.datastax.com/documentation/cql/3.1/cql/cql_reference/ucase-lcase_r.html). This is default and recommended approach.  
 But in case you need enforce the case you will need to wrap you names in double quotes. 
 ```java
@@ -810,6 +857,7 @@ CQL3 Statement
 ```     
 
 <a name="mapping_collections"/>
+
 #### Collections
 
 Collections must have generic type defined. Only java.util.List, Map and Set are allowed.  
@@ -851,7 +899,9 @@ CQL3 Statement
 For more info on collections please refer [Datastax Using Collection] (http://www.datastax.com/documentation/cql/3.1/cql/cql_using/use_collections_c.html)
 
 <a name="mapping_ttl"/>
+
 #### TTL
+
 ```java
 import com.datastax.driver.mapping.annotation.Ttl;
 ...
@@ -869,7 +919,9 @@ mappingSession.save(entity, new WriteOptions().setTtl(600)); // expires in 10 mi
 ```
 
 <a name="mapping_static"/>
+
 #### Static columns
+
 [what is it?](http://www.datastax.com/dev/blog/cql-in-2-0-6)
 
 ```java
@@ -900,7 +952,9 @@ CQL3 Statement
 ``` 
 
 <a name="uuid"/>
+
 ### ID, UUID and TimeUUID.
+
 uuid and timeuuid are often used in Primary Key.  
 This section describes few important features working with uuid type.  
 
@@ -954,7 +1008,9 @@ public class DateUtil {
 ```
 
 <a name="lock"/>
+
 ### Optimistic Lock
+
 C* does not support locking. But it provides ability for [Optimistic Concurrency Control] (http://en.wikipedia.org/wiki/Optimistic_concurrency_control).  
 While running, transactions use data resources without acquiring locks on those resources. Before committing, each transaction verifies that no other transaction has modified the data it has read. If the check reveals conflicting modifications, the committing transaction rolls back and can be restarted.  
 This section explains how you can achieve this with C* and Mapping Add-on
