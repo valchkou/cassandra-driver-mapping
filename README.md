@@ -112,10 +112,10 @@ MappingSession is your interface to mapper. You can instantiate as many mapping 
 	// initialize mapping.
 	MappingSession mappingSession = new MappingSession("keyspace_name", session);
 ```  
-MappingSession is very lightweight.
+MappingSession is very lightweight.  
 Underlying Datastax Session does all the heavylifting and is expansive.   
 For more info about Datastax Session please refer to [Datastax Dcumentation](http://docs.datastax.com/en/developer/java-driver/3.3/manual/). 
-Or look at the [Spring Framework Example](https://github.com/valchkou/SpringFrameworkCassandraSample).
+or [Spring Framework Example](https://github.com/valchkou/SpringFrameworkCassandraSample).
 
 <a name="jump_save"/>
 
