@@ -96,7 +96,8 @@ Module versioning policy matches underlying datastax driver core versioning.
 
 
 <a name="jump_init"/>
-- Init Mapping Session.  
+
+- Init Mapping Session.   
 MappingSession is cheap to instantiate and it is not replacement for the Datastax Session.   
 You can instantiate as many mapping sessions as you want. It's threadsafe.  
 
@@ -126,17 +127,18 @@ Or look at the [Spring Framework Example](https://github.com/valchkou/SpringFram
 	Entity entity = mappingSession.get(Entity.class, id);
 ```
 
-- Delete.
+- Delete.  
 ```java
 	mappingSession.delete(entity);	
 ```
 
 <a name="jump_sync"/>
+
 - To Sync or not to Sync.  
 
 Synchronization is a cool feature but you can completely or partially disable it using SyncOptions.  
 Supported SyncOptions are: DoNotSync, DoNotAddColumns, DoNotDropColumns.  
-SyncOptions can be set for all or specific entities as shown below:
+SyncOptions can be set for all or specific entities as shown below:  
 ```java
 	/** Turn synchronization with C* off: */
 	SyncOptions syncOptions = SyncOptions.withOptions().doNotSync());
@@ -155,18 +157,20 @@ SyncOptions can be set for all or specific entities as shown below:
 	SyncOptions syncOptions = SyncOptions.withOptions().add(SyncOptionTypes.DoNotAddColumns).add(SyncOptionTypes.DoNotDropColumns);
 	SyncOptions syncOptions = SyncOptions.withOptions().add(Entity1.class, SyncOptionTypes.DoNotDropColumns);
 ```
-Pass SyncOptions into the MappingSession
+
+Pass SyncOptions into the MappingSession  
 ```java
 	/** Constractor */
 	MappingSession mappingSession = new MappingSession("keyspace_name", session, syncOptions);
 
 	/** Setter */
 	mappingSession.setSyncOptions(syncOptions);
-```  
-
+``` 
 
 <a name="api"/>
+
 ### Mapping Session API
+
 To explore complete api go to [MappingSession.java](https://github.com/valchkou/cassandra-driver-mapping/blob/master/src/main/java/com/datastax/driver/mapping/MappingSession.java)  
 Synchronous samples are in UnitTests [MappingSessionTest.java](https://github.com/valchkou/cassandra-driver-mapping/blob/master/src/test/java/com/datastax/driver/mapping/MappingSessionTest.java)  
 Asynchronous samples are in UnitTests [MappingSessionAsyncTest.java](https://github.com/valchkou/cassandra-driver-mapping/blob/master/src/test/java/com/datastax/driver/mapping/MappingSessionAsyncTest.java)
