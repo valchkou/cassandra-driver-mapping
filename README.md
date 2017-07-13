@@ -50,9 +50,7 @@ Mapping Add-on relies on JPA 2.1 and Driver 3+
 	* [TTL](#mapping_ttl)
 	* [Static columns](#mapping_static)
 - [ID, UUID and TimeUUID](#uuid) 
-- [Optimistic Lock](#lock)
-	* [Lightweight transactions](#lock_transactions)
-	* [@Version](#lock_version)
+- [Optimistic Lock & @Version](#lock)
 
 <a name="features"/>
 
