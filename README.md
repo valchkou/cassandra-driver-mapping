@@ -94,7 +94,7 @@ Module versioning policy matches underlying datastax driver core versioning.
 <a name="jump_init"/>
 
 - Init Mapping Session.   
-MappingSession is your interface to mapper. You can instantiate as many mapping sessions as you want. It's threadsafe.  
+MappingSession is your interface to mapper. You can instantiate as many mapping sessions as you want or share one across the application as it's threadsafe.  
 
 ```java
 	import com.datastax.driver.core.Session;
@@ -102,11 +102,11 @@ MappingSession is your interface to mapper. You can instantiate as many mapping 
 	import com.datastax.driver.mapping.MappingSession;
 	...
     	
-	// initialize standard datastax session.
+	// initialize datastax cluster.
 	Cluster cluster = Cluster.builder()
         .withClusterName("myCluster").addContactPoint("127.0.0.1").build();
 	
-	// initialize standard datastax session.
+	// initialize datastax session.
 	Session session = cluster.connect();
 		
 	// initialize mapping.
