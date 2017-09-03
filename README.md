@@ -17,6 +17,9 @@ Mapping Add-on relies on JPA 2.1 and Driver 3+
 
 [Spring Framework Example](https://github.com/valchkou/SpringFrameworkCassandraSample)
 
+[Complete Documentation is here ](http://valchkou.com/cassandra-driver-mapping.html)
+
+
 ### Table of Contents  
 - [Features](#features)  
 - [Jump Start](#start)
