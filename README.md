@@ -12,5 +12,5 @@ Add-on is not replacement for the Driver but lightweight Object Mapper on top of
 You still can utilize full power of the Driver API and Datastax documentation.     
 Mapping Add-on relies on JPA 2.1 and Driver 3+
 
-[For Complete Documentation go there ](http://valchkou.com/cassandra-driver-mapping.html)
+[For Complete Documentation go here ](http://valchkou.com/cassandra-driver-mapping.html)
 
