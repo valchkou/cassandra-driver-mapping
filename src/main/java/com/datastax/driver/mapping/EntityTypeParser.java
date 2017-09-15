@@ -202,7 +202,10 @@ public class EntityTypeParser {
                 parsePropertyLevelMetadata(f.getType(), result, pkm, true);
             }
 
-            if ((f.getAnnotation(Transient.class) == null && javaTypeToDataType.get(f.getType()) != null) || isOwnField || f.getType().isEnum()) {
+            if (f.getAnnotation(Transient.class) != null) {
+                continue;
+            }
+            if (javaTypeToDataType.get(f.getType()) != null || isOwnField || f.getType().isEnum()) {
                 Method getter = null;
                 Method setter = null;
                 for (Method m : methods) {
