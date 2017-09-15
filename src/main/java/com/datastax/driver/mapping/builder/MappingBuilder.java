@@ -25,11 +25,13 @@ import com.datastax.driver.mapping.option.ReadOptions;
 import com.datastax.driver.mapping.option.WriteOptions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.reflect.TypeToken;
 
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
@@ -452,7 +454,7 @@ public class MappingBuilder {
                     if (value == null) {
                         value = new HashMap<Object, Object>();
                     }
-                    Map<Object, Object> data = row.getMap(field.getColumnName(), Object.class, Object.class);
+                    Map<?, ?> data = row.getMap(field.getColumnName(), TypeToken.of(field.getTypeParameters()[0]), TypeToken.of(field.getTypeParameters()[1]));
                     if (!data.isEmpty()) {
                         ((Map<Object, Object>) value).putAll(data);
                     }
@@ -461,7 +463,7 @@ public class MappingBuilder {
                     if (value == null) {
                         value = new ArrayList<Object>();
                     }
-                    List<Object> lst = row.getList(field.getColumnName(), Object.class);
+                    List<?> lst = row.getList(field.getColumnName(), TypeToken.of(field.getTypeParameters()[0]));
                     if (!lst.isEmpty()) {
                         ((List<Object>) value).addAll(lst);
                     }
@@ -470,7 +472,7 @@ public class MappingBuilder {
                     if (value == null) {
                         value = new HashSet<Object>();
                     }
-                    Set<Object> set = row.getSet(field.getColumnName(), Object.class);
+                    Set<?> set = row.getSet(field.getColumnName(), TypeToken.of(field.getTypeParameters()[0]));
                     if (!set.isEmpty()) {
                         ((Set<Object>) value).addAll(set);
                     }
@@ -479,7 +481,7 @@ public class MappingBuilder {
                     break;
             }
         } catch (Exception ex) {
-            // swallow any mapping discrepancies.
+            log.log(Level.WARNING, "Failed to read field [" + field.getColumnName() + "]", ex);
         }
         return value;
     }
