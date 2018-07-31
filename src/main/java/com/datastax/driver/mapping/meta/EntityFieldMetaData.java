@@ -86,9 +86,9 @@ public class EntityFieldMetaData {
 		try {
 			if (field.getType().isEnum()) {
 				Object eval = Enum.valueOf((Class<Enum>)field.getType(), (String)value);
-				setter.invoke(entity, new Object[]{eval});
+				setter.invoke(entity, eval);
 			} else {
-			    setter.invoke(entity, new Object[]{value});
+			    setter.invoke(entity, value);
 			}
 		} catch (Exception e) {
 			log.info("Can't set value for obj:"+entity+", method:"+setter.getName());
@@ -98,7 +98,7 @@ public class EntityFieldMetaData {
 	/**
 	 * String representation of generic modifier on the field
 	 * 
-	 * @return 
+	 * @return generic definition
 	 */
 	public String getGenericDef() {
 		return genericDef;
@@ -107,7 +107,7 @@ public class EntityFieldMetaData {
 	/**
 	 * set column definition for the collections with generics.
 	 * samples: list<text>, set<float>, map<bigint>
-	 * @param genericDef
+	 * @param genericDef generic definition
 	 */
 	public void setGenericDef(String genericDef) {
 		this.genericDef = genericDef;

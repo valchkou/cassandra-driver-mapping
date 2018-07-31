@@ -27,7 +27,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertNotNull;
@@ -91,7 +90,7 @@ public class MappingSessionAsyncTest {
 			session.close();
 			cluster.close();
 		} catch (Exception e) {
-			System.out.println(e);
+
 		}
 	}	
 	

@@ -30,6 +30,8 @@ import com.datastax.driver.mapping.schemasync.SyncOptions;
 import org.junit.*;
 
 import java.math.BigDecimal;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.*;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
@@ -42,14 +44,23 @@ public class MappingSessionTest {
 	static String keyspace = "unittest";
 	
 	private MappingSession target;
-	
+
+	private static  String getHost() {
+		try {
+//			return InetAddress.getLocalHost().getHostAddress();
+            return "127.0.0.1";
+		} catch (Exception e) {
+			return "localhost";
+		}
+	}
+
 	@BeforeClass 
 	public static void init() { 
-		String node = "127.0.0.1";
+		String node = getHost();
 		Builder builder = Cluster.builder();
 		builder.addContactPoint(node);
-		builder.withLoadBalancingPolicy(LatencyAwarePolicy.builder(DCAwareRoundRobinPolicy.builder().build()).build());
-		builder.withReconnectionPolicy(new ConstantReconnectionPolicy(1000L));
+//		builder.withLoadBalancingPolicy(LatencyAwarePolicy.builder(DCAwareRoundRobinPolicy.builder().build()).build());
+//		builder.withReconnectionPolicy(new ConstantReconnectionPolicy(1000L));
 		cluster = builder.build();
 		session = cluster.connect();
 	}
