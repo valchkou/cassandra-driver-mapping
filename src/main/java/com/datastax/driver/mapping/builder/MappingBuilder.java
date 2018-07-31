@@ -23,13 +23,8 @@ import com.datastax.driver.mapping.meta.EntityTypeMetadata;
 import com.datastax.driver.mapping.meta.PrimaryKeyMetadata;
 import com.datastax.driver.mapping.option.ReadOptions;
 import com.datastax.driver.mapping.option.WriteOptions;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
@@ -39,34 +34,18 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
  * Use MappingSession instead.
  */
 public class MappingBuilder {
-    protected static final Logger                     log            = Logger.getLogger(MappingBuilder.class.getName());
-    protected static Cache<String, PreparedStatement> statementCache = CacheBuilder.newBuilder().expireAfterAccess(5, TimeUnit.MINUTES).maximumSize(1000).concurrencyLevel(4).build();
+    protected static final Logger log = Logger.getLogger(MappingBuilder.class.getName());
 
     private MappingBuilder() {
     }
 
     /**
-     * Get statement from the cache or Prepare statement and place it in the
-     * cache.
+     * Prepare statement
      * 
      * @return PreparedStatement.
      */
     public static PreparedStatement getOrPrepareStatement(final Session session, final BuiltStatement stmt, final String key) {
-        PreparedStatement ps = null;
-        try {
-            ps = statementCache.get(getCacheKey(key, session), new Callable<PreparedStatement>() {
-                @Override
-                public PreparedStatement call() throws Exception {
-                    return session.prepare(stmt);
-                }
-            });
-        } catch (ExecutionException e) {
-            // if the error caused by prepare the client will get it as is,
-            // otherwise process will not blow and statement will not be cached.
-            return session.prepare(stmt);
-        }
-
-        return ps;
+        return session.prepare(stmt);
     }
 
     public static <E> BuiltStatement prepareSave(E entity, WriteOptions options, String keyspace) {
@@ -75,7 +54,7 @@ public class MappingBuilder {
         long version = Long.MIN_VALUE;
         if (entityMetadata.hasVersion()) {
             EntityFieldMetaData verField = entityMetadata.getVersionField();
-            version = ((Long) verField.getValue(entity)).longValue();
+            version = ((Long) verField.getValue(entity));
         }
 
         BuiltStatement stmt = null;
@@ -151,8 +130,8 @@ public class MappingBuilder {
     }
 
     /**
-     * @param options
-     * @param insert
+     * @param options write options
+     * @param insert insert statement
      */
     public static void applyOptions(WriteOptions options, Insert insert, EntityTypeMetadata emeta) {
         int ttl = getTtl(options, emeta);
@@ -271,7 +250,7 @@ public class MappingBuilder {
     protected static Object incVersion(Object version) {
         long newVersion = 0;
         try {
-            newVersion = ((Long) version).longValue();
+            newVersion = ((Long) version);
             newVersion += 1;
         } catch (Exception e) {
             return version;
@@ -290,25 +269,12 @@ public class MappingBuilder {
 
         // get prepared statement
         PreparedStatement ps;
-        try {
-            ps = statementCache.get(getSelectCacheKey(table, session, fields), new Callable<PreparedStatement>() {
-                @Override
-                public PreparedStatement call() throws Exception {
-                    Select stmt = buildSelectAll(table, pkCols, options, keyspace, fields);
-                    return session.prepare(stmt);
-                }
-            });
-        } catch (ExecutionException e) {
-            // if the error caused by prepare the client will get it as is,
-            // otherwise process will not blow and statement will not be cached.
-            Select stmt = buildSelectAll(table, pkCols, options, keyspace, fields);
-            ps = session.prepare(stmt);
-        }
+        Select stmt = buildSelectAll(table, pkCols, options, keyspace, fields);
+        ps = session.prepare(stmt);
 
         // bind parameters
         Object[] values = entityMetadata.getIdValues(id).toArray(new Object[pkCols.size()]);
-        BoundStatement bs = ps.bind(values);
-        return bs;
+        return ps.bind(values);
     }
 
     private static String getSelectCacheKey(String table, Session session, List<EntityFieldMetaData> fields) {
@@ -364,16 +330,14 @@ public class MappingBuilder {
         EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(entity.getClass());
         List<String> pkCols = entityMetadata.getPkColumns();
         Object[] values = entityMetadata.getEntityPKValues(entity).toArray(new Object[pkCols.size()]);
-        Delete delete = buildDelete(entityMetadata, pkCols, values, keyspace);
-        return delete;
+        return buildDelete(entityMetadata, pkCols, values, keyspace);
     }
 
     public static <T> BuiltStatement buildDelete(Class<T> clazz, Object id, String keyspace) {
         EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
         List<String> pkCols = entityMetadata.getPkColumns();
         Object[] values = entityMetadata.getIdValues(id).toArray(new Object[pkCols.size()]);
-        Delete delete = buildDelete(entityMetadata, pkCols, values, keyspace);
-        return delete;
+        return buildDelete(entityMetadata, pkCols, values, keyspace);
     }
 
     public static <T> Delete buildDelete(EntityTypeMetadata entityMetadata, List<String> pkCols, Object[] values, String keyspace) {
@@ -484,20 +448,11 @@ public class MappingBuilder {
         return value;
     }
 
-    public static Cache<String, PreparedStatement> getStatementCache() {
-        return statementCache;
-    }
-
-    public static void setStatementCache(Cache<String, PreparedStatement> statementCache) {
-        MappingBuilder.statementCache = statementCache;
-    }
 
     /**
      * Convert ResultSet into List<T>. Create an instance of <T> for each row.
      * To populate instance of <T> iterate through the entity fields and
      * retrieve the value from the ResultSet by the field name
-     * 
-     * @throws Exception
      */
     public static <T> List<T> getFromResultSet(Class<T> clazz, ResultSet rs) {
         List<T> result = new ArrayList<T>();

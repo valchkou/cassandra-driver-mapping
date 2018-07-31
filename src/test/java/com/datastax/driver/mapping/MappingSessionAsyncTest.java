@@ -35,6 +35,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 
+import com.datastax.driver.core.policies.*;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -47,13 +48,7 @@ import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Cluster.Builder;
-import com.datastax.driver.core.policies.ConstantReconnectionPolicy;
-import com.datastax.driver.core.policies.DefaultRetryPolicy;
-import com.datastax.driver.core.policies.LatencyAwarePolicy;
-import com.datastax.driver.core.policies.RoundRobinPolicy;
 import com.datastax.driver.core.utils.UUIDs;
-import com.datastax.driver.mapping.EntityTypeParser;
-import com.datastax.driver.mapping.MappingSession;
 import com.datastax.driver.mapping.entity.CompositeKey;
 import com.datastax.driver.mapping.entity.EntityMixedCase;
 import com.datastax.driver.mapping.entity.EntityWithCollections;
@@ -69,8 +64,6 @@ import com.datastax.driver.mapping.entity.Page;
 import com.datastax.driver.mapping.entity.Simple;
 import com.datastax.driver.mapping.entity.SimpleKey;
 import com.datastax.driver.mapping.option.WriteOptions;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 
 public class MappingSessionAsyncTest {
 
@@ -85,19 +78,10 @@ public class MappingSessionAsyncTest {
 		String node = "127.0.0.1";
 		Builder builder = Cluster.builder();
 		builder.addContactPoint(node);
-		builder.withLoadBalancingPolicy(LatencyAwarePolicy.builder(new RoundRobinPolicy()).build());
+		builder.withLoadBalancingPolicy(LatencyAwarePolicy.builder(DCAwareRoundRobinPolicy.builder().build()).build());
 		builder.withReconnectionPolicy(new ConstantReconnectionPolicy(1000L));
 		cluster = builder.build();
 		session = cluster.connect();
-		
-		Cache<String, PreparedStatement> cache = CacheBuilder
-			    .newBuilder()
-			    .expireAfterAccess(1, TimeUnit.MILLISECONDS)
-			    .maximumSize(1)
-			    .concurrencyLevel(1)
-			    .build();
-
-		MappingSession.setStatementCache(cache);		
 	}
 
 	@AfterClass 

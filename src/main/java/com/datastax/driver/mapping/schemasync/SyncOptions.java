@@ -27,9 +27,7 @@ import java.util.Map;
  * SyncOptions.withGlobalOptions().add()
  * 
  * If Entity options are defined the global will be ignored for this Entity.
- * 
- * 
- * 
+ *
  */
 public class SyncOptions {
 
@@ -74,7 +72,6 @@ public class SyncOptions {
 	 * Short hand to tell that this Entity should be synchronized with Cassandra
 	 * 
 	 * @param clazz Entity class
-	 * @param type SyncOptionTypes
 	 * @return this
 	 */
 	public SyncOptions doSync(Class<?> clazz) {
@@ -86,7 +83,6 @@ public class SyncOptions {
 	 * Short hand to mark this Entity to not synchronize with Cassandra
 	 * 
 	 * @param clazz Entity class
-	 * @param type SyncOptionTypes
 	 * @return this
 	 */	
 	public SyncOptions doNotSync(Class<?> clazz) {
@@ -99,8 +95,7 @@ public class SyncOptions {
 	
 	/**
 	 * Short hand to not synchronize with Cassandra
-	 * 
-	 * @param type SyncOptionTypes
+	 *
 	 * @return this
 	 */	
 	public SyncOptions doNotSync() {

@@ -17,10 +17,7 @@ package com.datastax.driver.mapping;
 
 import com.datastax.driver.core.*;
 import com.datastax.driver.core.Cluster.Builder;
-import com.datastax.driver.core.policies.ConstantReconnectionPolicy;
-import com.datastax.driver.core.policies.DefaultRetryPolicy;
-import com.datastax.driver.core.policies.LatencyAwarePolicy;
-import com.datastax.driver.core.policies.RoundRobinPolicy;
+import com.datastax.driver.core.policies.*;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.utils.UUIDs;
 import com.datastax.driver.mapping.entity.*;
@@ -29,14 +26,11 @@ import com.datastax.driver.mapping.meta.EntityTypeMetadata;
 import com.datastax.driver.mapping.option.WriteOptions;
 import com.datastax.driver.mapping.schemasync.SyncOptionTypes;
 import com.datastax.driver.mapping.schemasync.SyncOptions;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 
 import org.junit.*;
 
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static org.junit.Assert.*;
@@ -54,19 +48,10 @@ public class MappingSessionTest {
 		String node = "127.0.0.1";
 		Builder builder = Cluster.builder();
 		builder.addContactPoint(node);
-		builder.withLoadBalancingPolicy(LatencyAwarePolicy.builder(new RoundRobinPolicy()).build());
+		builder.withLoadBalancingPolicy(LatencyAwarePolicy.builder(DCAwareRoundRobinPolicy.builder().build()).build());
 		builder.withReconnectionPolicy(new ConstantReconnectionPolicy(1000L));
 		cluster = builder.build();
 		session = cluster.connect();
-		
-		Cache<String, PreparedStatement> cache = CacheBuilder
-			    .newBuilder()
-			    .expireAfterAccess(1, TimeUnit.MILLISECONDS)
-			    .maximumSize(1)
-			    .concurrencyLevel(1)
-			    .build();
-
-		MappingSession.setStatementCache(cache);
 	}
 
 	@AfterClass 

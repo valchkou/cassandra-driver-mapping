@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.ResultSetFuture;
@@ -39,7 +38,6 @@ import com.datastax.driver.mapping.option.WriteOptions;
 import com.datastax.driver.mapping.schemasync.SchemaSync;
 import com.datastax.driver.mapping.schemasync.SyncOptionTypes;
 import com.datastax.driver.mapping.schemasync.SyncOptions;
-import com.google.common.cache.Cache;
 
 /**
  * Object Mapper API to work with entities to be persisted in Cassandra. This is
@@ -96,7 +94,7 @@ public class MappingSession {
      * 
      * @param keyspace name
      * @param session Initialized Datastax Session
-     * @param doNotSync if set to true the mappingSession will not synchronize
+     * @param options if set to true the mappingSession will not synchronize
      *        entity definition with Cassandra
      */
     public MappingSession(String keyspace, Session session, SyncOptions options) {
@@ -109,7 +107,7 @@ public class MappingSession {
     /**
      * Get Entity by Id(Primary Key)
      * 
-     * @param class Entity.class
+     * @param clazz Entity.class
      * @param id primary key
      * @return Entity instance or null
      */
@@ -120,7 +118,7 @@ public class MappingSession {
     /**
      * Get Entity by Id(Primary Key)
      * 
-     * @param class Entity.class
+     * @param clazz Entity.class
      * @param id primary key
      * @param options ReadOptions
      * @return Entity instance or null
@@ -141,7 +139,7 @@ public class MappingSession {
     /**
      * Get Collection of Entities by custom Query Statement
      * 
-     * @param class Entity.class
+     * @param clazz Entity.class
      * @param query Statement
      * @return List<Entity> if nothing is retrieved empty List<Entity> is
      *         returned
@@ -154,7 +152,7 @@ public class MappingSession {
     /**
      * Get Collection of Entities by custom Query String
      * 
-     * @param class Entity.class
+     * @param clazz Entity.class
      * @param query String
      * @return List<Entity> if nothing is retrieved empty List<Entity> is 
      * returned
@@ -168,8 +166,8 @@ public class MappingSession {
      * Convert custom ResultSet into List<Entity>. No Cassandra invocations are
      * performed.
      * 
-     * @param class Entity.class
-     * @param query String
+     * @param clazz Entity.class
+     * @param rs ResultSet
      * @return List<Entity> or empty List<Entity> if nothing mapped.
      */
     public <T> List<T> getFromResultSet(Class<T> clazz, ResultSet rs) {
@@ -180,8 +178,8 @@ public class MappingSession {
      * Convert Row of ResultSet into Entity instance. 
      * No Cassandra invocations are performed.
      * 
-     * @param class Entity.class
-     * @param Row of ResultSet
+     * @param clazz Entity.class
+     * @param row of ResultSet
      * @return Entity instance
      */
     public <T> T getFromRow(Class<T> clazz, Row row) {
@@ -192,8 +190,8 @@ public class MappingSession {
      * Convert Row of ResultSet into Entity instance. 
      * No Cassandra invocations are performed.
      * 
-     * @param class Entity.class
-     * @param Row of ResultSet
+     * @param clazz Entity.class
+     * @param rows of ResultSet
      * @return List<Entity>
      */
     public <T> List<T> getFromRows(Class<T> clazz, Collection<Row> rows) {
@@ -214,7 +212,7 @@ public class MappingSession {
     /**
      * Delete Entity by ID(Primary key)
      * 
-     * @param class Entity.class
+     * @param clazz Entity.class
      * @param id Primary Key
      */
     public <T> void delete(Class<T> clazz, Object id) {
@@ -238,7 +236,7 @@ public class MappingSession {
     /**
      * Asynchronously Delete Entity by ID(Primary key)
      * 
-     * @param class Entity.class
+     * @param clazz Entity.class
      * @param id Primary Key
      */
     public <T> ResultSetFuture deleteAsync(Class<T> clazz, Object id) {
@@ -312,7 +310,7 @@ public class MappingSession {
      * Remove an item or items from the Set or List.
      * 
      * @param id Primary Key
-     * @param class Entity.class
+     * @param clazz Entity.class
      * @param propertyName property of Entity to modify
      * @param item can be single value, a List or a Set of values to remove.
      */
@@ -326,7 +324,7 @@ public class MappingSession {
      * Asynchronously Remove an item or items from the Set or List.
      * 
      * @param id Primary Key
-     * @param class Entity.class
+     * @param clazz Entity.class
      * @param propertyName property of Entity to modify
      * @param item can be single value, a List or a Set of values to remove.
      * @return ResultSetFuture.
@@ -341,7 +339,7 @@ public class MappingSession {
      * Delete value for an individual property
      * 
      * @param id Primary Key
-     * @param class Entity.class
+     * @param clazz Entity.class
      * @param propertyName Entity property
      */
     public void deleteValue(Object id, Class<?> clazz, String propertyName) {
@@ -354,7 +352,7 @@ public class MappingSession {
      * Asynchronously Delete value for an individual property
      * 
      * @param id Primary Key
-     * @param class Entity.class
+     * @param clazz Entity.class
      * @param propertyName Entity property
      * @return ResultSetFuture.
      */
@@ -368,7 +366,7 @@ public class MappingSession {
      * Asynchronously Append value or values to the Set, List or Map.
      * 
      * @param id Primary Key
-     * @param class Entity.class
+     * @param clazz Entity.class
      * @param propertyName Entity property
      * @param item can be a single value, a List, Set or a Map of values
      */
@@ -380,7 +378,7 @@ public class MappingSession {
      * Append value or values to the Set, List or Map.
      * 
      * @param id Primary Key
-     * @param class Entity.class
+     * @param clazz Entity.class
      * @param propertyName Entity property
      * @param item can be a single value, a List, Set or a Map of values
      * @param options WriteOptions
@@ -395,7 +393,7 @@ public class MappingSession {
      * Asynchronously Append value or values to the Set, List or Map.
      * 
      * @param id Primary Key
-     * @param class Entity.class
+     * @param clazz Entity.class
      * @param propertyName Entity property
      * @param item can be a single value, a List, Set or a Map of values
      * @return ResultSetFuture.
@@ -408,7 +406,7 @@ public class MappingSession {
      * Asynchronously Append value or values to the Set, List or Map.
      * 
      * @param id Primary Key
-     * @param class Entity.class
+     * @param clazz Entity.class
      * @param propertyName Entity property
      * @param item can be a single value, a List, Set or a Map of values
      * @param options WriteOptions
@@ -424,7 +422,7 @@ public class MappingSession {
      * Replace existing value with a new one.
      * 
      * @param id Primary Key
-     * @param class Entity.class
+     * @param clazz Entity.class
      * @param propertyName Entity property
      * @param value new value
      */
@@ -436,9 +434,9 @@ public class MappingSession {
      * Update values.
      * 
      * @param id Primary Key
-     * @param class Entity.class
+     * @param clazz Entity.class
      * @param propertyNames Array of properties to update
-     * @param value array of values to update
+     * @param values array of values to update
      */
     public void updateValues(Object id, Class<?> clazz, String[] propertyNames, Object[] values) {
         updateValues(id, clazz, propertyNames, values, null);
@@ -448,9 +446,9 @@ public class MappingSession {
      * Update values with options.
      * 
      * @param id Primary Key
-     * @param class Entity.class
+     * @param clazz Entity.class
      * @param propertyNames Array of properties to update
-     * @param value array of values to update
+     * @param values array of values to update
      */
     public void updateValues(Object id, Class<?> clazz, String[] propertyNames, Object[] values, WriteOptions options) {
         maybeSync(clazz);
@@ -462,7 +460,7 @@ public class MappingSession {
      * Asynchronously Replace existing value with a new one.
      * 
      * @param id Primary Key
-     * @param class Entity.class
+     * @param clazz Entity.class
      * @param propertyName Entity property
      * @param value new value
      * @return ResultSetFuture.
@@ -475,7 +473,7 @@ public class MappingSession {
      * Replace existing value with a new one.
      * 
      * @param id Primary Key
-     * @param class Entity.class
+     * @param clazz Entity.class
      * @param propertyName Entity property
      * @param value new value
      * @param options WriteOptions
@@ -490,7 +488,7 @@ public class MappingSession {
      * Asynchronously Replace existing value with a new one.
      * 
      * @param id Primary Key
-     * @param class Entity.class
+     * @param clazz Entity.class
      * @param propertyName Entity property
      * @param value new value
      * @param options WriteOptions
@@ -506,9 +504,9 @@ public class MappingSession {
      * Update values.
      * 
      * @param id Primary Key
-     * @param class Entity.class
+     * @param clazz Entity.class
      * @param propertyNames Array of properties to update
-     * @param value array of values to update
+     * @param values array of values to update
      */
     public ResultSetFuture updateValuesAsync(Object id, Class<?> clazz, String[] propertyNames, Object[] values) {
         return updateValuesAsync(id, clazz, propertyNames, values, null);
@@ -518,9 +516,9 @@ public class MappingSession {
      * Update values with options.
      * 
      * @param id Primary Key
-     * @param class Entity.class
+     * @param clazz Entity.class
      * @param propertyNames Array of properties to update
-     * @param value array of values to update
+     * @param values array of values to update
      */
     public ResultSetFuture updateValuesAsync(Object id, Class<?> clazz, String[] propertyNames, Object[] values, WriteOptions options) {
         maybeSync(clazz);
@@ -532,7 +530,7 @@ public class MappingSession {
      * Place item or items at the beginning of the List.
      * 
      * @param id Primary Key
-     * @param class Entity.class
+     * @param clazz Entity.class
      * @param propertyName Entity property
      * @param item can be a single item or a List of items
      */
@@ -544,7 +542,7 @@ public class MappingSession {
      * Asynchronously Place item or items at the beginning of the List.
      * 
      * @param id Primary Key
-     * @param class Entity.class
+     * @param clazz Entity.class
      * @param propertyName Entity property
      * @param item can be a single item or a List of items
      * @return ResultSetFuture.
@@ -557,7 +555,7 @@ public class MappingSession {
      * Place item or items at the beginning of the List.
      * 
      * @param id Primary Key
-     * @param class Entity.class
+     * @param clazz Entity.class
      * @param propertyName Entity property
      * @param item can be a single item or a List of items
      * @param options WriteOptions
@@ -572,7 +570,7 @@ public class MappingSession {
      * Asynchronously Place item or items at the beginning of the List.
      * 
      * @param id Primary Key
-     * @param class Entity.class
+     * @param clazz Entity.class
      * @param propertyName Entity property
      * @param item can be a single item or a List of items
      * @param options WriteOptions
@@ -588,7 +586,7 @@ public class MappingSession {
      * Replace item at the specified position in the List.
      * 
      * @param id Primary Key
-     * @param class Entity.class
+     * @param clazz Entity.class
      * @param propertyName Entity property
      * @param item
      * @param idx index of the item to replace. Starts from 0.
@@ -601,7 +599,7 @@ public class MappingSession {
      * Asynchronously Replace item at the specified position in the List.
      * 
      * @param id Primary Key
-     * @param class Entity.class
+     * @param clazz Entity.class
      * @param propertyName Entity property
      * @param item
      * @param idx index of the item to replace. Starts from 0.
@@ -615,7 +613,7 @@ public class MappingSession {
      * Replace item at the specified position in the List.
      * 
      * @param id Primary Key
-     * @param class Entity.class
+     * @param clazz Entity.class
      * @param propertyName Entity property
      * @param item
      * @param idx index of the item to replace. Starts from 0.
@@ -631,7 +629,7 @@ public class MappingSession {
      * Asynchronously Replace item at the specified position in the List.
      * 
      * @param id Primary Key
-     * @param class Entity.class
+     * @param clazz Entity.class
      * @param propertyName Entity property
      * @param item
      * @param idx index of the item to replace. Starts from 0.
@@ -725,24 +723,6 @@ public class MappingSession {
     	}
     }
 
-    /**
-     * get PreparedStatement Cache. May be used to retrieve cache statistics or
-     * to access cache directly.
-     * 
-     * @param statementCache
-     */
-    public static Cache<String, PreparedStatement> getStatementCache() {
-        return MappingBuilder.getStatementCache();
-    }
-
-    /**
-     * replace default PreparedStatement Cache with your customized one.
-     * 
-     * @param statementCache
-     */
-    public static void setStatementCache(Cache<String, PreparedStatement> statementCache) {
-        MappingBuilder.setStatementCache(statementCache);
-    }
 
     protected void execute(BoundStatement bs) {
         if (bs != null) {
