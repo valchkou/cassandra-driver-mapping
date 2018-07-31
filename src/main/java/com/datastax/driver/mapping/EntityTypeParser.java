@@ -38,8 +38,6 @@ import javax.persistence.Version;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.mapping.annotation.CollectionType;
 import com.datastax.driver.mapping.annotation.Static;
-import com.datastax.driver.mapping.annotation.TableProperties;
-import com.datastax.driver.mapping.annotation.TableProperty;
 import com.datastax.driver.mapping.annotation.Ttl;
 import com.datastax.driver.mapping.meta.EntityFieldMetaData;
 import com.datastax.driver.mapping.meta.EntityTypeMetadata;
@@ -165,15 +163,6 @@ public class EntityTypeParser {
             result = new EntityTypeMetadata(clazz);
         }
 
-        // parse properties
-        annotation = clazz.getAnnotation(TableProperties.class);
-        if (annotation instanceof TableProperties) {
-            TableProperty[] props = ((TableProperties) annotation).values();
-            for (TableProperty prop : props) {
-                result.addProperty(prop.value());
-            }
-        }
-
         // parse ttl
         annotation = clazz.getAnnotation(Ttl.class);
         if (annotation instanceof Ttl) {
@@ -287,9 +276,8 @@ public class EntityTypeParser {
     }
 
     /**
-     * by default data type retrieved from javaTypeToDataType.
-     * 
-     * @Column columnDefinition may override datatype.
+     * By default data type retrieved from javaTypeToDataType.
+     * ColumnDefinition may override datatype.
      */
     private static DataType.Name getColumnDataType(Field f) {
         Class<?> t = f.getType();

@@ -140,9 +140,6 @@ public final class SchemaSync {
      * Built create statements on the provided class for table and indexes.
      * <p>
      * Statement will contain one CREATE TABLE and many or zero CREATE INDEX statements
-     *
-     * @param class the class to generate statements for.
-     * @return a new {@code List<RegularStatement>}.
      */
     private static <T> List<RegularStatement> createTableStatements(String keyspace, EntityTypeMetadata entityMetadata) {
     	List<RegularStatement> statements = new ArrayList<RegularStatement>();
@@ -160,10 +157,7 @@ public final class SchemaSync {
     /**
      * Compare TableMetadata against Entity metadata and generate alter statements if necessary.
      * <p>
-     * Cannot alter clustered and primary key columns. 
-     *
-     * @param class the class to generate statements for or indexed
-     * @return a new {@code List<RegularStatement>}.
+     * Cannot alter clustered and primary key columns.
      */
     private static <T> List<RegularStatement> alterTableStatements(String keyspace, Session session, EntityTypeMetadata entityMetadata, SyncOptions syncOptions) {
     	

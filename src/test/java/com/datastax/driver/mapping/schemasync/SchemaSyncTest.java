@@ -39,7 +39,6 @@ import com.datastax.driver.mapping.EntityTypeParser;
 import com.datastax.driver.mapping.entity.EntityWithCompositeKey;
 import com.datastax.driver.mapping.entity.EntityWithIndexes;
 import com.datastax.driver.mapping.entity.EntityWithIndexesV2;
-import com.datastax.driver.mapping.entity.EntityWithProperties;
 import com.datastax.driver.mapping.entity.EntityWithTimeUUID;
 import com.datastax.driver.mapping.meta.EntityTypeMetadata;
 
@@ -194,12 +193,6 @@ public class SchemaSyncTest {
 		
 		columnMetadata = tableMetadata.getColumn("key");
 		assertNull(columnMetadata);		
-	}	
-	
-	@Test
-	public void testCreateWithProperties() {
-		EntityTypeParser.getEntityMetadata(EntityWithProperties.class).markUnSynced(keyspace);
-		SchemaSync.sync(keyspace, session, EntityWithProperties.class);
 	}
 	
     @Test

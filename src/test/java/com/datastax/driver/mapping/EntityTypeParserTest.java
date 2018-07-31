@@ -31,14 +31,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.datastax.driver.core.DataType;
-import com.datastax.driver.mapping.EntityTypeParser;
 import com.datastax.driver.mapping.entity.CompositeKey;
 import com.datastax.driver.mapping.entity.EntityOverrideDataType;
 import com.datastax.driver.mapping.entity.EntityWithCollectionsOverride;
 import com.datastax.driver.mapping.entity.EntityWithCompositeKey;
 import com.datastax.driver.mapping.entity.EntityWithEnum;
 import com.datastax.driver.mapping.entity.EntityWithKey;
-import com.datastax.driver.mapping.entity.EntityWithProperties;
 import com.datastax.driver.mapping.entity.EntityWithTtl;
 import com.datastax.driver.mapping.entity.Simple;
 import com.datastax.driver.mapping.entity.SimpleKey;
@@ -161,23 +159,7 @@ public class EntityTypeParserTest {
 		List<Object> vals = meta.getIdValues(id);
 		assertEquals(1, vals.size());
 		assertEquals(id, vals.get(0));
-	}	
-	
-	@Test
-	public void testGetEntityMetadataWithProperties() {
-		EntityTypeMetadata meta = EntityTypeParser.getEntityMetadata(EntityWithProperties.class);
-		assertEquals("test_entity_properties", meta.getTableName());
-		assertEquals(0, meta.getIndexes().size());
-		assertEquals(6, meta.getFields().size());
-		
-		List<String> props = meta.getProperties();
-		assertNotNull(props);
-		
-		assertEquals(4, props.size());
-		assertTrue(props.contains("comment='Important records'"));
-		assertTrue(props.contains("read_repair_chance = 1.0"));
-		assertTrue(props.contains("compression ={ 'sstable_compression' : 'DeflateCompressor', 'chunk_length_kb' : 64 }"));
-	}	
+	}
 
 	@Test
 	public void testGetEntityMetadataWithTtl() {
