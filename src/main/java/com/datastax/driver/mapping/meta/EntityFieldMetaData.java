@@ -20,12 +20,12 @@ import java.lang.reflect.Method;
 import java.util.logging.Logger;
 
 import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.DataType.Name;
+import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 
 /**
  * This class is a field meta information of the entity.
  */
-public class EntityFieldMetaData {
+public class EntityFieldMetaData implements Comparable {
 	private static final Logger log = Logger.getLogger(EntityFieldMetaData.class.getName());
 	private Field field;
 	private Method getter;
@@ -33,26 +33,28 @@ public class EntityFieldMetaData {
 	private String genericDef;
 	private Class<?> collectionType;
 
-	private Name dataType;
+	private DataType dataType;
 	private String columnName;
-	private boolean isPrimary;
 	private boolean isPartition;
+	private boolean isClustered;
+    private int ordinal = 0;
+    private SchemaBuilder.Direction sortOrder;
 	private boolean isStatic;
 	private boolean autoGenerate;
 	
-	public EntityFieldMetaData(Field field, DataType.Name dataType, Method getter, Method setter, String columnName) {
+	public EntityFieldMetaData(Field field, DataType dataType, Method getter, Method setter, String columnName) {
 		this.field = field;
 		this.getter = getter;
 		this.setter = setter;
-		this.dataType = dataType;
+        this.dataType = dataType;
 		this.columnName = columnName;
 	}
 	
 	public Class<?> getType() {
 		return field.getType();
 	}
-	
-	public DataType.Name getDataType() {
+
+	public DataType getDataType() {
 		return dataType;
 	}
 	
@@ -129,14 +131,6 @@ public class EntityFieldMetaData {
 		return columnName;
 	}
 
-	public boolean isPrimary() {
-		return isPrimary;
-	}
-
-	public void setPrimary(boolean isPrimary) {
-		this.isPrimary = isPrimary;
-	}
-
 	public boolean isPartition() {
 		return isPartition;
 	}
@@ -171,5 +165,62 @@ public class EntityFieldMetaData {
 
     public void setAutoGenerate(boolean autoGenerate) {
         this.autoGenerate = autoGenerate;
-    }	
+    }
+
+    public boolean isClustered() {
+        return isClustered;
+    }
+
+    public void setClustered(boolean clustered) {
+        isClustered = clustered;
+    }
+
+    public int getOrdinal() {
+        return ordinal;
+    }
+
+    public void setOrdinal(int ordinal) {
+        this.ordinal = ordinal;
+    }
+
+    public SchemaBuilder.Direction getSortOrder() {
+        return sortOrder;
+    }
+
+    public void setSortOrder(SchemaBuilder.Direction sortOrder) {
+        this.sortOrder = sortOrder;
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        EntityFieldMetaData that = (EntityFieldMetaData)o;
+
+        if (this.isPartition() && that.isPartition()) {
+            return this.getOrdinal()-that.getOrdinal();
+        }
+
+        if (this.isPartition() && !that.isPartition()) {
+            return -1;
+        }
+
+        if (that.isPartition() && !this.isPartition()) {
+            return 1;
+        }
+
+        if (this.isClustered() && that.isClustered()) {
+            return this.getOrdinal()-that.getOrdinal();
+        }
+
+        if (this.isClustered() && !that.isClustered()) {
+            return -1;
+        }
+
+        if (that.isClustered() && !this.isClustered()) {
+            return 1;
+        }
+
+        return 0;
+    }
+
+
 }

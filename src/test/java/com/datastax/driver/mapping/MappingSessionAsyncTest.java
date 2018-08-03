@@ -296,8 +296,7 @@ public class MappingSessionAsyncTest {
 		key.setEmail("email@at");
 		
 		EntityWithCompositeKey obj = new EntityWithCompositeKey();
-		obj.setKey(key);
-		obj.setTimestamp(1000); 
+		obj.setTimestamp(1000);
 		obj.setAsof(created);
 		
 		EntityWithCompositeKey loaded = target.get(EntityWithCompositeKey.class, key);
@@ -327,8 +326,7 @@ public class MappingSessionAsyncTest {
 		Date created = new Date();
 		
 		EntityWithKey obj = new EntityWithKey();
-		obj.setKey(key);
-		obj.setTimestamp(1000); 
+		obj.setTimestamp(1000);
 		obj.setAsof(created);
 		
 		EntityWithKey loaded = target.get(EntityWithKey.class, key);

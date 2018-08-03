@@ -29,8 +29,7 @@ public class EntityTypeMetadata {
 	
 	private Class<?> entityClass;
 	private String tableName;
-	
-	private PrimaryKeyMetadata primaryKeyMetadata;
+
 	private List<EntityFieldMetaData> fields = new ArrayList<EntityFieldMetaData>();
 	private EntityFieldMetaData versionField;
 	
@@ -39,7 +38,7 @@ public class EntityTypeMetadata {
 	// table properties
 	private List<String> properties = new ArrayList<String>();
 	// default time to leave
-	private int ttl = -100;
+	private int ttl = 0;
 	// true if synchronized with Cassandra
 	private List<String> syncedKeyspaces = new ArrayList<String>();
 
@@ -85,6 +84,7 @@ public class EntityTypeMetadata {
 	}
 
 	public List<EntityFieldMetaData> getFields() {
+		fields.sort((f1, f2) -> f1.compareTo(f2));
 		return fields;
 	}
 	
@@ -110,100 +110,6 @@ public class EntityTypeMetadata {
 
 	public void markUnSynced(String keyspace) {
 	    syncedKeyspaces.remove(keyspace);
-	}
-
-	public PrimaryKeyMetadata getPrimaryKeyMetadata() {
-		return primaryKeyMetadata;
-	}
-
-	public void setPrimaryKeyMetadata(PrimaryKeyMetadata primaryKeyMetadata) {
-		this.primaryKeyMetadata = primaryKeyMetadata;
-	}
-	
-
-	public List<String> getPkColumns() {
-		List<String> columns = new ArrayList<String>();
-		if (primaryKeyMetadata.hasPartitionKey()) {
-			PrimaryKeyMetadata pk = primaryKeyMetadata.getPartitionKey();
-			for (EntityFieldMetaData f: pk.getFields()) {
-				columns.add(f.getColumnName());
-			}
-		} 
-		
-		if (primaryKeyMetadata.isCompound()) {
-			for (EntityFieldMetaData f: primaryKeyMetadata.getFields()) {
-				columns.add(f.getColumnName());
-			}			
-		} else {
-			columns.add(primaryKeyMetadata.getOwnField().getColumnName());
-		}
-		
-		return columns;
-	}
-
-	/**
-	 * retrieve values from PK
-	 */	
-	public List<Object> getIdValues(Object id) {
-		List<Object> vals = new ArrayList<Object>();
-		if (primaryKeyMetadata.hasPartitionKey()) {
-			PrimaryKeyMetadata pk = primaryKeyMetadata.getPartitionKey();
-			Object partitionKey = pk.getOwnField().getValue(id);
-			for (EntityFieldMetaData f: pk.getFields()) {
-				vals.add(f.getValue(partitionKey));
-			}
-		} 
-		
-		if (primaryKeyMetadata.isCompound()) {
-			for (EntityFieldMetaData f: primaryKeyMetadata.getFields()) {
-				vals.add(f.getValue(id));
-			}			
-		} else {
-			vals.add(id);
-		}
-		
-		return vals;
-	}
-	
-	public List<Object> getEntityPKValues(Object entity) {
-		Object id = primaryKeyMetadata.getOwnField().getValue(entity);
-		return getIdValues(id);
-	}
-	
-	/**
-	 * (p1, p2), p3, p4
-	 */
-	public String getPkDefinition() {
-		StringBuilder sb = new StringBuilder();
-		if (primaryKeyMetadata.hasPartitionKey()) {
-			PrimaryKeyMetadata pk = primaryKeyMetadata.getPartitionKey();
-			sb.append("(");
-			Iterator<EntityFieldMetaData> it = pk.getFields().iterator();
-			while (it.hasNext()) {
-				sb.append(it.next().getColumnName());
-				if (it.hasNext()) {
-					sb.append(",");
-				}
-			}
-			sb.append(")");
-		} 
-		
-		if (primaryKeyMetadata.isCompound()) {
-			Iterator<EntityFieldMetaData> it = primaryKeyMetadata.getFields().iterator();
-			if (it.hasNext() && primaryKeyMetadata.hasPartitionKey()) {
-				sb.append(",");
-			}			
-			while (it.hasNext()) {
-				sb.append(it.next().getColumnName());
-				if (it.hasNext()) {
-					sb.append(",");
-				}
-			}
-		} else {
-			sb.append(primaryKeyMetadata.getOwnField().getColumnName());
-		}
-		
-		return sb.toString();
 	}
 
 	/**

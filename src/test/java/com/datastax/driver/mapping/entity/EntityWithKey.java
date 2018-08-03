@@ -1,19 +1,32 @@
 package com.datastax.driver.mapping.entity;
 
-import java.util.Date;
+import com.datastax.driver.mapping.annotation.ClusteredKeyColumn;
+import com.datastax.driver.mapping.annotation.PartitionKeyColumn;
 
+import java.util.Date;
+import java.util.UUID;
+
+import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
 
-@Entity
 @Table(name="test_entity")
 public class EntityWithKey {
-	
-	@EmbeddedId
-	private SimpleKey key;
-	
+
+    @PartitionKeyColumn
+	private String name;
+
+    @ClusteredKeyColumn(ordinal = 0)
+	private int rank;
+
+    @ClusteredKeyColumn(ordinal = 1)
+	private UUID t1;
+
+    @ClusteredKeyColumn(ordinal = 2)
+	private UUID t2;
+
 	private long timestamp;
 	private Date asof;
 	
@@ -29,51 +42,36 @@ public class EntityWithKey {
 	public void setTimestamp(long timestamp) {
 		this.timestamp = timestamp;
 	}
-	public SimpleKey getKey() {
-		return key;
-	}
-	public void setKey(SimpleKey key) {
-		this.key = key;
-	}
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((asof == null) ? 0 : asof.hashCode());
-		result = prime * result + ((key == null) ? 0 : key.hashCode());
-		result = prime * result + (int) (timestamp ^ (timestamp >>> 32));
-		return result;
-	}
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj == null) {
-			return false;
-		}
-		if (getClass() != obj.getClass()) {
-			return false;
-		}
-		EntityWithKey other = (EntityWithKey) obj;
-		if (asof == null) {
-			if (other.asof != null) {
-				return false;
-			}
-		} else if (!asof.equals(other.asof)) {
-			return false;
-		}
-		if (key == null) {
-			if (other.key != null) {
-				return false;
-			}
-		} else if (!key.equals(other.key)) {
-			return false;
-		}
-		if (timestamp != other.timestamp) {
-			return false;
-		}
-		return true;
-	}
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getRank() {
+        return rank;
+    }
+
+    public void setRank(int rank) {
+        this.rank = rank;
+    }
+
+    public UUID getT1() {
+        return t1;
+    }
+
+    public void setT1(UUID t1) {
+        this.t1 = t1;
+    }
+
+    public UUID getT2() {
+        return t2;
+    }
+
+    public void setT2(UUID t2) {
+        this.t2 = t2;
+    }
 }

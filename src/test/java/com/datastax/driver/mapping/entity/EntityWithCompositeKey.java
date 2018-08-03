@@ -15,18 +15,34 @@
  */
 package com.datastax.driver.mapping.entity;
 
-import java.util.Date;
+import com.datastax.driver.mapping.annotation.ClusteredKeyColumn;
+import com.datastax.driver.mapping.annotation.PartitionKeyColumn;
 
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
+import java.util.Date;
+import java.util.UUID;
+
 import javax.persistence.Table;
 
-@Entity
 @Table(name = "test_entity_composites")
 public class EntityWithCompositeKey {
 
-	@EmbeddedId
-	private CompositeKey key;
+    @PartitionKeyColumn(ordinal = 2)
+    private UUID t1;
+
+    @PartitionKeyColumn(ordinal = 1)
+    private int rank;
+
+    @PartitionKeyColumn(ordinal = 0)
+    private String name;
+
+    @PartitionKeyColumn(ordinal = 3)
+    private UUID t2;
+
+    @ClusteredKeyColumn(ordinal = 1)
+	private Date created;
+
+    @ClusteredKeyColumn(ordinal = 0)
+	private String email;
 
 	private long timestamp;
 	private Date asof;
@@ -47,54 +63,51 @@ public class EntityWithCompositeKey {
 		this.timestamp = timestamp;
 	}
 
-	public CompositeKey getKey() {
-		return key;
-	}
+    public UUID getT1() {
+        return t1;
+    }
 
-	public void setKey(CompositeKey key) {
-		this.key = key;
-	}
+    public void setT1(UUID t1) {
+        this.t1 = t1;
+    }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((asof == null) ? 0 : asof.hashCode());
-		result = prime * result + ((key == null) ? 0 : key.hashCode());
-		result = prime * result + (int) (timestamp ^ (timestamp >>> 32));
-		return result;
-	}
+    public int getRank() {
+        return rank;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj == null) {
-			return false;
-		}
-		if (getClass() != obj.getClass()) {
-			return false;
-		}
-		EntityWithCompositeKey other = (EntityWithCompositeKey) obj;
-		if (asof == null) {
-			if (other.asof != null) {
-				return false;
-			}
-		} else if (!asof.equals(other.asof)) {
-			return false;
-		}
-		if (key == null) {
-			if (other.key != null) {
-				return false;
-			}
-		} else if (!key.equals(other.key)) {
-			return false;
-		}
-		if (timestamp != other.timestamp) {
-			return false;
-		}
-		return true;
-	}
-	
+    public void setRank(int rank) {
+        this.rank = rank;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public UUID getT2() {
+        return t2;
+    }
+
+    public void setT2(UUID t2) {
+        this.t2 = t2;
+    }
+
+    public Date getCreated() {
+        return created;
+    }
+
+    public void setCreated(Date created) {
+        this.created = created;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
 }

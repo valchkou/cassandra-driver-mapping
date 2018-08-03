@@ -15,6 +15,8 @@
  */
 package com.datastax.driver.mapping.entity;
 
+import com.datastax.driver.mapping.annotation.PartitionKeyColumn;
+
 import java.util.Date;
 import java.util.UUID;
 
@@ -22,8 +24,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
 public class Simple {
-	
-	@Id @GeneratedValue
+
+    @PartitionKeyColumn
+	@GeneratedValue
 	private UUID id;
 	private String name;
 	private Date timestamp;

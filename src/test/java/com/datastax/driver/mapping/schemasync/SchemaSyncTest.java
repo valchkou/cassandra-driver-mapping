@@ -198,7 +198,7 @@ public class SchemaSyncTest {
     @Test
     public void testCreateWithTimeUUID() {
         EntityTypeParser.remove(EntityWithTimeUUID.class);
-        System.out.println(SchemaSync.getScript(keyspace, session,  EntityWithTimeUUID.class));
+//        System.out.println(SchemaSync.getScript(keyspace, session,  EntityWithTimeUUID.class));
         SchemaSync.sync(keyspace, session, EntityWithTimeUUID.class);
         
         EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(EntityWithTimeUUID.class);

@@ -8,8 +8,10 @@ public class SimpleKey {
 
 	private String name;
 	private int rank;
+
 	@Column(columnDefinition="timeuuid")
-	private UUID t1;
+    private UUID t1;
+
 	@Column(columnDefinition="timeuuid")
 	private UUID t2;
 

@@ -19,6 +19,9 @@ import com.datastax.driver.core.*;
 import com.datastax.driver.core.Cluster.Builder;
 import com.datastax.driver.core.policies.*;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.schemabuilder.CreateKeyspace;
+import com.datastax.driver.core.schemabuilder.KeyspaceOptions;
+import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 import com.datastax.driver.core.utils.UUIDs;
 import com.datastax.driver.mapping.entity.*;
 import com.datastax.driver.mapping.meta.EntityFieldMetaData;
@@ -27,6 +30,7 @@ import com.datastax.driver.mapping.option.WriteOptions;
 import com.datastax.driver.mapping.schemasync.SyncOptionTypes;
 import com.datastax.driver.mapping.schemasync.SyncOptions;
 
+import com.google.common.collect.ImmutableMap;
 import org.junit.*;
 
 import java.math.BigDecimal;
@@ -59,8 +63,8 @@ public class MappingSessionTest {
 		String node = getHost();
 		Builder builder = Cluster.builder();
 		builder.addContactPoint(node);
-//		builder.withLoadBalancingPolicy(LatencyAwarePolicy.builder(DCAwareRoundRobinPolicy.builder().build()).build());
-//		builder.withReconnectionPolicy(new ConstantReconnectionPolicy(1000L));
+		builder.withLoadBalancingPolicy(LatencyAwarePolicy.builder(DCAwareRoundRobinPolicy.builder().build()).build());
+		builder.withReconnectionPolicy(new ConstantReconnectionPolicy(1000L));
 		cluster = builder.build();
 		session = cluster.connect();
 	}
@@ -78,7 +82,16 @@ public class MappingSessionTest {
 	
 	@Before
 	public void setUp() {
-		session.execute("CREATE KEYSPACE IF NOT EXISTS "+ keyspace +" WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 }");
+	    // new SimpleStatement("CREATE KEYSPACE IF NOT EXISTS "+ keyspace +" WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 }")
+        KeyspaceOptions createKeyspace = SchemaBuilder
+                .createKeyspace(keyspace)
+                .ifNotExists()
+                .with()
+                .replication(ImmutableMap.of(
+                "class", (Object) "SimpleStrategy",
+                "replication_factor", 1
+        ));
+		session.execute(createKeyspace);
 		session.execute("USE "+keyspace);
 		target = new MappingSession(keyspace, session);
 	}
@@ -337,8 +350,7 @@ public class MappingSessionTest {
 		key.setEmail("email@at");
 		
 		EntityWithCompositeKey obj = new EntityWithCompositeKey();
-		obj.setKey(key);
-		obj.setTimestamp(1000); 
+		obj.setTimestamp(1000);
 		obj.setAsof(created);
 		
 		EntityWithCompositeKey loaded = target.get(EntityWithCompositeKey.class, key);
@@ -392,8 +404,7 @@ public class MappingSessionTest {
 		Date created = new Date();
 		
 		EntityWithKey obj = new EntityWithKey();
-		obj.setKey(key);
-		obj.setTimestamp(1000); 
+		obj.setTimestamp(1000);
 		obj.setAsof(created);
 		
 		EntityWithKey loaded = target.get(EntityWithKey.class, key);

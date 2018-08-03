@@ -36,12 +36,9 @@ import javax.persistence.Transient;
 import javax.persistence.Version;
 
 import com.datastax.driver.core.DataType;
-import com.datastax.driver.mapping.annotation.CollectionType;
-import com.datastax.driver.mapping.annotation.Static;
-import com.datastax.driver.mapping.annotation.Ttl;
+import com.datastax.driver.mapping.annotation.*;
 import com.datastax.driver.mapping.meta.EntityFieldMetaData;
 import com.datastax.driver.mapping.meta.EntityTypeMetadata;
-import com.datastax.driver.mapping.meta.PrimaryKeyMetadata;
 import com.google.common.primitives.Primitives;
 
 /**
@@ -49,32 +46,53 @@ import com.google.common.primitives.Primitives;
  * instance.
  */
 public class EntityTypeParser {
-    private static Map<Class<?>, DataType.Name>            javaTypeToDataType = new HashMap<Class<?>, DataType.Name>();
+    private static Map<Class<?>, DataType.Name> javaTypeToDataTypeName = new HashMap<Class<?>, DataType.Name>();
+    private static Map<Class<?>, DataType> javaTypeToDataType = new HashMap<Class<?>, DataType>();
     private static final Map<Class<?>, EntityTypeMetadata> entityData         = new HashMap<Class<?>, EntityTypeMetadata>();
 
     static {
         // Mapping java types to DATASTAX driver types
-        javaTypeToDataType.put(InetAddress.class, DataType.Name.INET);
-        javaTypeToDataType.put(ByteBuffer.class, DataType.Name.BLOB);
-        javaTypeToDataType.put(Boolean.class, DataType.Name.BOOLEAN);
-        javaTypeToDataType.put(String.class, DataType.Name.TEXT);
-        javaTypeToDataType.put(Date.class, DataType.Name.TIMESTAMP);
-        javaTypeToDataType.put(UUID.class, DataType.Name.UUID);
-        javaTypeToDataType.put(Integer.class, DataType.Name.INT);
-        javaTypeToDataType.put(Double.class, DataType.Name.DOUBLE);
-        javaTypeToDataType.put(Float.class, DataType.Name.FLOAT);
-        javaTypeToDataType.put(Long.class, DataType.Name.BIGINT);
-        javaTypeToDataType.put(BigDecimal.class, DataType.Name.DECIMAL);
-        javaTypeToDataType.put(BigInteger.class, DataType.Name.VARINT);
-        javaTypeToDataType.put(Map.class, DataType.Name.MAP);
-        javaTypeToDataType.put(List.class, DataType.Name.LIST);
-        javaTypeToDataType.put(Set.class, DataType.Name.SET);
-        javaTypeToDataType.put(boolean.class, DataType.Name.BOOLEAN);
-        javaTypeToDataType.put(int.class, DataType.Name.INT);
-        javaTypeToDataType.put(long.class, DataType.Name.BIGINT);
-        javaTypeToDataType.put(double.class, DataType.Name.DOUBLE);
-        javaTypeToDataType.put(float.class, DataType.Name.FLOAT);
-        javaTypeToDataType.put(Enum.class, DataType.Name.VARCHAR);
+        javaTypeToDataTypeName.put(InetAddress.class, DataType.Name.INET);
+        javaTypeToDataTypeName.put(ByteBuffer.class, DataType.Name.BLOB);
+        javaTypeToDataTypeName.put(Boolean.class, DataType.Name.BOOLEAN);
+        javaTypeToDataTypeName.put(String.class, DataType.Name.TEXT);
+        javaTypeToDataTypeName.put(Date.class, DataType.Name.TIMESTAMP);
+        javaTypeToDataTypeName.put(UUID.class, DataType.Name.UUID);
+        javaTypeToDataTypeName.put(Integer.class, DataType.Name.INT);
+        javaTypeToDataTypeName.put(Double.class, DataType.Name.DOUBLE);
+        javaTypeToDataTypeName.put(Float.class, DataType.Name.FLOAT);
+        javaTypeToDataTypeName.put(Long.class, DataType.Name.BIGINT);
+        javaTypeToDataTypeName.put(BigDecimal.class, DataType.Name.DECIMAL);
+        javaTypeToDataTypeName.put(BigInteger.class, DataType.Name.VARINT);
+        javaTypeToDataTypeName.put(Map.class, DataType.Name.MAP);
+        javaTypeToDataTypeName.put(List.class, DataType.Name.LIST);
+        javaTypeToDataTypeName.put(Set.class, DataType.Name.SET);
+        javaTypeToDataTypeName.put(boolean.class, DataType.Name.BOOLEAN);
+        javaTypeToDataTypeName.put(int.class, DataType.Name.INT);
+        javaTypeToDataTypeName.put(long.class, DataType.Name.BIGINT);
+        javaTypeToDataTypeName.put(double.class, DataType.Name.DOUBLE);
+        javaTypeToDataTypeName.put(float.class, DataType.Name.FLOAT);
+        javaTypeToDataTypeName.put(Enum.class, DataType.Name.VARCHAR);
+
+        // Mapping java types to DATASTAX driver types
+        javaTypeToDataType.put(InetAddress.class, DataType.inet());
+        javaTypeToDataType.put(ByteBuffer.class, DataType.blob());
+        javaTypeToDataType.put(Boolean.class, DataType.cboolean());
+        javaTypeToDataType.put(String.class, DataType.text());
+        javaTypeToDataType.put(Date.class, DataType.timestamp());
+        javaTypeToDataType.put(UUID.class, DataType.uuid());
+        javaTypeToDataType.put(Integer.class, DataType.cint());
+        javaTypeToDataType.put(Double.class, DataType.cdouble());
+        javaTypeToDataType.put(Float.class, DataType.cfloat());
+        javaTypeToDataType.put(Long.class, DataType.varint());
+        javaTypeToDataType.put(BigDecimal.class, DataType.decimal());
+        javaTypeToDataType.put(BigInteger.class, DataType.varint());
+        javaTypeToDataType.put(boolean.class, DataType.cboolean());
+        javaTypeToDataType.put(int.class, DataType.cint());
+        javaTypeToDataType.put(long.class, DataType.varint());
+        javaTypeToDataType.put(double.class, DataType.cdouble());
+        javaTypeToDataType.put(float.class, DataType.cfloat());
+        javaTypeToDataType.put(Enum.class, DataType.varchar());
     }
 
     /**
@@ -83,7 +101,7 @@ public class EntityTypeParser {
      * @param mapping
      */
     public static void setDataTypeMapping(Map<Class<?>, DataType.Name> mapping) {
-        javaTypeToDataType = mapping;
+        javaTypeToDataTypeName = mapping;
     }
 
     /**
@@ -93,7 +111,7 @@ public class EntityTypeParser {
      * @param type the datastax DataType.Name
      */
     public static void overrideDataTypeMapping(Class<?> clazz, DataType.Name type) {
-        javaTypeToDataType.put(clazz, type);
+        javaTypeToDataTypeName.put(clazz, type);
     }
 
     /**
@@ -130,13 +148,12 @@ public class EntityTypeParser {
      */
     private static <T> EntityTypeMetadata parseEntityClass(Class<T> clazz) {
         EntityTypeMetadata result = parseEntityLevelMetadata(clazz);
-        parsePropertyLevelMetadata(result.getEntityClass(), result, null, false);
+        parseFiledMetadata(result.getEntityClass(), result);
         return result;
     }
 
     /**
-     * Parses class level annotations and initializes EntityMetadata object for
-     * given entity class
+     * Parses class level annotations and initializes EntityMetadata for the given entity class
      * 
      * @param clazz
      * @return EntityMetadata
@@ -171,54 +188,38 @@ public class EntityTypeParser {
         return result;
     }
 
-    private static EntityTypeMetadata parsePropertyLevelMetadata(Class<?> clazz, EntityTypeMetadata result, PrimaryKeyMetadata pkmeta, boolean isPartitionKey) {
+    /**
+     * Parses field level annotations and initializes EntityFieldMetaData for the given entity class
+     *
+     * @param clazz
+     * @return EntityMetadata
+     */
+    private static EntityTypeMetadata parseFiledMetadata(Class<?> clazz, EntityTypeMetadata result) {
         Field[] fields = clazz.getDeclaredFields();
         Method[] methods = clazz.getDeclaredMethods();
 
         for (Field f : fields) {
-            boolean isOwnField = false;
-            PrimaryKeyMetadata pkm = null;
-            // for embedded key go recursive
-            if (f.getAnnotation(EmbeddedId.class) != null || f.getAnnotation(Id.class) != null) {
-                isOwnField = true;
-                pkm = new PrimaryKeyMetadata();
-                pkm.setPartition(isPartitionKey);
-                if (isPartitionKey) {
-                    pkmeta.setPartitionKey(pkm);
-                } else {
-                    result.setPrimaryKeyMetadata(pkm);
-                }
-                parsePropertyLevelMetadata(f.getType(), result, pkm, true);
-            }
 
-            if ((f.getAnnotation(Transient.class) == null && javaTypeToDataType.get(f.getType()) != null) || isOwnField || f.getType().isEnum()) {
+            // skip transient or uknown type fields
+            if ((f.getAnnotation(Transient.class) == null && javaTypeToDataType.get(f.getType()) != null) || f.getType().isEnum()) {
                 Method getter = null;
                 Method setter = null;
                 for (Method m : methods) {
 
-                    // before add a field we need to make sure both getter and
-                    // setter are defined
+                    // keep looking for getter and setter
                     if (isGetterFor(m, f.getName())) {
                         getter = m;
                     } else if (isSetterFor(m, f)) {
                         setter = m;
                     }
+
+                    // both getter and setter must be defined
                     if (setter != null && getter != null) {
                         String columnName = getColumnName(f);
-                        DataType.Name dataType = getColumnDataType(f);
+                        DataType dataType = getColumnDataType(f);
                         EntityFieldMetaData fd = new EntityFieldMetaData(f, dataType, getter, setter, columnName);
 
-                        if (pkmeta != null && !isOwnField) {
-                            fd.setPartition(pkmeta.isPartition());
-                            fd.setPrimary(true);
-                            pkmeta.addField(fd);
-                        } else if (isOwnField) {
-                            pkm.setOwnField(fd);
-                        }
-
-                        if (f.getAnnotation(EmbeddedId.class) != null) {
-                            break;
-                        }
+                        markAsPk(f, fd);
 
                         if (f.getAnnotation(Version.class) != null) {
                             result.setVersionField(fd);
@@ -234,13 +235,29 @@ public class EntityTypeParser {
                             fd.setAutoGenerate(true);
                         }
                         result.addField(fd);
+
                         break; // exit inner loop on filed's methods and go to
-                               // the next field
+                        // the next field
                     }
                 }
             }
         }
         return result;
+    }
+
+    private static void markAsPk(Field f, EntityFieldMetaData fd) {
+        Annotation a = f.getAnnotation(PartitionKeyColumn.class);
+        if (a!=null) {
+            fd.setPartition(true);
+            fd.setOrdinal(((PartitionKeyColumn)a).ordinal());
+        }
+
+        a = f.getAnnotation(ClusteredKeyColumn.class);
+        if (a!=null) {
+            fd.setClustered(true);
+            fd.setOrdinal(((ClusteredKeyColumn)a).ordinal());
+            fd.setSortOrder(((ClusteredKeyColumn)a).ordering());
+        }
     }
 
     private static void setCollections(Field f, EntityFieldMetaData fd) {
@@ -253,48 +270,62 @@ public class EntityTypeParser {
         }
 
         Annotation annotation = f.getAnnotation(CollectionType.class);
-        if (annotation instanceof CollectionType) {
+        if (annotation != null) {
             fd.setCollectionType(((CollectionType) annotation).value());
         }
     }
 
     /**
-     * by default the field name is the column name.
-     * 
-     * @Column annotation will override defaults
+     * By default the field name is the column name.
+     * Filed annotation may override it.
      */
     private static String getColumnName(Field f) {
         String columnName = null;
         Annotation columnA = f.getAnnotation(Column.class);
-        if (columnA instanceof Column) {
+        if (columnA != null) {
             columnName = ((Column) columnA).name();
         }
-        if (columnName == null || columnName.length() < 1) {
+
+        if (columnName == null) {
+            columnA = f.getAnnotation(PartitionKeyColumn.class);
+            if (columnA != null) {
+                columnName = ((PartitionKeyColumn) columnA).name();
+            }
+        }
+
+        if (columnName == null) {
+            columnA = f.getAnnotation(ClusteredKeyColumn.class);
+            if (columnA != null) {
+                columnName = ((ClusteredKeyColumn) columnA).name();
+            }
+        }
+
+        if (columnName == null || columnName.isEmpty()) {
             columnName = f.getName();
         }
         return columnName;
     }
 
+
     /**
      * By default data type retrieved from javaTypeToDataType.
      * ColumnDefinition may override datatype.
      */
-    private static DataType.Name getColumnDataType(Field f) {
+    private static DataType getColumnDataType(Field f) {
         Class<?> t = f.getType();
-        DataType.Name dataType = javaTypeToDataType.get(t);
+        DataType dataType = javaTypeToDataType.get(t);
 
         if (t.isEnum()) { // enum is a special type.
             dataType = javaTypeToDataType.get(Enum.class);
         }
 
+        // todo get collection types
+
         Annotation columnA = f.getAnnotation(Column.class);
         if (columnA instanceof Column) {
             String typedef = ((Column) columnA).columnDefinition();
             if (typedef != null && typedef.length() > 0) {
-                DataType.Name dt = DataType.Name.valueOf(typedef.toUpperCase());
-                if (dt != null) {
-                    dataType = dt;
-                }
+                // todo: override datatype
             }
         }
         return dataType;
@@ -303,7 +334,7 @@ public class EntityTypeParser {
     private static String genericsOfList(Field f) {
         Type[] fieldGenerics = getGenericTypes(f);
         if (fieldGenerics != null) {
-            return String.format("list<%s>", javaTypeToDataType.get(fieldGenerics[0]));
+            return String.format("list<%s>", javaTypeToDataTypeName.get(fieldGenerics[0]));
         } else {
             return "list<text>";
         }
@@ -312,7 +343,7 @@ public class EntityTypeParser {
     private static String genericsOfSet(Field f) {
         Type[] fieldGenerics = getGenericTypes(f);
         if (fieldGenerics != null) {
-            return String.format("set<%s>", javaTypeToDataType.get(fieldGenerics[0]));
+            return String.format("set<%s>", javaTypeToDataTypeName.get(fieldGenerics[0]));
         } else {
             return "set<text>";
         }
@@ -321,7 +352,7 @@ public class EntityTypeParser {
     private static String genericsOfMap(Field f) {
         Type[] fieldGenerics = getGenericTypes(f);
         if (fieldGenerics != null) {
-            return String.format("map<%s, %s>", javaTypeToDataType.get(fieldGenerics[0]), javaTypeToDataType.get(fieldGenerics[1]));
+            return String.format("map<%s, %s>", javaTypeToDataTypeName.get(fieldGenerics[0]), javaTypeToDataTypeName.get(fieldGenerics[1]));
         } else {
             return "map<text, text>";
         }
@@ -374,10 +405,10 @@ public class EntityTypeParser {
 
     public static String mappingToString() {
         StringBuilder b = new StringBuilder();
-        for (Class<?> c : javaTypeToDataType.keySet()) {
+        for (Class<?> c : javaTypeToDataTypeName.keySet()) {
             b.append(c.getName());
             b.append("|");
-            b.append(javaTypeToDataType.get(c));
+            b.append(javaTypeToDataTypeName.get(c));
             b.append("\n");
         }
         return b.toString();
