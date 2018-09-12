@@ -31,11 +31,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.datastax.driver.core.DataType;
-import com.datastax.driver.mapping.EntityTypeParser;
 import com.datastax.driver.mapping.entity.CompositeKey;
 import com.datastax.driver.mapping.entity.EntityOverrideDataType;
 import com.datastax.driver.mapping.entity.EntityWithCollectionsOverride;
 import com.datastax.driver.mapping.entity.EntityWithCompositeKey;
+import com.datastax.driver.mapping.entity.EntityWithEmbedded;
 import com.datastax.driver.mapping.entity.EntityWithEnum;
 import com.datastax.driver.mapping.entity.EntityWithKey;
 import com.datastax.driver.mapping.entity.EntityWithProperties;
@@ -221,5 +221,27 @@ public class EntityTypeParserTest {
 		EntityTypeMetadata meta = EntityTypeParser.getEntityMetadata(EntityWithEnum.class);
 		assertEquals("entity_with_enum", meta.getTableName());
 		assertEquals(2, meta.getFields().size());
-	}	
+	}
+
+	@Test
+	public void testGetEntityMetadataWithEmbedded() {
+		EntityTypeMetadata meta = EntityTypeParser.getEntityMetadata(EntityWithEmbedded.class);
+		assertEquals("test_entity_embedded", meta.getTableName());
+		assertEquals(2, meta.getFields().size());
+
+		List<String> columnFieldsName = columnFieldsName(meta);
+		assertTrue(columnFieldsName.contains("uid"));
+		assertTrue(columnFieldsName.contains("embeddable_field"));
+	}
+
+	private List<String> columnFieldsName(EntityTypeMetadata entityTypeMetadata) {
+		List<String> fieldsName = new LinkedList<String>();
+
+		for (EntityFieldMetaData fieldMetaData : entityTypeMetadata.getFields()) {
+			fieldsName.add(fieldMetaData.getColumnName());
+		}
+
+		return fieldsName;
+	}
+
 }

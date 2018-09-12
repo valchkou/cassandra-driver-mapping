@@ -27,6 +27,8 @@ import java.nio.ByteBuffer;
 import java.util.*;
 
 import javax.persistence.Column;
+import javax.persistence.Embeddable;
+import javax.persistence.Embedded;
 import javax.persistence.EmbeddedId;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -200,6 +202,10 @@ public class EntityTypeParser {
                     result.setPrimaryKeyMetadata(pkm);
                 }
                 parsePropertyLevelMetadata(f.getType(), result, pkm, true);
+            }
+            // same for embedded
+            if (f.getAnnotation(Embedded.class) != null && f.getType().getAnnotation(Embeddable.class) != null) {
+                parsePropertyLevelMetadata(f.getType(), result, pkm, false);
             }
 
             if ((f.getAnnotation(Transient.class) == null && javaTypeToDataType.get(f.getType()) != null) || isOwnField || f.getType().isEnum()) {
