@@ -141,7 +141,7 @@ public final class SchemaSync {
         if (indexes != null) {
             for (String columnName : indexes.keySet()) {
                 String indexName = indexes.get(columnName);
-                if (indexName == null) {
+                if (indexName == null || indexName.equals("")) {
                     indexName = entityMetadata.getTableName() + "_" + columnName + "_idx";
                 }
                 SchemaStatement ss = SchemaBuilder.createIndex(indexName)
