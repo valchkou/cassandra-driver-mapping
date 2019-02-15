@@ -15,6 +15,8 @@
  */
 package com.datastax.driver.mapping.entity;
 
+import com.datastax.driver.mapping.annotation.PartitionKeyColumn;
+
 import java.util.UUID;
 
 import javax.persistence.Id;
@@ -22,8 +24,8 @@ import javax.persistence.Table;
 
 @Table(name="entity_with_enum")
 public class EntityWithEnum {
-	
-	@Id
+
+	@PartitionKeyColumn
 	private UUID id;
 	private Month month;
 

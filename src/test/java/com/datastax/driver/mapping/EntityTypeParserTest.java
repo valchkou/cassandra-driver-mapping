@@ -121,6 +121,14 @@ public class EntityTypeParserTest {
         assertTrue(fields.get(3).isPartition());
         assertFalse(fields.get(3).isClustered());
 
+        assertEquals("email", fields.get(4).getColumnName());
+        assertFalse(fields.get(4).isPartition());
+        assertTrue(fields.get(4).isClustered());
+
+        assertEquals("created", fields.get(5).getColumnName());
+        assertFalse(fields.get(5).isPartition());
+        assertTrue(fields.get(5).isClustered());
+
         assertFalse(fields.get(6).isPartition());
         assertFalse(fields.get(6).isClustered());
 
@@ -229,10 +237,10 @@ public class EntityTypeParserTest {
 //
 //	}
 //
-//	@Test
-//	public void testGetEntityMetadataWithEnum() {
-//		EntityTypeMetadata meta = EntityTypeParser.getEntityMetadata(EntityWithEnum.class);
-//		assertEquals("entity_with_enum", meta.getTableName());
-//		assertEquals(2, meta.getFields().size());
-//	}
+	@Test
+	public void testGetEntityMetadataWithEnum() {
+		EntityTypeMetadata meta = EntityTypeParser.getEntityMetadata(EntityWithEnum.class);
+		assertEquals("entity_with_enum", meta.getTableName());
+		assertEquals(2, meta.getFields().size());
+	}
 }

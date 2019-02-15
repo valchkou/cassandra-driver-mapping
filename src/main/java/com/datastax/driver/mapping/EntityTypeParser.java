@@ -27,9 +27,7 @@ import java.nio.ByteBuffer;
 import java.util.*;
 
 import javax.persistence.Column;
-import javax.persistence.EmbeddedId;
 import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -46,34 +44,10 @@ import com.google.common.primitives.Primitives;
  * instance.
  */
 public class EntityTypeParser {
-    private static Map<Class<?>, DataType.Name> javaTypeToDataTypeName = new HashMap<Class<?>, DataType.Name>();
-    private static Map<Class<?>, DataType> javaTypeToDataType = new HashMap<Class<?>, DataType>();
-    private static final Map<Class<?>, EntityTypeMetadata> entityData         = new HashMap<Class<?>, EntityTypeMetadata>();
+    private static Map<Class<?>, DataType> javaTypeToDataType = new HashMap<>();
+    private static final Map<Class<?>, EntityTypeMetadata> entityData = new HashMap<>();
 
     static {
-        // Mapping java types to DATASTAX driver types
-        javaTypeToDataTypeName.put(InetAddress.class, DataType.Name.INET);
-        javaTypeToDataTypeName.put(ByteBuffer.class, DataType.Name.BLOB);
-        javaTypeToDataTypeName.put(Boolean.class, DataType.Name.BOOLEAN);
-        javaTypeToDataTypeName.put(String.class, DataType.Name.TEXT);
-        javaTypeToDataTypeName.put(Date.class, DataType.Name.TIMESTAMP);
-        javaTypeToDataTypeName.put(UUID.class, DataType.Name.UUID);
-        javaTypeToDataTypeName.put(Integer.class, DataType.Name.INT);
-        javaTypeToDataTypeName.put(Double.class, DataType.Name.DOUBLE);
-        javaTypeToDataTypeName.put(Float.class, DataType.Name.FLOAT);
-        javaTypeToDataTypeName.put(Long.class, DataType.Name.BIGINT);
-        javaTypeToDataTypeName.put(BigDecimal.class, DataType.Name.DECIMAL);
-        javaTypeToDataTypeName.put(BigInteger.class, DataType.Name.VARINT);
-        javaTypeToDataTypeName.put(Map.class, DataType.Name.MAP);
-        javaTypeToDataTypeName.put(List.class, DataType.Name.LIST);
-        javaTypeToDataTypeName.put(Set.class, DataType.Name.SET);
-        javaTypeToDataTypeName.put(boolean.class, DataType.Name.BOOLEAN);
-        javaTypeToDataTypeName.put(int.class, DataType.Name.INT);
-        javaTypeToDataTypeName.put(long.class, DataType.Name.BIGINT);
-        javaTypeToDataTypeName.put(double.class, DataType.Name.DOUBLE);
-        javaTypeToDataTypeName.put(float.class, DataType.Name.FLOAT);
-        javaTypeToDataTypeName.put(Enum.class, DataType.Name.VARCHAR);
-
         // Mapping java types to DATASTAX driver types
         javaTypeToDataType.put(InetAddress.class, DataType.inet());
         javaTypeToDataType.put(ByteBuffer.class, DataType.blob());
@@ -100,19 +74,10 @@ public class EntityTypeParser {
      * 
      * @param mapping
      */
-    public static void setDataTypeMapping(Map<Class<?>, DataType.Name> mapping) {
-        javaTypeToDataTypeName = mapping;
+    public static void setDataTypeMapping(Map<Class<?>, DataType> mapping) {
+        javaTypeToDataType = mapping;
     }
 
-    /**
-     * Override individual entry for java type to datastax type
-     * 
-     * @param clazz the class of a java data type
-     * @param type the datastax DataType.Name
-     */
-    public static void overrideDataTypeMapping(Class<?> clazz, DataType.Name type) {
-        javaTypeToDataTypeName.put(clazz, type);
-    }
 
     /**
      * Remove entity metadata from the cache.
@@ -334,7 +299,7 @@ public class EntityTypeParser {
     private static String genericsOfList(Field f) {
         Type[] fieldGenerics = getGenericTypes(f);
         if (fieldGenerics != null) {
-            return String.format("list<%s>", javaTypeToDataTypeName.get(fieldGenerics[0]));
+            return String.format("list<%s>", javaTypeToDataType.get(fieldGenerics[0]));
         } else {
             return "list<text>";
         }
@@ -343,7 +308,7 @@ public class EntityTypeParser {
     private static String genericsOfSet(Field f) {
         Type[] fieldGenerics = getGenericTypes(f);
         if (fieldGenerics != null) {
-            return String.format("set<%s>", javaTypeToDataTypeName.get(fieldGenerics[0]));
+            return String.format("set<%s>", javaTypeToDataType.get(fieldGenerics[0]));
         } else {
             return "set<text>";
         }
@@ -352,7 +317,7 @@ public class EntityTypeParser {
     private static String genericsOfMap(Field f) {
         Type[] fieldGenerics = getGenericTypes(f);
         if (fieldGenerics != null) {
-            return String.format("map<%s, %s>", javaTypeToDataTypeName.get(fieldGenerics[0]), javaTypeToDataTypeName.get(fieldGenerics[1]));
+            return String.format("map<%s, %s>", javaTypeToDataType.get(fieldGenerics[0]), javaTypeToDataType.get(fieldGenerics[1]));
         } else {
             return "map<text, text>";
         }
@@ -405,10 +370,10 @@ public class EntityTypeParser {
 
     public static String mappingToString() {
         StringBuilder b = new StringBuilder();
-        for (Class<?> c : javaTypeToDataTypeName.keySet()) {
+        for (Class<?> c : javaTypeToDataType.keySet()) {
             b.append(c.getName());
             b.append("|");
-            b.append(javaTypeToDataTypeName.get(c));
+            b.append(javaTypeToDataType.get(c));
             b.append("\n");
         }
         return b.toString();

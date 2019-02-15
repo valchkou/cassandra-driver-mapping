@@ -1,86 +1,86 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>com.valchkou.datastax</groupId>
-  <artifactId>cassandra-driver-mapping</artifactId>
-  <version>3.5.1</version>
-  <packaging>jar</packaging>	
-  <name>Entity Mapping Addon for DataStax Java Driver</name>
-  <description>Entity Mapping Addon JPA 2.1 compatible  for DataStax Java Driver 3.0+ for Cassandra. </description>
-  <url>https://github.com/valchkou/cassandra-driver-mapping</url>
-	<properties>
-		<java-src-version>1.8</java-src-version>
-		<java-compile-version>1.8</java-compile-version>
-	</properties>
-  <parent>
-    <groupId>org.sonatype.oss</groupId>
-    <artifactId>oss-parent</artifactId>
-    <version>7</version>
-  </parent>
-  <dependencies>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.valchkou.datastax</groupId>
+    <artifactId>cassandra-driver-mapping</artifactId>
+    <version>3.6.0</version>
+    <packaging>jar</packaging>
+    <name>Entity Mapping Addon for DataStax Java Driver</name>
+    <description>Entity Mapping Addon JPA 2.1 compatible for DataStax Java Driver 3.0+ for Cassandra.</description>
+    <url>https://github.com/valchkou/cassandra-driver-mapping</url>
+    <properties>
+        <java-src-version>1.8</java-src-version>
+        <java-compile-version>1.8</java-compile-version>
+    </properties>
+    <parent>
+        <groupId>org.sonatype.oss</groupId>
+        <artifactId>oss-parent</artifactId>
+        <version>7</version>
+    </parent>
+    <dependencies>
 
-		<!-- JPA API -->
-		<dependency>
-		    <groupId>org.eclipse.persistence</groupId>
-		    <artifactId>javax.persistence</artifactId>
-		    <version>2.1.0</version>
-		</dependency>
+        <!-- JPA API -->
+        <dependency>
+            <groupId>org.eclipse.persistence</groupId>
+            <artifactId>javax.persistence</artifactId>
+            <version>2.1.0</version>
+        </dependency>
 
-		<!-- Cassandra Client Driver -->
-		<dependency>
-		  <groupId>com.datastax.cassandra</groupId>
-		  <artifactId>cassandra-driver-core</artifactId>
-		  <version>${version}</version>
-		</dependency>
-		
-		<!-- Test -->
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.7</version>
-			<scope>test</scope>
-		</dependency>
-		
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.7.5</version>
-			<scope>test</scope>
-		</dependency>
+        <!-- Cassandra Client Driver -->
+        <dependency>
+            <groupId>com.datastax.cassandra</groupId>
+            <artifactId>cassandra-driver-core</artifactId>
+            <version>${version}</version>
+        </dependency>
 
-  </dependencies>
+        <!-- Test -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.7</version>
+            <scope>test</scope>
+        </dependency>
 
-	<build>
-		<plugins>
-			<plugin>
-				<artifactId>maven-eclipse-plugin</artifactId>
-				<version>2.9</version>
-				<configuration>
-					<downloadSources>true</downloadSources>
-					<downloadJavadocs>true</downloadJavadocs>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<version>1.2.1</version>
-				<configuration>
-					<mainClass>org.test.int1.Main</mainClass>
-				</configuration>
-			</plugin>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.7.5</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
-	      <plugin>
-	        <groupId>org.apache.maven.plugins</groupId>
-	        <artifactId>maven-gpg-plugin</artifactId>
-	        <executions>
-	          <execution>
-	            <id>sign-artifacts</id>
-	            <phase>verify</phase>
-	            <goals>
-	              <goal>sign</goal>
-	            </goals>
-	          </execution>
-	        </executions>
-	      </plugin>
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-eclipse-plugin</artifactId>
+                <version>2.9</version>
+                <configuration>
+                    <downloadSources>true</downloadSources>
+                    <downloadJavadocs>true</downloadJavadocs>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.2.1</version>
+                <configuration>
+                    <mainClass>org.test.int1.Main</mainClass>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -90,31 +90,30 @@
                 </configuration>
             </plugin>
         </plugins>
-	</build>
+    </build>
 
-  <scm>
-    <connection>scm:git:git://github.com/valchkou/cassandra-driver-mapping.git</connection>
-    <developerConnection>scm:git:git@github.com:valchkou/cassandra-driver-mapping.git</developerConnection>
-    <url>https://github.com/valchkou/cassandra-driver-mapping</url>
-    <tag>cassandra-driver-mapping-${version}</tag>
-  </scm>
+    <scm>
+        <connection>scm:git:git://github.com/valchkou/cassandra-driver-mapping.git</connection>
+        <developerConnection>scm:git:git@github.com:valchkou/cassandra-driver-mapping.git</developerConnection>
+        <url>https://github.com/valchkou/cassandra-driver-mapping</url>
+        <tag>cassandra-driver-mapping-${version}</tag>
+    </scm>
 
-  <developers>
-    <developer>
-      <name>Eugene Valchkou</name>
-      <organization>valchkou</organization>
-    </developer>
-  </developers>
-  
-  <licenses>
-    <license>
-      <name>Apache 2</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-      <distribution>repo</distribution>
-      <comments>Apache License Version 2.0</comments>
-    </license>
-  </licenses>
-  
+    <developers>
+        <developer>
+            <name>Eugene Valchkou</name>
+            <organization>valchkou</organization>
+        </developer>
+    </developers>
+
+    <licenses>
+        <license>
+            <name>Apache 2</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+            <comments>Apache License Version 2.0</comments>
+        </license>
+    </licenses>
 
 </project>
 

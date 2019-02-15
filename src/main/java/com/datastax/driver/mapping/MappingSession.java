@@ -77,23 +77,6 @@ public class MappingSession {
      * 
      * @param keyspace name
      * @param session Initialized Datastax Session
-     * @param doNotSync if set to true the mappingSession will not synchronize
-     *        entity definition with Cassandra
-     */
-    @Deprecated
-    public MappingSession(String keyspace, Session session, boolean doNotSync) {
-        this(keyspace, session);
-        if (doNotSync) {
-        	syncOptions = syncOptions.add(SyncOptionTypes.DoNotSync);
-        }       
-    	
-    }
-
-    /**
-     * Constructor
-     * 
-     * @param keyspace name
-     * @param session Initialized Datastax Session
      * @param options if set to true the mappingSession will not synchronize
      *        entity definition with Cassandra
      */
@@ -201,7 +184,7 @@ public class MappingSession {
     /**
      * Delete Entity
      * 
-     * @param entity
+     * @param entity Object
      */
     public <E> void delete(E entity) {
         maybeSync(entity.getClass());
@@ -224,7 +207,7 @@ public class MappingSession {
     /**
      * Asynchronously Delete Entity
      * 
-     * @param entity
+     * @param entity Object
      * @return ResultSetFuture
      */
     public <E> ResultSetFuture deleteAsync(E entity) {
@@ -249,7 +232,7 @@ public class MappingSession {
      * Save Entity. If Entity has @Version field, in attempt to save not the
      * latest version null is returned.
      * 
-     * @param entity
+     * @param entity Object
      * @return ResultSetFuture.
      */
     public <E> E save(E entity) {
@@ -261,7 +244,7 @@ public class MappingSession {
      * latest version the entity will not be saved and no Exceptions will be
      * thrown.
      * 
-     * @param entity
+     * @param entity Object
      * @return ResultSetFuture.
      */
     public <E> ResultSetFuture saveAsync(E entity) {
@@ -272,7 +255,7 @@ public class MappingSession {
      * Save Entity. If Entity has @Version field, in attempt to save not the
      * latest version null is returned.
      * 
-     * @param entity
+     * @param entity Object
      * @param options WriteOptions
      * @return ResultSetFuture.
      */
@@ -296,7 +279,7 @@ public class MappingSession {
      * save not the latest version the entity will not be saved and no
      * Exceptions will be thrown.
      * 
-     * @param entity
+     * @param entity Object
      * @param options WriteOptions
      * @return ResultSetFuture.
      */
@@ -652,7 +635,7 @@ public class MappingSession {
         MappingSession         m;
         Batch                  b;
 
-        public BatchExecutor(MappingSession m) {
+        BatchExecutor(MappingSession m) {
             this.m = m;
             b = QueryBuilder.batch(new RegularStatement[0]);
         }
@@ -673,22 +656,6 @@ public class MappingSession {
             return this;
         }
 
-        /**
-         * Apply Options to the whole batch statement.
-         * 
-         * @param options
-         */
-        public void withOptions(BatchOptions options) {
-            if (options != null) {
-                if (options.getConsistencyLevel() != null) {
-                    b.setConsistencyLevel(options.getConsistencyLevel());
-                }
-
-                if (options.getRetryPolicy() != null) {
-                    b.setRetryPolicy(options.getRetryPolicy());
-                }
-            }
-        }
 
         /** execute batch statement */
         public void execute() {
