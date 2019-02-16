@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.*;
 
 /**
  * This class is Meta Info for the persistent entity and entity fields
@@ -136,5 +137,12 @@ public class EntityTypeMetadata {
 
 	public void setTtl(int ttl) {
 		this.ttl = ttl;
-	}	
+	}
+
+	public List<String> getPkColumns() {
+		return getFields().stream()
+				.filter(f-> f.isPartition() || f.isClustered())
+				.map(f-> f.getColumnName())
+				.collect(Collectors.toList());
+	}
 }

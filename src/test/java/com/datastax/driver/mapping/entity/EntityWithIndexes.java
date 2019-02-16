@@ -15,6 +15,8 @@
  */
 package com.datastax.driver.mapping.entity;
 
+import com.datastax.driver.mapping.annotation.*;
+
 import java.util.Date;
 import java.util.UUID;
 
@@ -33,7 +35,7 @@ import javax.persistence.Transient;
 })
 public class EntityWithIndexes {
 	
-	@Id
+	@PartitionKeyColumn
 	private UUID uuid = UUID.randomUUID();
 	private String email;
 	private Date timeStamp;

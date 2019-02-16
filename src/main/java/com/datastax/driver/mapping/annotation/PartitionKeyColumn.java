@@ -19,7 +19,7 @@ public @interface PartitionKeyColumn {
     /**
      * The order of this column relative to other primary key columns.
      */
-    int ordinal() default Integer.MIN_VALUE;
+    int ordinal() default 0;
 
     /**
      * Allows to override default datatype for the column

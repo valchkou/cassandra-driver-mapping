@@ -77,8 +77,8 @@ public class MappingBuilder {
         String table = entityMetadata.getTableName();
         List<EntityFieldMetaData> fields = entityMetadata.getFields();
 
-        List<String> pkCols; // = entityMetadata.getPkColumns();
-        List<Object> pkVals; // = entityMetadata.getEntityPKValues(entity);
+        List<String> pkCols = entityMetadata.getPkColumns();
+        List<Object> pkVals = entityMetadata.getEntityPKValues(entity);
 
         String[] columns = new String[fields.size()];
         Object[] values = new Object[fields.size()];
@@ -99,19 +99,19 @@ public class MappingBuilder {
             EntityFieldMetaData f = fields.get(i);
             String colName = f.getColumnName();
             Object colVal = null;
-//            if (pkCols.contains(colName)) {
-//                int idx = pkCols.indexOf(colName);
-//                colVal = pkVals.get(idx);
-//                if (colVal == null && f.isAutoGenerate()) {
-//                    if (f.getDataTypeName() == DataType.Name.TIMEUUID){
-//                        colVal = QueryBuilder.fcall("now");
-//                    } else if(f.getDataTypeName() == DataType.Name.UUID) {
-//                        colVal = QueryBuilder.fcall("uuid");
-//                    }
-//                }
-//            } else {
-//                colVal = f.getValue(entity);
-//            }
+            if (pkCols.contains(colName)) {
+                int idx = pkCols.indexOf(colName);
+                colVal = pkVals.get(idx);
+                if (colVal == null && f.isAutoGenerate()) {
+                    if (f.getDataType() == DataType.Name.TIMEUUID){
+                        colVal = QueryBuilder.fcall("now");
+                    } else if(f.getDataTypeName() == DataType.Name.UUID) {
+                        colVal = QueryBuilder.fcall("uuid");
+                    }
+                }
+            } else {
+                colVal = f.getValue(entity);
+            }
             columns[i] = colName;
             if (f.equals(verField)) {
                 values[i] = newVersion;
@@ -260,10 +260,10 @@ public class MappingBuilder {
     /**
      * Prepare BoundStatement to select row by id
      */
-    public static <T> BoundStatement prepareSelect(Class<T> clazz, Object id, final ReadOptions options, final String keyspace, final Session session) {
+    public static <T> BoundStatement prepareSelect(final Class<T> clazz, Object[] id, final ReadOptions options, final String keyspace, final Session session) {
         EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
         final List<EntityFieldMetaData> fields = entityMetadata.getFields();
-        final List<String> pkCols = null; // = entityMetadata.getPkColumns();
+        final List<String> pkCols = entityMetadata.getPkColumns();
         final String table = entityMetadata.getTableName();
 
         // get prepared statement
@@ -271,9 +271,7 @@ public class MappingBuilder {
         Select stmt = buildSelectAll(table, pkCols, options, keyspace, fields);
         ps = session.prepare(stmt);
 
-        // bind parameters
-        Object[] values = {}; // = entityMetadata.getIdValues(id).toArray(new Object[pkCols.size()]);
-        return ps.bind(values);
+        return ps.bind(id);
     }
 
     private static String getSelectCacheKey(String table, Session session, List<EntityFieldMetaData> fields) {

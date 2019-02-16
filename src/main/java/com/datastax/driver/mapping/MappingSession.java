@@ -86,29 +86,31 @@ public class MappingSession {
         	this.syncOptions = options;
         }
     }    
-    
-    /**
-     * Get Entity by Id(Primary Key)
-     * 
-     * @param clazz Entity.class
-     * @param id primary key
-     * @return Entity instance or null
-     */
-    public <T> T get(Class<T> clazz, Object id) {
-        return get(clazz, id, null);
-    }
+
 
     /**
      * Get Entity by Id(Primary Key)
-     * 
+     *
+     * @param clazz Entity class
+     * @param idVals primary key values
+     * @return Entity instance or null
+     */
+    public <T> T get(Class<T> clazz, Object ... idVals) {
+        return get(clazz, null, idVals);
+    }
+
+
+    /**
+     * Get Entity by Id(Primary Key)
+     *
      * @param clazz Entity.class
-     * @param id primary key
+     * @param idVals primary key arguments
      * @param options ReadOptions
      * @return Entity instance or null
      */
-    public <T> T get(Class<T> clazz, Object id, ReadOptions options) {
+    public <T> T get(Class<T> clazz, ReadOptions options, Object... idVals) {
         maybeSync(clazz);
-        BoundStatement bs = MappingBuilder.prepareSelect(clazz, id, options, keyspace, session);
+        BoundStatement bs = MappingBuilder.prepareSelect(clazz, idVals, options, keyspace, session);
         if (bs != null) {
             ResultSet rs = session.execute(bs);
             List<T> all = getFromResultSet(clazz, rs);
