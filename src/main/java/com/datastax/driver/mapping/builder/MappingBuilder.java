@@ -103,9 +103,9 @@ public class MappingBuilder {
                 int idx = pkCols.indexOf(colName);
                 colVal = pkVals.get(idx);
                 if (colVal == null && f.isAutoGenerate()) {
-                    if (f.getDataType() == DataType.Name.TIMEUUID){
+                    if (f.getDataType().getName() == DataType.Name.TIMEUUID){
                         colVal = QueryBuilder.fcall("now");
-                    } else if(f.getDataTypeName() == DataType.Name.UUID) {
+                    } else if(f.getDataType().getName() == DataType.Name.UUID) {
                         colVal = QueryBuilder.fcall("uuid");
                     }
                 }
