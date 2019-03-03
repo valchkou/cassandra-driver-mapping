@@ -45,9 +45,17 @@ public final class SchemaSync {
             session.execute(stmt);
         }
 
+        reloadTableMetadata(keyspace, session, entityMetadata);
         entityMetadata.markSynced(keyspace);
     }
 
+    /** after sync reload table metadata from DB*/
+    private static void reloadTableMetadata(String keyspace, Session session, EntityTypeMetadata entityMetadata) {
+        Cluster cluster = session.getCluster();
+        KeyspaceMetadata keyspaceMetadata = cluster.getMetadata().getKeyspace(keyspace);
+        TableMetadata tableMetadata = keyspaceMetadata.getTable(entityMetadata.getTableName());
+        entityMetadata.setTableMetadata(tableMetadata);
+    }
 
     public static String getScript(String keyspace, Session session, Class<?> clazz, SyncOptions syncOptions) {
         StringBuilder sb = new StringBuilder();
@@ -101,7 +109,7 @@ public final class SchemaSync {
         KeyspaceMetadata keyspaceMetadata = cluster.getMetadata().getKeyspace(keyspace);
         TableMetadata tableMetadata = keyspaceMetadata.getTable(table);
 
-        List<SchemaStatement> statements = null;
+        List<SchemaStatement> statements;
 
         if (tableMetadata == null) {
             statements = createTableStatements(keyspace, entityMetadata);

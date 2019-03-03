@@ -15,6 +15,8 @@
  */
 package com.datastax.driver.mapping.meta;
 
+import com.datastax.driver.core.*;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -42,6 +44,7 @@ public class EntityTypeMetadata {
 	private int ttl = 0;
 	// true if synchronized with Cassandra
 	private List<String> syncedKeyspaces = new ArrayList<String>();
+	private TableMetadata tableMetadata;
 
 	public EntityTypeMetadata(Class<?> entityClass) {
 		this(entityClass, entityClass.getSimpleName());
@@ -87,6 +90,13 @@ public class EntityTypeMetadata {
 	public List<EntityFieldMetaData> getFields() {
 		fields.sort((f1, f2) -> f1.compareTo(f2));
 		return fields;
+	}
+
+	public List<EntityFieldMetaData> getPKFields() {
+		return getFields().stream()
+				.filter(f -> f.isPartition() || f.isClustered())
+				.sorted()
+				.collect(Collectors.toList());
 	}
 	
 	public Map<String, String> getIndexes() {
@@ -139,9 +149,18 @@ public class EntityTypeMetadata {
 		this.ttl = ttl;
 	}
 
-	public List<String> getPkColumns() {
+    public TableMetadata getTableMetadata() {
+        return tableMetadata;
+    }
+
+    public void setTableMetadata(TableMetadata tableMetadata) {
+        this.tableMetadata = tableMetadata;
+    }
+
+    public List<String> getPkColumns() {
 		return getFields().stream()
 				.filter(f-> f.isPartition() || f.isClustered())
+				.sorted()
 				.map(f-> f.getColumnName())
 				.collect(Collectors.toList());
 	}

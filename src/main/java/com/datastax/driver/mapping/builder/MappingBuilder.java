@@ -77,9 +77,6 @@ public class MappingBuilder {
         String table = entityMetadata.getTableName();
         List<EntityFieldMetaData> fields = entityMetadata.getFields();
 
-        List<String> pkCols = entityMetadata.getPkColumns();
-        List<Object> pkVals = entityMetadata.getEntityPKValues(entity);
-
         String[] columns = new String[fields.size()];
         Object[] values = new Object[fields.size()];
 
@@ -98,19 +95,14 @@ public class MappingBuilder {
         for (int i = 0; i < fields.size(); i++) {
             EntityFieldMetaData f = fields.get(i);
             String colName = f.getColumnName();
-            Object colVal = null;
-            if (pkCols.contains(colName)) {
-                int idx = pkCols.indexOf(colName);
-                colVal = pkVals.get(idx);
-                if (colVal == null && f.isAutoGenerate()) {
+            Object colVal = f.getValue(entity);
+
+            if ((f.isClustered() || f.isPartition()) && colVal == null && f.isAutoGenerate()) {
                     if (f.getDataType().getName() == DataType.Name.TIMEUUID){
                         colVal = QueryBuilder.fcall("now");
                     } else if(f.getDataType().getName() == DataType.Name.UUID) {
                         colVal = QueryBuilder.fcall("uuid");
                     }
-                }
-            } else {
-                colVal = f.getValue(entity);
             }
             columns[i] = colName;
             if (f.equals(verField)) {
@@ -156,8 +148,8 @@ public class MappingBuilder {
     /**
      * Statement to persist an entity in Cassandra
      * 
-     * @param entity to be inserted
-     * @return com.datastax.driver.core.BoundStatement
+     * @param entity to be updated
+     * @return BuiltStatement
      */
     public static <E> BuiltStatement buildUpdate(E entity, WriteOptions options, String keyspace) {
         Class<?> clazz = entity.getClass();
@@ -165,43 +157,23 @@ public class MappingBuilder {
         String table = entityMetadata.getTableName();
         List<EntityFieldMetaData> fields = entityMetadata.getFields();
 
-        List<String> pkCols; // = entityMetadata.getPkColumns();
-        List<Object> pkVals; // = entityMetadata.getEntityPKValues(entity);
-
-        String[] columns = new String[fields.size()];
-        Object[] values = new Object[fields.size()];
         Update update = QueryBuilder.update(keyspace, table);
-
-        EntityFieldMetaData verField = null;
-        Object newVersion = null;
-        Object oldVersion = null;
 
         // increment and set @Version field
         if (entityMetadata.hasVersion()) {
-            verField = entityMetadata.getVersionField();
-            oldVersion = verField.getValue(entity);
-            newVersion = incVersion(oldVersion);
+            EntityFieldMetaData verField = entityMetadata.getVersionField();
+            Object oldVersion = verField.getValue(entity);
+            Object newVersion = incVersion(oldVersion);
             verField.setValue(entity, newVersion);
             update.onlyIf(eq(verField.getColumnName(), oldVersion));
         }
 
-        for (int i = 0; i < fields.size(); i++) {
-            EntityFieldMetaData field = fields.get(i);
+        for (EntityFieldMetaData field: fields) {
             String colName = field.getColumnName();
-            Object colVal = null;
-//            if (pkCols.contains(colName)) {
-//                int idx = pkCols.indexOf(colName);
-//                colVal = pkVals.get(idx);
-//                update.where(eq(colName, colVal));
-//                continue;
-//            } else {
-//                colVal = field.getValue(entity);
-//            }
-            columns[i] = colName;
-            if (field.equals(verField)) {
-                values[i] = newVersion;
-            } else {
-                values[i] = colVal;
+            Object colVal = field.getValue(entity);
+            if (field.isClustered() || field.isPartition()) {
+                update.where(eq(colName, colVal));
+                continue;
             }
             update.with(set(colName, colVal));
         }
@@ -349,99 +321,99 @@ public class MappingBuilder {
     @SuppressWarnings("unchecked")
     public static Object getValueFromRow(Row row, EntityFieldMetaData field) {
         Object value = null;
-//        try {
-//            if (field.hasCollectionType()) {
-//                value = field.getCollectionType().newInstance();
-//            }
-//
-//            Class<?> cls = field.getType();
-//            DataType.Name dataType = field.getDataTypeName();
-//            switch (dataType) {
-//                case INET:
-//                    value = row.getInet(field.getColumnName());
-//                    break;
-//                case ASCII:
-//                    value = row.getString(field.getColumnName());
-//                    break;
-//                case BLOB:
-//                    value = row.getBytes(field.getColumnName());
-//                    break;
-//                case BOOLEAN:
-//                    value = row.getBool(field.getColumnName());
-//                    break;
-//                case TEXT:
-//                    value = row.getString(field.getColumnName());
-//                    break;
-//                case TIMESTAMP:
-//                	if (cls == Date.class) {
-//                		value = row.getTimestamp(field.getColumnName());
-//                	} else {
-//                		value = (row.getTimestamp(field.getColumnName())).getTime();
-//                	}
-//                    break;
-//                case UUID:
-//                    value = row.getUUID(field.getColumnName());
-//                    break;
-//                case TIMEUUID:
-//                    value = row.getUUID(field.getColumnName());
-//                    break;
-//                case INT:
-//                    value = row.getInt(field.getColumnName());
-//                    break;
-//                case COUNTER:
-//                    value = row.getLong(field.getColumnName());
-//                    break;
-//                case DOUBLE:
-//                    value = row.getDouble(field.getColumnName());
-//                    break;
-//                case BIGINT:
-//                    value = row.getLong(field.getColumnName());
-//                    break;
-//                case DECIMAL:
-//                    value = row.getDecimal(field.getColumnName());
-//                    break;
-//                case VARINT:
-//                    value = row.getVarint(field.getColumnName());
-//                    break;
-//                case FLOAT:
-//                    value = row.getFloat(field.getColumnName());
-//                    break;
-//                case VARCHAR:
-//                    value = row.getString(field.getColumnName());
-//                    break;
-//                case MAP:
-//                    if (value == null) {
-//                        value = new HashMap<Object, Object>();
-//                    }
-//                    Map<Object, Object> data = row.getMap(field.getColumnName(), Object.class, Object.class);
-//                    if (!data.isEmpty()) {
-//                        ((Map<Object, Object>) value).putAll(data);
-//                    }
-//                    break;
-//                case LIST:
-//                    if (value == null) {
-//                        value = new ArrayList<Object>();
-//                    }
-//                    List<Object> lst = row.getList(field.getColumnName(), Object.class);
-//                    if (!lst.isEmpty()) {
-//                        ((List<Object>) value).addAll(lst);
-//                    }
-//                    break;
-//                case SET:
-//                    if (value == null) {
-//                        value = new HashSet<Object>();
-//                    }
-//                    Set<Object> set = row.getSet(field.getColumnName(), Object.class);
-//                    if (!set.isEmpty()) {
-//                        ((Set<Object>) value).addAll(set);
-//                    }
-//                    break;
-//                default:
-//                    break;
-//            }
-//        } catch (Exception ex) {
-//            // swallow any mapping discrepancies.
-//        }
+        try {
+            if (field.hasCollectionType()) {
+                value = field.getCollectionType().newInstance();
+            }
+
+            Class<?> cls = field.getType();
+            DataType.Name dataType = field.getDataType().getName();
+            switch (dataType) {
+                case INET:
+                    value = row.getInet(field.getColumnName());
+                    break;
+                case ASCII:
+                    value = row.getString(field.getColumnName());
+                    break;
+                case BLOB:
+                    value = row.getBytes(field.getColumnName());
+                    break;
+                case BOOLEAN:
+                    value = row.getBool(field.getColumnName());
+                    break;
+                case TEXT:
+                    value = row.getString(field.getColumnName());
+                    break;
+                case TIMESTAMP:
+                	if (cls == Date.class) {
+                		value = row.getTimestamp(field.getColumnName());
+                	} else {
+                		value = (row.getTimestamp(field.getColumnName())).getTime();
+                	}
+                    break;
+                case UUID:
+                    value = row.getUUID(field.getColumnName());
+                    break;
+                case TIMEUUID:
+                    value = row.getUUID(field.getColumnName());
+                    break;
+                case INT:
+                    value = row.getInt(field.getColumnName());
+                    break;
+                case COUNTER:
+                    value = row.getLong(field.getColumnName());
+                    break;
+                case DOUBLE:
+                    value = row.getDouble(field.getColumnName());
+                    break;
+                case BIGINT:
+                    value = row.getLong(field.getColumnName());
+                    break;
+                case DECIMAL:
+                    value = row.getDecimal(field.getColumnName());
+                    break;
+                case VARINT:
+                    value = row.getVarint(field.getColumnName());
+                    break;
+                case FLOAT:
+                    value = row.getFloat(field.getColumnName());
+                    break;
+                case VARCHAR:
+                    value = row.getString(field.getColumnName());
+                    break;
+                case MAP:
+                    if (value == null) {
+                        value = new HashMap<Object, Object>();
+                    }
+                    Map<Object, Object> data = row.getMap(field.getColumnName(), Object.class, Object.class);
+                    if (!data.isEmpty()) {
+                        ((Map<Object, Object>) value).putAll(data);
+                    }
+                    break;
+                case LIST:
+                    if (value == null) {
+                        value = new ArrayList<Object>();
+                    }
+                    List<Object> lst = row.getList(field.getColumnName(), Object.class);
+                    if (!lst.isEmpty()) {
+                        ((List<Object>) value).addAll(lst);
+                    }
+                    break;
+                case SET:
+                    if (value == null) {
+                        value = new HashSet<Object>();
+                    }
+                    Set<Object> set = row.getSet(field.getColumnName(), Object.class);
+                    if (!set.isEmpty()) {
+                        ((Set<Object>) value).addAll(set);
+                    }
+                    break;
+                default:
+                    break;
+            }
+        } catch (Exception ex) {
+            // swallow any mapping discrepancies.
+        }
         return value;
     }
 
@@ -474,49 +446,26 @@ public class MappingBuilder {
      * Convert individual ResultSet Row into Entity instance
      */
     public static <T> T getFromRow(Class<T> clazz, Row row) {
+
         EntityTypeMetadata entityMetadata = EntityTypeParser.getEntityMetadata(clazz);
-
         T entity = null;
-        Object primaryKey = null;
-        Object partitionKey = null;
+        try {
+            entity = clazz.newInstance();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
 
-//        // create PK
-//        try {
-//            entity = clazz.newInstance();
-//            PrimaryKeyMetadata pkmeta = entityMetadata.getPrimaryKeyMetadata();
-//            if (pkmeta.isCompound()) {
-//                EntityFieldMetaData pkField = pkmeta.getOwnField();
-//                primaryKey = pkField.getType().newInstance();
-//                pkField.setValue(entity, primaryKey);
-//                if (pkmeta.hasPartitionKey()) {
-//                    PrimaryKeyMetadata partmeta = pkmeta.getPartitionKey();
-//                    EntityFieldMetaData partField = partmeta.getOwnField();
-//                    partitionKey = partField.getType().newInstance();
-//                    partField.setValue(primaryKey, partitionKey);
-//                }
-//            }
-//        } catch (Exception e) {
-//            // skip error to support any-2-any
-//        }
-
-        // set properties' values
-//        for (EntityFieldMetaData field : entityMetadata.getFields()) {
-//            Object value = getValueFromRow(row, field);
-//            try {
-//                if (value != null) {
-//                    if (field.isPartition()) {
-//                        field.setValue(partitionKey, value);
-//                    } else if (field.isPrimary()) {
-//                        field.setValue(primaryKey, value);
-//                    } else {
-//                        field.setValue(entity, value);
-//                    }
-//
-//                }
-//            } catch (Exception ex) {
-//                ex.printStackTrace();
-//            }
-//        }
+        for (EntityFieldMetaData field : entityMetadata.getFields()) {
+            Object value = getValueFromRow(row, field);
+            try {
+                if (value != null) {
+                    field.setValue(entity, value);
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
         return entity;
     }
 
